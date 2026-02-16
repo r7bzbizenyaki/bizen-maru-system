@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理ダッシュボード - 備前丸内覧会</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #C41E3A 0%, #8B0000 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+        
+        .stat-icon {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+        
+        .stat-value {
+            font-size: 42px;
+            font-weight: bold;
+            color: #C41E3A;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .data-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1A2B4A;
+        }
+        
+        .export-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        
+        .data-table thead {
+            background: #f8f8f8;
+        }
+        
+        .data-table th {
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+            color: #1A2B4A;
+            border-bottom: 2px solid #ddd;
+        }
+        
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .data-table tr:hover {
+            background: #f9f9f9;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status-completed {
+            background: #E8F5E9;
+            color: #2E7D32;
+        }
+        
+        .status-onboard {
+            background: #FFF3E0;
+            color: #E65100;
+        }
+        
+        .chart-container {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        
+        .chart-title {
+            font-weight: bold;
+            color: #1A2B4A;
+            margin-bottom: 15px;
+        }
+        
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            height: 200px;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .bar {
+            flex: 1;
+            background: linear-gradient(180deg, #C41E3A 0%, #8B0000 100%);
+            border-radius: 8px 8px 0 0;
+            position: relative;
+            min-height: 20px;
+            transition: all 0.3s;
+        }
+        
+        .bar:hover {
+            opacity: 0.8;
+        }
+        
+        .bar-label {
+            position: absolute;
+            bottom: -25px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .bar-value {
+            position: absolute;
+            top: -25px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-weight: bold;
+            color: #1A2B4A;
+        }
+        
+        .refresh-time {
+            text-align: center;
+            color: #999;
+            font-size: 12px;
+            margin-top: 20px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #C41E3A 0%, #8B0000 100%);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #555;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <h1>⛵ 備前丸 内覧会 管理ダッシュボード</h1>
+            <p>リアルタイム管理・統計・データエクスポート</p>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-value" id="totalVisitors">0</div>
+                <div class="stat-label">総エントリー数</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">🚢</div>
+                <div class="stat-value" id="totalBoarding">0</div>
+                <div class="stat-label">乗船者数</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">👋</div>
+                <div class="stat-value" id="totalDisembark">0</div>
+                <div class="stat-label">下船者数</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">⏱️</div>
+                <div class="stat-value" id="avgStay">-</div>
+                <div class="stat-label">平均滞在時間</div>
+            </div>
+        </div>
+        
+        <div class="data-section">
+            <div class="section-header">
+                <div class="section-title">📊 参加者属性分析</div>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">年代別参加者数</div>
+                <div class="bar-chart" id="ageChart"></div>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">性別分布</div>
+                <div class="bar-chart" id="genderChart"></div>
+            </div>
+        </div>
+        
+        <div class="data-section">
+            <div class="section-header">
+                <div class="section-title">📋 参加者リスト</div>
+                <button class="export-btn" onclick="exportToCSV()">📥 CSVエクスポート</button>
+            </div>
+            
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>チケットID</th>
+                            <th>お名前</th>
+                            <th>年代</th>
+                            <th>性別</th>
+                            <th>連絡先</th>
+                            <th>エントリー時刻</th>
+                            <th>乗船時刻</th>
+                            <th>下船時刻</th>
+                            <th>滞在時間</th>
+                            <th>ステータス</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody">
+                        <tr>
+                            <td colspan="10" style="text-align: center; color: #999;">データがありません</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="action-buttons">
+            <button class="btn btn-primary" onclick="refreshData()">🔄 データを更新</button>
+            <button class="btn btn-secondary" onclick="clearAllData()">🗑️ 全データをクリア</button>
+        </div>
+        
+        <div class="refresh-time" id="refreshTime">最終更新: -</div>
+    </div>
+    
+    <script>
+        let allData = [];
+        
+        // 初期化
+        window.onload = function() {
+            loadData();
+            setInterval(loadData, 10000); // 10秒ごとに自動更新
+        };
+        
+        function loadData() {
+            // ローカルストレージからデータを読み込み
+            const scanData = JSON.parse(localStorage.getItem('scanData') || '{}');
+            
+            allData = [];
+            for (const id in scanData) {
+                const record = scanData[id];
+                
+                // チケットデータを探す（複数参加者の場合を想定）
+                let ticketInfo = {};
+                const allTickets = JSON.parse(localStorage.getItem('allTickets') || '[]');
+                const found = allTickets.find(t => t.id === id);
+                if (found) {
+                    ticketInfo = found;
+                }
+                
+                allData.push({
+                    id: id,
+                    name: record.name || '-',
+                    age: ticketInfo.age || '-',
+                    gender: ticketInfo.gender || '-',
+                    phone: ticketInfo.phone || '-',
+                    email: ticketInfo.email || '-',
+                    address: ticketInfo.address || '-',
+                    entry_time: ticketInfo.timestamp || '-',
+                    boarding_time: record.boarding_time || null,
+                    disembark_time: record.disembark_time || null
+                });
+            }
+            
+            updateStats();
+            updateCharts();
+            updateTable();
+            
+            document.getElementById('refreshTime').textContent = 
+                '最終更新: ' + new Date().toLocaleTimeString('ja-JP');
+        }
+        
+        function updateStats() {
+            const stats = JSON.parse(localStorage.getItem('stats') || '{"boarding": 0, "disembark": 0}');
+            
+            document.getElementById('totalVisitors').textContent = allData.length;
+            document.getElementById('totalBoarding').textContent = stats.boarding;
+            document.getElementById('totalDisembark').textContent = stats.disembark;
+            
+            // 平均滞在時間
+            let totalDuration = 0;
+            let count = 0;
+            
+            allData.forEach(record => {
+                if (record.boarding_time && record.disembark_time) {
+                    const duration = (new Date(record.disembark_time) - new Date(record.boarding_time)) / 60000;
+                    totalDuration += duration;
+                    count++;
+                }
+            });
+            
+            if (count > 0) {
+                document.getElementById('avgStay').textContent = Math.round(totalDuration / count) + '分';
+            }
+        }
+        
+        function updateCharts() {
+            // 年代別集計
+            const ageData = {};
+            allData.forEach(record => {
+                const age = record.age || '不明';
+                ageData[age] = (ageData[age] || 0) + 1;
+            });
+            
+            createBarChart('ageChart', ageData);
+            
+            // 性別集計
+            const genderData = {};
+            allData.forEach(record => {
+                const gender = record.gender || '不明';
+                genderData[gender] = (genderData[gender] || 0) + 1;
+            });
+            
+            createBarChart('genderChart', genderData);
+        }
+        
+        function createBarChart(containerId, data) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            if (Object.keys(data).length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #999;">データがありません</p>';
+                return;
+            }
+            
+            const maxValue = Math.max(...Object.values(data));
+            
+            for (const [label, value] of Object.entries(data)) {
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.style.height = (value / maxValue * 100) + '%';
+                
+                const barValue = document.createElement('div');
+                barValue.className = 'bar-value';
+                barValue.textContent = value;
+                
+                const barLabel = document.createElement('div');
+                barLabel.className = 'bar-label';
+                barLabel.textContent = label;
+                
+                bar.appendChild(barValue);
+                bar.appendChild(barLabel);
+                container.appendChild(bar);
+            }
+        }
+        
+        function updateTable() {
+            const tbody = document.getElementById('dataTableBody');
+            tbody.innerHTML = '';
+            
+            if (allData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: #999;">データがありません</td></tr>';
+                return;
+            }
+            
+            allData.forEach(record => {
+                const row = document.createElement('tr');
+                
+                const entryTime = record.entry_time ? new Date(record.entry_time).toLocaleString('ja-JP') : '-';
+                const boardingTime = record.boarding_time ? new Date(record.boarding_time).toLocaleTimeString('ja-JP') : '-';
+                const disembarkTime = record.disembark_time ? new Date(record.disembark_time).toLocaleTimeString('ja-JP') : '-';
+                
+                let duration = '-';
+                let status = '未乗船';
+                let statusClass = 'status-badge';
+                
+                if (record.boarding_time && record.disembark_time) {
+                    const durationMin = Math.round((new Date(record.disembark_time) - new Date(record.boarding_time)) / 60000);
+                    duration = durationMin + '分';
+                    status = '完了';
+                    statusClass += ' status-completed';
+                } else if (record.boarding_time) {
+                    status = '乗船中';
+                    statusClass += ' status-onboard';
+                }
+                
+                row.innerHTML = `
+                    <td><small>${record.id}</small></td>
+                    <td>${record.name}</td>
+                    <td>${record.age}</td>
+                    <td>${record.gender}</td>
+                    <td><small>${record.phone}</small></td>
+                    <td><small>${entryTime}</small></td>
+                    <td><small>${boardingTime}</small></td>
+                    <td><small>${disembarkTime}</small></td>
+                    <td>${duration}</td>
+                    <td><span class="${statusClass}">${status}</span></td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+        
+        function exportToCSV() {
+            if (allData.length === 0) {
+                alert('エクスポートするデータがありません');
+                return;
+            }
+            
+            // CSVヘッダー
+            let csv = '\uFEFF'; // BOM for Excel
+            csv += 'チケットID,お名前,年代,性別,電話番号,メールアドレス,住所,エントリー日時,乗船時刻,下船時刻,滞在時間（分）\n';
+            
+            // データ行
+            allData.forEach(record => {
+                const entryTime = record.entry_time ? new Date(record.entry_time).toLocaleString('ja-JP') : '';
+                const boardingTime = record.boarding_time ? new Date(record.boarding_time).toLocaleString('ja-JP') : '';
+                const disembarkTime = record.disembark_time ? new Date(record.disembark_time).toLocaleString('ja-JP') : '';
+                
+                let duration = '';
+                if (record.boarding_time && record.disembark_time) {
+                    duration = Math.round((new Date(record.disembark_time) - new Date(record.boarding_time)) / 60000);
+                }
+                
+                csv += `"${record.id}","${record.name}","${record.age}","${record.gender}","${record.phone}","${record.email}","${record.address}","${entryTime}","${boardingTime}","${disembarkTime}","${duration}"\n`;
+            });
+            
+            // ダウンロード
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', '備前丸内覧会データ_' + new Date().toISOString().split('T')[0] + '.csv');
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        function refreshData() {
+            loadData();
+            alert('データを更新しました');
+        }
+        
+        function clearAllData() {
+            if (!confirm('全データを削除してもよろしいですか？この操作は取り消せません。')) {
+                return;
+            }
+            
+            if (!confirm('本当に削除しますか？')) {
+                return;
+            }
+            
+            localStorage.removeItem('scanData');
+            localStorage.removeItem('stats');
+            localStorage.removeItem('ticketData');
+            localStorage.removeItem('allTickets');
+            
+            loadData();
+            alert('全データを削除しました');
+        }
+    </script>
+</body>
+</html>

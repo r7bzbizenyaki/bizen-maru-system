@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>備前丸内覧会管理システム - セットアップガイド</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: #f9f9f9;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 30px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #C41E3A 0%, #8B0000 100%);
+            color: white;
+            padding: 50px 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px 30px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section-title {
+            font-size: 24px;
+            color: #C41E3A;
+            border-bottom: 3px solid #C41E3A;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .card {
+            background: #f8f8f8;
+            border-left: 5px solid #C41E3A;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        
+        .card-title {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #1A2B4A;
+        }
+        
+        .step {
+            background: white;
+            border: 2px solid #e0e0e0;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+        
+        .step-number {
+            display: inline-block;
+            background: #C41E3A;
+            color: white;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+            border-radius: 50%;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .step-title {
+            font-weight: bold;
+            font-size: 16px;
+            color: #1A2B4A;
+            margin-bottom: 10px;
+        }
+        
+        .file-list {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        
+        .file-list li {
+            margin-bottom: 8px;
+            list-style-position: inside;
+        }
+        
+        .highlight {
+            background: #FFF8E1;
+            border-left: 4px solid #D4AF37;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        
+        .highlight-title {
+            font-weight: bold;
+            color: #1A2B4A;
+            margin-bottom: 8px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        
+        th {
+            background: #f5f5f5;
+            font-weight: bold;
+            color: #1A2B4A;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .feature-box {
+            background: #f8f8f8;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .feature-icon {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+        
+        .feature-title {
+            font-weight: bold;
+            font-size: 14px;
+            color: #1A2B4A;
+        }
+        
+        code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        
+        .footer {
+            background: #1A2B4A;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        a {
+            color: #C41E3A;
+            text-decoration: none;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⛵ 備前丸 内覧会管理システム</h1>
+            <p>セットアップ＆使用ガイド</p>
+        </div>
+        
+        <div class="content">
+            <!-- システム概要 -->
+            <div class="section">
+                <h2 class="section-title">📋 システム概要</h2>
+                <p>このシステムは、備前丸停泊内覧会のために開発された、QRコードベースの参加者管理システムです。完全無料で使用でき、300〜800名規模のイベントに対応しています。</p>
+                
+                <div class="feature-grid">
+                    <div class="feature-box">
+                        <div class="feature-icon">📱</div>
+                        <div class="feature-title">スマホ対応</div>
+                    </div>
+                    <div class="feature-box">
+                        <div class="feature-icon">🔒</div>
+                        <div class="feature-title">安全・無料</div>
+                    </div>
+                    <div class="feature-box">
+                        <div class="feature-icon">📊</div>
+                        <div class="feature-title">リアルタイム統計</div>
+                    </div>
+                    <div class="feature-box">
+                        <div class="feature-icon">💾</div>
+                        <div class="feature-title">CSVエクスポート</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ファイル構成 -->
+            <div class="section">
+                <h2 class="section-title">🗂️ ファイル構成</h2>
+                <div class="file-list">
+                    <ul>
+                        <li><strong>index.html</strong> - エントリーフォーム（参加者用）</li>
+                        <li><strong>ticket.html</strong> - デジタルチケット表示</li>
+                        <li><strong>scan.html</strong> - スキャン管理画面（係員用）</li>
+                        <li><strong>dashboard.html</strong> - 管理ダッシュボード（管理者用）</li>
+                        <li><strong>README.md</strong> - 詳細ドキュメント</li>
+                        <li><strong>setup-guide.html</strong> - このファイル</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- セットアップ手順 -->
+            <div class="section">
+                <h2 class="section-title">🚀 セットアップ手順</h2>
+                
+                <div class="step">
+                    <div class="step-title">
+                        <span class="step-number">1</span>
+                        ファイルを解凍
+                    </div>
+                    <p><code>bizen-maru-system.zip</code> を解凍して、すべてのHTMLファイルを確認してください。</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-title">
+                        <span class="step-number">2</span>
+                        ホスティングサービスを選択
+                    </div>
+                    <p>以下のいずれかの無料ホスティングサービスを使用してください：</p>
+                    <table>
+                        <tr>
+                            <th>サービス</th>
+                            <th>URL</th>
+                            <th>難易度</th>
+                        </tr>
+                        <tr>
+                            <td>Netlify（推奨）</td>
+                            <td><a href="https://www.netlify.com/" target="_blank">netlify.com</a></td>
+                            <td>★☆☆</td>
+                        </tr>
+                        <tr>
+                            <td>Vercel</td>
+                            <td><a href="https://vercel.com/" target="_blank">vercel.com</a></td>
+                            <td>★☆☆</td>
+                        </tr>
+                        <tr>
+                            <td>GitHub Pages</td>
+                            <td><a href="https://pages.github.com/" target="_blank">pages.github.com</a></td>
+                            <td>★★☆</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div class="step">
+                    <div class="step-title">
+                        <span class="step-number">3</span>
+                        ファイルをアップロード
+                    </div>
+                    <p>選択したホスティングサービスに、すべてのHTMLファイルをアップロードします。</p>
+                    <div class="highlight">
+                        <div class="highlight-title">💡 Netlifyの場合</div>
+                        <ol>
+                            <li>Netlifyにログイン</li>
+                            <li>「Sites」→「Add new site」→「Deploy manually」</li>
+                            <li>解凍したフォルダをドラッグ＆ドロップ</li>
+                            <li>自動的にURLが発行されます（例: https://bizen-maru-xxx.netlify.app）</li>
+                        </ol>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-title">
+                        <span class="step-number">4</span>
+                        エントリー用QRコードを生成
+                    </div>
+                    <p>発行されたURLに <code>/index.html</code> を追加して、QRコードを生成します。</p>
+                    <ol>
+                        <li><a href="https://www.qrcode-monkey.com/" target="_blank">QRコード生成サイト</a>にアクセス</li>
+                        <li>URL欄に <code>https://あなたのURL/index.html</code> を入力</li>
+                        <li>QRコードをダウンロード</li>
+                        <li>A4サイズで印刷して会場に設置</li>
+                    </ol>
+                </div>
+                
+                <div class="step">
+                    <div class="step-title">
+                        <span class="step-number">5</span>
+                        係員用端末の準備
+                    </div>
+                    <p>スキャン用の端末（スマホまたはタブレット）2台を準備します。</p>
+                    <ul>
+                        <li>ブラウザで <code>https://あなたのURL/scan.html</code> を開く</li>
+                        <li>カメラアクセスを許可</li>
+                        <li>ホーム画面に追加（ブックマーク）して、素早くアクセスできるようにする</li>
+                    </ul>
+                </div>
+                
+                <div class="step">
+                    <div class="step-title">
+                        <span class="step-number">6</span>
+                        管理者用ダッシュボードの設定
+                    </div>
+                    <p>管理者用PCまたはタブレットで、ダッシュボードを開きます。</p>
+                    <ul>
+                        <li>ブラウザで <code>https://あなたのURL/dashboard.html</code> を開く</li>
+                        <li>リアルタイムで統計が自動更新されます（10秒ごと）</li>
+                        <li>必要に応じてCSVエクスポート機能を使用</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- 当日の運用フロー -->
+            <div class="section">
+                <h2 class="section-title">📅 当日の運用フロー</h2>
+                
+                <div class="card">
+                    <div class="card-title">参加者側の流れ</div>
+                    <ol>
+                        <li>会場のQRコードをスマホでスキャン</li>
+                        <li>エントリーフォームに必要事項を入力</li>
+                        <li>送信すると、無料乗船チケット（QRコード）が表示される</li>
+                        <li>スクリーンショットを保存（推奨）</li>
+                        <li>乗船時に係員にQRコードを提示</li>
+                        <li>下船時に再度QRコードを提示</li>
+                    </ol>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">係員側の流れ</div>
+                    <ol>
+                        <li>scan.htmlを開いてスタンバイ</li>
+                        <li>乗船時：「乗船モード」でQRコードをスキャン</li>
+                        <li>画面に「乗船を記録しました」と表示されることを確認</li>
+                        <li>下船時：「下船モード」に切り替えてスキャン</li>
+                        <li>滞在時間が自動計算されて表示される</li>
+                    </ol>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">管理者側の作業</div>
+                    <ol>
+                        <li>dashboard.htmlで全体の状況を監視</li>
+                        <li>船内人数をリアルタイムで確認（定員管理）</li>
+                        <li>必要に応じて係員に指示</li>
+                        <li>イベント終了後、CSVエクスポートでデータを保存</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <!-- トラブルシューティング -->
+            <div class="section">
+                <h2 class="section-title">🔧 トラブルシューティング</h2>
+                
+                <div class="card">
+                    <div class="card-title">Q: カメラが起動しない</div>
+                    <p><strong>A:</strong> ブラウザのカメラアクセス許可を確認してください。設定→プライバシー→カメラで、ブラウザにカメラの使用を許可してください。それでも解決しない場合は、手動入力機能をご利用ください。</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Q: QRコードが読み取れない</div>
+                    <p><strong>A:</strong> 明るい場所で、QRコードを画面中央に大きく表示してください。それでも読み取れない場合は、画面下部の「手動入力」欄にチケットIDを入力してください。</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Q: オフライン時の対応</div>
+                    <p><strong>A:</strong> オフライン表示が出た場合でも、手動入力で記録できます。データは端末内に一時保存され、オンライン復帰後も保持されます。</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Q: データのバックアップ</div>
+                    <p><strong>A:</strong> イベント中に定期的に、dashboard.htmlから「CSVエクスポート」ボタンをクリックして、データをダウンロードしてください。イベント終了後も必ず実行してください。</p>
+                </div>
+            </div>
+            
+            <!-- 注意事項 -->
+            <div class="section">
+                <h2 class="section-title">⚠️ 重要な注意事項</h2>
+                
+                <div class="highlight">
+                    <div class="highlight-title">データの保存場所</div>
+                    <p>現在の実装では、データは各端末のブラウザに保存されます。複数端末間でのリアルタイム同期は行われませんので、以下の点にご注意ください：</p>
+                    <ul>
+                        <li>スキャン用端末2台は、それぞれ独立してデータを記録します</li>
+                        <li>ダッシュボードは、開いている端末内のデータのみを表示します</li>
+                        <li>各端末から定期的にCSVエクスポートすることを推奨します</li>
+                    </ul>
+                </div>
+                
+                <div class="highlight">
+                    <div class="highlight-title">個人情報の取り扱い</div>
+                    <p>参加者の個人情報が含まれますので、以下の点にご注意ください：</p>
+                    <ul>
+                        <li>イベント終了後、データを安全に保管してください</li>
+                        <li>不要になったデータは適切に削除してください</li>
+                        <li>エクスポートしたCSVファイルの取り扱いに注意してください</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- サポート情報 -->
+            <div class="section">
+                <h2 class="section-title">📞 サポート</h2>
+                <p>このシステムは完全無料で使用できます。セットアップや使用方法について不明な点がございましたら、お気軽にお問い合わせください。</p>
+                
+                <div class="card">
+                    <div class="card-title">今後の拡張について</div>
+                    <p>より本格的な運用（複数端末のリアルタイム同期、クラウドデータベース連携など）をご希望の場合は、Google Sheets APIとの連携も可能です。ご要望があればお知らせください。</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p><strong>備前丸 内覧会管理システム</strong></p>
+            <p>備前丸内覧会の成功をお祈りしています！⛵</p>
+        </div>
+    </div>
+</body>
+</html>

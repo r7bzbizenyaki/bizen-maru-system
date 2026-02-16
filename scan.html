@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>スキャン管理 - 備前丸内覧会</title>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+            background: linear-gradient(135deg, #1A2B4A 0%, #2C4A7C 100%);
+            min-height: 100vh;
+            padding: 15px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #C41E3A 0%, #8B0000 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px 15px 0 0;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 22px;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+        
+        .mode-selector {
+            background: white;
+            padding: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .mode-btn {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .mode-btn.active {
+            background: linear-gradient(135deg, #C41E3A 0%, #8B0000 100%);
+            color: white;
+            border-color: #C41E3A;
+        }
+        
+        .scanner-section {
+            background: white;
+            padding: 20px;
+        }
+        
+        #reader {
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .manual-input {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #f0f0f0;
+        }
+        
+        .manual-input h3 {
+            color: #1A2B4A;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .input-group input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .input-group button {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .result-section {
+            background: white;
+            padding: 20px;
+            border-radius: 0 0 15px 15px;
+            min-height: 200px;
+        }
+        
+        .result-card {
+            background: #F5F5F0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .result-success {
+            border-left: 5px solid #4CAF50;
+        }
+        
+        .result-error {
+            border-left: 5px solid #f44336;
+        }
+        
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .result-icon {
+            font-size: 32px;
+        }
+        
+        .result-time {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .result-info {
+            margin-top: 10px;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            color: #666;
+            font-size: 13px;
+        }
+        
+        .info-value {
+            color: #1A2B4A;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .stats-section {
+            background: #FFF8E1;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+        
+        .stats-title {
+            font-weight: bold;
+            color: #1A2B4A;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #C41E3A;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .offline-indicator {
+            background: #ff9800;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+        }
+        
+        .offline-indicator.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-indicator" id="offlineIndicator">
+        ⚠️ オフラインモード - データは一時保存されます
+    </div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>⛵ 備前丸 スキャン管理</h1>
+            <p>係員用管理画面</p>
+        </div>
+        
+        <div class="mode-selector">
+            <button class="mode-btn active" id="boardingBtn" onclick="setMode('boarding')">
+                🚢 乗船
+            </button>
+            <button class="mode-btn" id="disembarkBtn" onclick="setMode('disembark')">
+                👋 下船
+            </button>
+        </div>
+        
+        <div class="scanner-section">
+            <div id="reader"></div>
+            
+            <div class="manual-input">
+                <h3>🔢 手動入力（オフライン時）</h3>
+                <div class="input-group">
+                    <input type="text" id="manualId" placeholder="チケットID (例: BM1234567890)">
+                    <button onclick="manualScan()">記録</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="result-section">
+            <div class="stats-section">
+                <div class="stats-title">📊 本日の統計</div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalBoarding">0</div>
+                        <div class="stat-label">乗船者数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalDisembark">0</div>
+                        <div class="stat-label">下船者数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="currentOnboard">0</div>
+                        <div class="stat-label">船内人数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="avgStay">-</div>
+                        <div class="stat-label">平均滞在時間</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="resultContainer"></div>
+        </div>
+    </div>
+    
+    <script>
+        let currentMode = 'boarding';
+        let html5QrCode;
+        let scanData = JSON.parse(localStorage.getItem('scanData') || '{}');
+        let stats = JSON.parse(localStorage.getItem('stats') || '{"boarding": 0, "disembark": 0}');
+        
+        // オフライン検知
+        window.addEventListener('offline', () => {
+            document.getElementById('offlineIndicator').classList.add('show');
+        });
+        
+        window.addEventListener('online', () => {
+            document.getElementById('offlineIndicator').classList.remove('show');
+            syncOfflineData();
+        });
+        
+        // 初期化
+        window.onload = function() {
+            initScanner();
+            updateStats();
+            if (!navigator.onLine) {
+                document.getElementById('offlineIndicator').classList.add('show');
+            }
+        };
+        
+        function initScanner() {
+            html5QrCode = new Html5Qrcode("reader");
+            
+            html5QrCode.start(
+                { facingMode: "environment" },
+                {
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 }
+                },
+                onScanSuccess,
+                onScanError
+            ).catch(err => {
+                console.error("カメラ起動エラー:", err);
+                showResult('error', 'カメラを起動できませんでした。手動入力をご利用ください。');
+            });
+        }
+        
+        function onScanSuccess(decodedText, decodedResult) {
+            try {
+                const data = JSON.parse(decodedText);
+                processScan(data.id, data.name);
+            } catch (e) {
+                console.error("QRコード解析エラー:", e);
+                showResult('error', '無効なQRコードです');
+            }
+        }
+        
+        function onScanError(errorMessage) {
+            // スキャンエラーは無視（連続スキャン中は頻繁に発生）
+        }
+        
+        function setMode(mode) {
+            currentMode = mode;
+            
+            // ボタンのアクティブ状態を更新
+            document.getElementById('boardingBtn').classList.remove('active');
+            document.getElementById('disembarkBtn').classList.remove('active');
+            
+            if (mode === 'boarding') {
+                document.getElementById('boardingBtn').classList.add('active');
+            } else {
+                document.getElementById('disembarkBtn').classList.add('active');
+            }
+        }
+        
+        function processScan(ticketId, name) {
+            const timestamp = new Date().toISOString();
+            const now = new Date();
+            
+            if (!scanData[ticketId]) {
+                scanData[ticketId] = {
+                    name: name,
+                    boarding_time: null,
+                    disembark_time: null
+                };
+            }
+            
+            if (currentMode === 'boarding') {
+                if (scanData[ticketId].boarding_time) {
+                    showResult('error', '既に乗船済みです', {
+                        'お名前': name,
+                        'チケットID': ticketId,
+                        '乗船時刻': new Date(scanData[ticketId].boarding_time).toLocaleTimeString('ja-JP')
+                    });
+                    return;
+                }
+                
+                scanData[ticketId].boarding_time = timestamp;
+                stats.boarding++;
+                
+                showResult('success', '乗船を記録しました ✓', {
+                    'お名前': name,
+                    'チケットID': ticketId,
+                    '乗船時刻': now.toLocaleTimeString('ja-JP')
+                });
+                
+            } else {
+                if (!scanData[ticketId].boarding_time) {
+                    showResult('error', '乗船記録がありません', {
+                        'お名前': name,
+                        'チケットID': ticketId
+                    });
+                    return;
+                }
+                
+                if (scanData[ticketId].disembark_time) {
+                    showResult('error', '既に下船済みです', {
+                        'お名前': name,
+                        'チケットID': ticketId,
+                        '下船時刻': new Date(scanData[ticketId].disembark_time).toLocaleTimeString('ja-JP')
+                    });
+                    return;
+                }
+                
+                scanData[ticketId].disembark_time = timestamp;
+                stats.disembark++;
+                
+                // 滞在時間を計算
+                const boardingTime = new Date(scanData[ticketId].boarding_time);
+                const duration = Math.round((now - boardingTime) / 60000); // 分単位
+                
+                showResult('success', '下船を記録しました ✓', {
+                    'お名前': name,
+                    'チケットID': ticketId,
+                    '下船時刻': now.toLocaleTimeString('ja-JP'),
+                    '滞在時間': duration + '分'
+                });
+            }
+            
+            // データを保存
+            localStorage.setItem('scanData', JSON.stringify(scanData));
+            localStorage.setItem('stats', JSON.stringify(stats));
+            
+            // オフライン時はキューに追加
+            if (!navigator.onLine) {
+                saveToOfflineQueue({
+                    ticketId: ticketId,
+                    mode: currentMode,
+                    timestamp: timestamp
+                });
+            }
+            
+            updateStats();
+            
+            // 効果音（オプション）
+            playSound();
+        }
+        
+        function manualScan() {
+            const ticketId = document.getElementById('manualId').value.trim();
+            if (!ticketId) {
+                alert('チケットIDを入力してください');
+                return;
+            }
+            
+            // ローカルストレージから参加者データを検索
+            const ticketData = JSON.parse(localStorage.getItem('ticketData') || '{}');
+            let name = '手動入力';
+            
+            if (ticketData.id === ticketId) {
+                name = ticketData.name;
+            }
+            
+            processScan(ticketId, name);
+            document.getElementById('manualId').value = '';
+        }
+        
+        function showResult(type, message, details = {}) {
+            const container = document.getElementById('resultContainer');
+            const resultCard = document.createElement('div');
+            resultCard.className = `result-card result-${type}`;
+            
+            let detailsHtml = '';
+            if (Object.keys(details).length > 0) {
+                detailsHtml = '<div class="result-info">';
+                for (const [label, value] of Object.entries(details)) {
+                    detailsHtml += `
+                        <div class="info-item">
+                            <span class="info-label">${label}</span>
+                            <span class="info-value">${value}</span>
+                        </div>
+                    `;
+                }
+                detailsHtml += '</div>';
+            }
+            
+            resultCard.innerHTML = `
+                <div class="result-header">
+                    <div class="result-icon">${type === 'success' ? '✅' : '⚠️'}</div>
+                    <div class="result-time">${new Date().toLocaleTimeString('ja-JP')}</div>
+                </div>
+                <strong>${message}</strong>
+                ${detailsHtml}
+            `;
+            
+            container.insertBefore(resultCard, container.firstChild);
+            
+            // 最新5件のみ表示
+            while (container.children.length > 5) {
+                container.removeChild(container.lastChild);
+            }
+        }
+        
+        function updateStats() {
+            document.getElementById('totalBoarding').textContent = stats.boarding;
+            document.getElementById('totalDisembark').textContent = stats.disembark;
+            document.getElementById('currentOnboard').textContent = stats.boarding - stats.disembark;
+            
+            // 平均滞在時間を計算
+            let totalDuration = 0;
+            let count = 0;
+            
+            for (const id in scanData) {
+                if (scanData[id].boarding_time && scanData[id].disembark_time) {
+                    const duration = (new Date(scanData[id].disembark_time) - new Date(scanData[id].boarding_time)) / 60000;
+                    totalDuration += duration;
+                    count++;
+                }
+            }
+            
+            if (count > 0) {
+                document.getElementById('avgStay').textContent = Math.round(totalDuration / count) + '分';
+            }
+        }
+        
+        function saveToOfflineQueue(data) {
+            const queue = JSON.parse(localStorage.getItem('offlineQueue') || '[]');
+            queue.push(data);
+            localStorage.setItem('offlineQueue', JSON.stringify(queue));
+        }
+        
+        function syncOfflineData() {
+            const queue = JSON.parse(localStorage.getItem('offlineQueue') || '[]');
+            if (queue.length > 0) {
+                console.log('オンライン復帰: ' + queue.length + '件のデータを同期中...');
+                // ここでGoogle Sheets APIにデータを送信
+                // 成功したらキューをクリア
+                // localStorage.setItem('offlineQueue', '[]');
+            }
+        }
+        
+        function playSound() {
+            // ビープ音を生成（オプション）
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.1);
+        }
+    </script>
+</body>
+</html>
