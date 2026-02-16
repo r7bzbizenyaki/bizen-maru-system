@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>乗船チケット - 備前丸</title>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -106,6 +105,7 @@
             background: white;
             border-radius: 15px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            min-height: 230px;
         }
         
         .ticket-info {
@@ -139,11 +139,15 @@
         
         .ticket-id {
             text-align: center;
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
             color: #C41E3A;
-            letter-spacing: 2px;
+            letter-spacing: 3px;
             margin-bottom: 20px;
+            padding: 15px;
+            background: #FFF8E1;
+            border-radius: 10px;
+            border: 2px dashed #D4AF37;
         }
         
         .instructions {
@@ -212,6 +216,17 @@
             padding-top: 20px;
             border-top: 1px solid #e0e0e0;
         }
+        
+        .debug-info {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            padding: 10px;
+            margin-top: 15px;
+            border-radius: 5px;
+            font-size: 12px;
+            color: #1565c0;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -227,7 +242,9 @@
             
             <div class="qr-section">
                 <div class="qr-label">乗船用QRコード</div>
-                <div id="qrcode"></div>
+                <div id="qrcode">
+                    <p style="color: #999; padding: 80px 20px;">QRコード生成中...</p>
+                </div>
             </div>
             
             <div class="ticket-info">
@@ -248,9 +265,9 @@
             <div class="instructions">
                 <div class="instructions-title">📋 ご利用方法</div>
                 <ul>
-                    <li><strong>乗船時：</strong>このQRコードを係員に提示してください</li>
-                    <li><strong>下船時：</strong>再度QRコードをスキャンさせてください</li>
-                    <li>スクリーンショットを保存しておくと便利です</li>
+                    <li><strong>乗船時：</strong>このQRコードまたはチケットIDを係員に提示してください</li>
+                    <li><strong>下船時：</strong>再度QRコードまたはチケットIDを提示してください</li>
+                    <li><strong>推奨：</strong>この画面全体のスクリーンショットを保存してください</li>
                     <li>当日はこの画面を提示いただくだけでOKです</li>
                 </ul>
             </div>
@@ -264,34 +281,35 @@
                 備前丸 停泊内覧会<br>
                 このチケットは無料です
             </div>
+            
+            <div id="debugInfo" class="debug-info"></div>
         </div>
     </div>
     
     <script>
+        // デバッグログ関数
+        function debugLog(message) {
+            console.log(message);
+            const debugDiv = document.getElementById('debugInfo');
+            debugDiv.style.display = 'block';
+            debugDiv.innerHTML += message + '<br>';
+        }
+        
+        debugLog('スクリプト開始');
+        
         // URLパラメータからIDを取得
         const urlParams = new URLSearchParams(window.location.search);
         const ticketId = urlParams.get('id');
+        debugLog('チケットID: ' + ticketId);
         
         // ローカルストレージからデータを取得
         const ticketData = JSON.parse(localStorage.getItem('ticketData') || '{}');
+        debugLog('ストレージデータ: ' + JSON.stringify(ticketData));
         
         if (ticketId && ticketData.id === ticketId) {
             // チケットIDを表示
             document.getElementById('ticketId').textContent = ticketId;
-            
-            // QRコード生成
-            new QRCode(document.getElementById('qrcode'), {
-                text: JSON.stringify({
-                    id: ticketId,
-                    name: ticketData.name,
-                    type: 'boarding_ticket'
-                }),
-                width: 200,
-                height: 200,
-                colorDark: '#1A2B4A',
-                colorLight: '#ffffff',
-                correctLevel: QRCode.CorrectLevel.H
-            });
+            debugLog('チケットID表示成功');
             
             // 情報を表示
             document.getElementById('displayName').textContent = ticketData.name;
@@ -301,19 +319,81 @@
             document.getElementById('displayTime').textContent = 
                 entryTime.toLocaleDateString('ja-JP') + ' ' + 
                 entryTime.toLocaleTimeString('ja-JP', {hour: '2-digit', minute: '2-digit'});
-                
+            
+            debugLog('情報表示完了');
+            
+            // QRコード生成（Google Charts API使用 - 外部ライブラリ不要）
+            setTimeout(function() {
+                generateQRCode();
+            }, 100);
+            
         } else {
-            alert('チケット情報が見つかりません');
+            debugLog('エラー: チケット情報不一致');
+            alert('チケット情報が見つかりません\n\nindex.htmlからエントリーしてください');
             window.location.href = 'index.html';
+        }
+        
+        function generateQRCode() {
+            debugLog('QRコード生成開始');
+            
+            const qrData = JSON.stringify({
+                id: ticketId,
+                name: ticketData.name,
+                type: 'boarding_ticket'
+            });
+            
+            debugLog('QRデータ: ' + qrData);
+            
+            try {
+                const qrContainer = document.getElementById('qrcode');
+                const encodedData = encodeURIComponent(qrData);
+                
+                // Google Charts APIを使用（外部ライブラリ不要）
+                const img = document.createElement('img');
+                img.src = 'https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=' + encodedData + '&choe=UTF-8';
+                img.style.width = '200px';
+                img.style.height = '200px';
+                img.alt = 'QRコード - チケットID: ' + ticketId;
+                
+                img.onload = function() {
+                    debugLog('QRコード画像読み込み成功');
+                };
+                
+                img.onerror = function() {
+                    debugLog('QRコード画像読み込み失敗');
+                    qrContainer.innerHTML = '<div style="padding: 20px; text-align: center;">' +
+                        '<p style="color: #f44336; font-weight: bold; margin-bottom: 10px;">⚠️ QRコード生成失敗</p>' +
+                        '<p style="color: #666; font-size: 14px;">上記のチケットIDを係員に提示してください</p>' +
+                        '</div>';
+                };
+                
+                qrContainer.innerHTML = '';
+                qrContainer.appendChild(img);
+                
+                debugLog('QRコード要素追加完了');
+                
+            } catch (e) {
+                debugLog('エラー: ' + e.message);
+                document.getElementById('qrcode').innerHTML = 
+                    '<div style="padding: 20px; text-align: center;">' +
+                    '<p style="color: #f44336; font-weight: bold; margin-bottom: 10px;">⚠️ QRコード生成エラー</p>' +
+                    '<p style="color: #666; font-size: 14px;">上記のチケットIDを係員に提示してください</p>' +
+                    '<p style="color: #999; font-size: 12px; margin-top: 10px;">エラー: ' + e.message + '</p>' +
+                    '</div>';
+            }
         }
         
         function saveScreenshot() {
-            alert('このチケットのスクリーンショットを保存してください。\n\n【保存方法】\niPhone: 電源+音量上ボタン同時押し\nAndroid: 電源+音量下ボタン同時押し');
+            alert('このチケットのスクリーンショットを保存してください。\n\n【保存方法】\niPhone: 電源ボタン+音量上ボタン同時押し\nAndroid: 電源ボタン+音量下ボタン同時押し\nPC: PrintScreenキー または Windows+Shift+S');
         }
         
         function goBack() {
-            window.location.href = 'index.html';
+            if (confirm('エントリーフォームに戻りますか？')) {
+                window.location.href = 'index.html';
+            }
         }
+        
+        debugLog('スクリプト終了');
     </script>
 </body>
 </html>
