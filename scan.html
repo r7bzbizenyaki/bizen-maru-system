@@ -268,12 +268,12 @@
     <div class="container">
         <div class="header">
             <h1>⛵ 備前丸 スキャン管理</h1>
-            <p>係員用管理画面（完全版）</p>
+            <p>係員用管理画面（LINE対応版）</p>
         </div>
 
-        <!-- Android LINE内蔵ブラウザ警告 -->
+        <!-- LINE内蔵ブラウザ警告 -->
         <div id="lineWarning" class="line-warning">
-            <h3>⚠️ Android版LINEでは動作しません</h3>
+            <h3>⚠️ LINE内蔵ブラウザでは動作しません</h3>
             <p><strong>カメラ機能を使用するには、外部ブラウザ（Chrome）で開く必要があります。</strong></p>
             <p><strong>📱 開き方:</strong></p>
             <ol>
@@ -364,21 +364,15 @@
             console.log(`[${time}] ${message}`);
         };
         
-        // Android LINE内蔵ブラウザ検出（iPhoneは除外）
-        function detectAndroidLineApp() {
+        // LINE内蔵ブラウザ検出
+        function detectLineApp() {
             const ua = navigator.userAgent.toLowerCase();
             const isLine = ua.includes('line/');
-            const isAndroid = ua.includes('android');
-            const isIPhone = ua.includes('iphone') || ua.includes('ipad');
             
-            // Android + LINE の組み合わせのみ検出
-            if (isLine && isAndroid && !isIPhone) {
-                debugLog('⚠️ Android版LINE内蔵ブラウザを検出');
+            if (isLine) {
+                debugLog('⚠️ LINE内蔵ブラウザを検出');
                 document.getElementById('lineWarning').style.display = 'block';
                 return true;
-            } else if (isLine && isIPhone) {
-                debugLog('✅ iPhone版LINE内蔵ブラウザ（動作可能）');
-                return false;
             } else {
                 debugLog('✅ 標準ブラウザを検出');
                 return false;
@@ -390,8 +384,8 @@
         const existingEntries = JSON.parse(localStorage.getItem('entries') || '[]');
         debugLog(`既存エントリー数: ${existingEntries.length}件`);
         
-        // Android LINE検出
-        const isAndroidLineApp = detectAndroidLineApp();
+        // LINE検出
+        const isLineApp = detectLineApp();
         
         function setMode(mode) {
             currentMode = mode;
@@ -413,8 +407,8 @@
         async function startCamera() {
             debugLog('カメラ起動開始...');
             
-            // Android LINE警告を再表示
-            if (isAndroidLineApp) {
+            // LINE警告を再表示
+            if (isLineApp) {
                 document.getElementById('lineWarning').style.display = 'block';
             }
             
@@ -454,9 +448,9 @@
             } catch (err) {
                 debugLog(`カメラ起動エラー: ${err.name || 'Unknown'} - ${err.message || err}`);
                 
-                // Android LINE内蔵ブラウザの場合
-                if (isAndroidLineApp) {
-                    showMessage('Android版LINEではカメラが使用できません。Chromeで開いてください。', 'error');
+                // LINE内蔵ブラウザの場合
+                if (isLineApp) {
+                    showMessage('LINE内蔵ブラウザではカメラが使用できません。Chromeで開いてください。', 'error');
                     document.getElementById('lineWarning').style.display = 'block';
                 }
                 // 権限エラーの場合
