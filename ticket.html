@@ -268,14 +268,14 @@
                 
                 <div class="footer-note">
                     備前丸 停泊内覧会<br>
-                    乗船中の飲食はご遠慮願います。
+                    このチケットは無料です。
                 </div>
             </div>
         </div>
     </div>
     
     <script>
-        console.log('🚀 Ticket.html 起動（修正版）');
+        console.log('🚀 Ticket.html 起動（統合版）');
         console.log('📅 ' + new Date().toLocaleString('ja-JP'));
         
         // URLパラメータからIDを取得
@@ -283,11 +283,20 @@
         const ticketId = urlParams.get('id');
         console.log('🎫 チケットID:', ticketId);
         
-        // ローカルストレージからデータを取得
-        const ticketData = JSON.parse(localStorage.getItem('ticketData') || '{}');
-        console.log('💾 チケットデータ:', ticketData);
+        if (!ticketId) {
+            console.error('❌ チケットIDが見つかりません');
+            alert('チケットIDが見つかりません。\n\nエントリーフォームからやり直してください。');
+            window.location.href = 'index.html';
+        }
         
-        if (ticketId && ticketData.id === ticketId) {
+        // 統一されたデータキー 'entries' から該当データを検索
+        const entries = JSON.parse(localStorage.getItem('entries') || '[]');
+        console.log('💾 全エントリー数:', entries.length);
+        
+        const ticketData = entries.find(e => e.id === ticketId);
+        console.log('🔍 該当データ:', ticketData);
+        
+        if (ticketData) {
             // チケットIDを表示
             document.getElementById('ticketId').textContent = ticketId;
             console.log('✓ チケットID表示成功');
@@ -297,33 +306,39 @@
             document.getElementById('displayDemo').textContent = 
                 (ticketData.age || '-') + ' / ' + (ticketData.gender || '-');
             
+            // timestamp が数値（ミリ秒）の場合の処理
             const entryTime = new Date(ticketData.timestamp);
             document.getElementById('displayTime').textContent = 
                 entryTime.toLocaleDateString('ja-JP') + ' ' + 
                 entryTime.toLocaleTimeString('ja-JP', {hour: '2-digit', minute: '2-digit'});
             
             console.log('✓ 参加者情報表示完了');
+            console.log('  - 名前:', ticketData.name);
+            console.log('  - 年代:', ticketData.age);
+            console.log('  - 性別:', ticketData.gender);
+            console.log('  - 時刻:', entryTime.toLocaleString('ja-JP'));
             
             // QRコード生成
             generateQRCode();
         } else {
-            alert('チケット情報が見つかりません');
+            console.error('❌ チケットデータが見つかりません');
+            console.log('📋 localStorage内容:', localStorage);
+            console.log('📋 entries配列:', entries);
+            alert('チケット情報が見つかりません。\n\nチケットID: ' + ticketId + '\n\nエントリーフォームからやり直してください。');
             window.location.href = 'index.html';
         }
         
         function generateQRCode() {
-            console.log('🔄 QRコード生成開始（Canvas直接描画）');
+            console.log('🔄 QRコード生成開始（API方式）');
             
             try {
                 // チケットIDだけをエンコード
                 const qrData = ticketId;
                 console.log('📝 QRデータ:', qrData, '（', qrData.length, '文字）');
                 
-                // 軽量QR生成関数（手動実装）
                 const container = document.getElementById('qrcodeContainer');
                 
-                // QRコード生成用の簡易実装
-                // Data URI方式でQRコードAPIを使用（オンライン環境）
+                // QRサーバーAPIを使用（オンライン環境）
                 const qrCodeURL = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}`;
                 
                 const img = document.createElement('img');
@@ -333,20 +348,36 @@
                 img.style.height = '200px';
                 img.style.display = 'block';
                 
+                img.onload = function() {
+                    console.log('✅ QRコード画像読み込み成功');
+                };
+                
+                img.onerror = function() {
+                    console.error('❌ QRコード画像読み込みエラー');
+                    // フォールバック表示
+                    container.innerHTML = `
+                        <div style="padding: 20px; background: #FFF8E1; border: 2px solid #D4AF37; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 12px; color: #666; margin-bottom: 10px;">チケットID</div>
+                            <div style="font-size: 18px; font-weight: bold; word-break: break-all; color: #1A2B4A; line-height: 1.5;">${ticketId}</div>
+                            <div style="font-size: 11px; color: #999; margin-top: 10px;">⚠️ QRコード生成失敗<br>係員にこのIDを伝えてください</div>
+                        </div>
+                    `;
+                };
+                
                 container.appendChild(img);
                 
-                console.log('✅ QRコード生成成功！');
+                console.log('✅ QRコード生成開始');
                 console.log('📊 外部API使用: qrserver.com');
-                console.log('🎉 200x200px QRコード表示');
+                console.log('🎉 200x200px QRコード');
             } catch (error) {
                 console.error('❌ QRコード生成エラー:', error);
                 
                 // フォールバック: チケットIDのみ大きく表示
                 const container = document.getElementById('qrcodeContainer');
                 container.innerHTML = `
-                    <div style="padding: 20px; background: #FFF8E1; border: 2px solid #D4AF37; border-radius: 10px;">
+                    <div style="padding: 20px; background: #FFF8E1; border: 2px solid #D4AF37; border-radius: 10px; text-align: center;">
                         <div style="font-size: 12px; color: #666; margin-bottom: 10px;">チケットID</div>
-                        <div style="font-size: 18px; font-weight: bold; word-break: break-all; color: #1A2B4A;">${ticketId}</div>
+                        <div style="font-size: 18px; font-weight: bold; word-break: break-all; color: #1A2B4A; line-height: 1.5;">${ticketId}</div>
                         <div style="font-size: 11px; color: #999; margin-top: 10px;">係員に口頭で伝えてください</div>
                     </div>
                 `;
