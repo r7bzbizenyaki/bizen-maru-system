@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>無料乗船チケット - 備前丸内覧会</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+            background: linear-gradient(135deg, #1A2B4A 0%, #2C4A7C 100%);
+            min-height: 100vh;
+            padding: 15px;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .ticket-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .header-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+        
+        .header h1 {
+            font-size: 22px;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .ticket-content {
+            padding: 30px 20px;
+        }
+        
+        .qr-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .qr-label {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1A2B4A;
+            margin-bottom: 15px;
+        }
+        
+        #qrcode {
+            display: inline-block;
+            padding: 15px;
+            background: white;
+            border-radius: 15px;
+            border: 3px solid #4CAF50;
+        }
+        
+        #qrcode canvas {
+            display: block !important;
+        }
+        
+        .ticket-id-section {
+            background: #FFF8E1;
+            border: 2px dashed #D4AF37;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .ticket-id-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .ticket-id {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1A2B4A;
+            word-break: break-all;
+            line-height: 1.5;
+            letter-spacing: 1px;
+        }
+        
+        @media (max-width: 480px) {
+            .ticket-id {
+                font-size: 14px;
+                letter-spacing: 0.5px;
+            }
+        }
+        
+        .info-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .info-value {
+            font-size: 14px;
+            font-weight: bold;
+            color: #1A2B4A;
+        }
+        
+        .instructions {
+            background: #E3F2FD;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .instructions-title {
+            font-weight: bold;
+            color: #1A2B4A;
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+        
+        .instructions ul {
+            margin-left: 20px;
+            color: #555;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-save {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .btn-save:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-back {
+            background: #f0f0f0;
+            color: #666;
+        }
+        
+        .footer-note {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 13px;
+            line-height: 1.6;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .success-badge {
+            display: inline-block;
+            background: #4CAF50;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="ticket-card">
+            <div class="header">
+                <div class="header-icon">✅</div>
+                <h1>エントリー完了</h1>
+                <p>無料乗船チケットを発行しました</p>
+            </div>
+            
+            <div class="ticket-content">
+                <div class="qr-section">
+                    <div class="qr-label">
+                        🚢 乗船用QRコード
+                        <div class="success-badge">✓ 高品質QRコード</div>
+                    </div>
+                    <div id="qrcode"></div>
+                </div>
+                
+                <div class="ticket-id-section">
+                    <div class="ticket-id-label">チケットID</div>
+                    <div class="ticket-id" id="ticketId">読み込み中...</div>
+                </div>
+                
+                <div class="info-section">
+                    <div class="info-row">
+                        <span class="info-label">お名前</span>
+                        <span class="info-value" id="displayName">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">年代 / 性別</span>
+                        <span class="info-value" id="displayDemo">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">エントリー日時</span>
+                        <span class="info-value" id="displayTime">-</span>
+                    </div>
+                </div>
+                
+                <div class="instructions">
+                    <div class="instructions-title">📋 ご利用方法</div>
+                    <ul>
+                        <li><strong>乗船時：</strong>このQRコードまたはチケットIDを係員に提示してください</li>
+                        <li><strong>下船時：</strong>再度QRコードまたはチケットIDを提示してください</li>
+                        <li><strong>推奨：</strong>この画面のスクリーンショットを保存してください</li>
+                        <li>当日はこの画面を提示いただくだけでOKです</li>
+                    </ul>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-save" onclick="saveScreenshot()">📸 保存する</button>
+                    <button class="btn btn-back" onclick="goBack()">← 戻る</button>
+                </div>
+                
+                <div class="footer-note">
+                    備前丸 停泊内覧会<br>
+                    乗船中の飲食はご遠慮願います。
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        console.log('🚀 Ticket.html 起動');
+        console.log('📅 ' + new Date().toLocaleString('ja-JP'));
+        
+        // URLパラメータからIDを取得
+        const urlParams = new URLSearchParams(window.location.search);
+        const ticketId = urlParams.get('id');
+        console.log('🎫 チケットID:', ticketId);
+        
+        // ローカルストレージからデータを取得
+        const ticketData = JSON.parse(localStorage.getItem('ticketData') || '{}');
+        console.log('💾 チケットデータ:', ticketData);
+        
+        if (ticketId && ticketData.id === ticketId) {
+            // チケットIDを表示
+            document.getElementById('ticketId').textContent = ticketId;
+            console.log('✓ チケットID表示成功');
+            
+            // 情報を表示
+            document.getElementById('displayName').textContent = ticketData.name || '-';
+            document.getElementById('displayDemo').textContent = 
+                (ticketData.age || '-') + ' / ' + (ticketData.gender || '-');
+            
+            const entryTime = new Date(ticketData.timestamp);
+            document.getElementById('displayTime').textContent = 
+                entryTime.toLocaleDateString('ja-JP') + ' ' + 
+                entryTime.toLocaleTimeString('ja-JP', {hour: '2-digit', minute: '2-digit'});
+            
+            console.log('✓ 参加者情報表示完了');
+            
+            // QRコード生成（シンプル版：チケットIDのみ）
+            setTimeout(function() {
+                generateQRCode();
+            }, 100);
+        } else {
+            alert('チケット情報が見つかりません');
+            window.location.href = 'index.html';
+        }
+        
+        function generateQRCode() {
+            console.log('🔄 QRコード生成開始（標準ライブラリ）');
+            
+            // シンプルにチケットIDだけをQRコードに
+            const qrData = ticketId;
+            
+            console.log('📝 QRデータ:', qrData);
+            
+            try {
+                // 標準qrcode.jsライブラリを使用
+                new QRCode(document.getElementById('qrcode'), {
+                    text: qrData,
+                    width: 200,
+                    height: 200,
+                    colorDark: '#000000',
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.H  // 最高品質
+                });
+                
+                console.log('✅ QRコード生成成功！');
+                console.log('🎉 標準ライブラリ使用 - 高品質QRコード');
+            } catch (error) {
+                console.error('❌ QRコード生成エラー:', error);
+                alert('QRコードの生成に失敗しました: ' + error.message);
+            }
+        }
+        
+        function saveScreenshot() {
+            alert('📸 スクリーンショット保存方法:\n\niPhone: 電源ボタン + 音量上ボタン\nAndroid: 電源ボタン + 音量下ボタン\n\nこの画面全体を撮影してください。');
+        }
+        
+        function goBack() {
+            if (confirm('エントリーフォームに戻りますか？')) {
+                window.location.href = 'index.html';
+            }
+        }
+    </script>
+</body>
+</html>
