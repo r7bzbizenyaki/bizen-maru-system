@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>無料乗船チケット - 備前丸内覧会</title>
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -77,7 +76,7 @@
             border: 3px solid #4CAF50;
         }
         
-        #qrcode canvas {
+        #qrcode img {
             display: block !important;
         }
         
@@ -227,7 +226,7 @@
                 <div class="qr-section">
                     <div class="qr-label">
                         🚢 乗船用QRコード
-                        <div class="success-badge">✓ 最適化QRコード</div>
+                        <div class="success-badge">✓ シンプルQRコード</div>
                     </div>
                     <div id="qrcode"></div>
                 </div>
@@ -275,8 +274,11 @@
         </div>
     </div>
     
+    <!-- 軽量QRコード生成ライブラリ -->
+    <script src="https://cdn.rawgit.com/kazuhikoarase/qrcode-generator/master/js/qrcode.js"></script>
+    
     <script>
-        console.log('🚀 Ticket.html 起動（最適化版）');
+        console.log('🚀 Ticket.html 起動（シンプル版）');
         console.log('📅 ' + new Date().toLocaleString('ja-JP'));
         
         // URLパラメータからIDを取得
@@ -305,39 +307,39 @@
             
             console.log('✓ 参加者情報表示完了');
             
-            // QRコード生成（最適化版）
-            setTimeout(function() {
-                generateQRCode();
-            }, 100);
+            // QRコード生成
+            generateQRCode();
         } else {
             alert('チケット情報が見つかりません');
             window.location.href = 'index.html';
         }
         
         function generateQRCode() {
-            console.log('🔄 QRコード生成開始（最適化版）');
-            
-            // シンプルにチケットIDだけをQRコードに
-            const qrData = ticketId;
-            
-            console.log('📝 QRデータ:', qrData, '（長さ:', qrData.length, '文字）');
+            console.log('🔄 QRコード生成開始（qrcode-generator）');
             
             try {
-                // QRコード設定を最適化
-                // - Error Correction Level M（中程度）に変更
-                // - サイズを256x256に拡大（より読み取りやすく）
-                new QRCode(document.getElementById('qrcode'), {
-                    text: qrData,
-                    width: 256,
-                    height: 256,
-                    colorDark: '#000000',
-                    colorLight: '#ffffff',
-                    correctLevel: QRCode.CorrectLevel.M  // ⭐ 中程度に変更（H→M）
-                });
+                // チケットIDだけをエンコード
+                const qrData = ticketId;
+                console.log('📝 QRデータ:', qrData, '（', qrData.length, '文字）');
+                
+                // QRコードオブジェクトを作成
+                const typeNumber = 0; // 自動調整
+                const errorCorrectionLevel = 'M'; // 中程度のエラー訂正
+                const qr = qrcode(typeNumber, errorCorrectionLevel);
+                qr.addData(qrData);
+                qr.make();
+                
+                // 画像として表示（セルサイズ4px）
+                const cellSize = 4;
+                const margin = 2;
+                const imgTag = qr.createImgTag(cellSize, margin);
+                
+                // QRコードを表示
+                document.getElementById('qrcode').innerHTML = imgTag;
                 
                 console.log('✅ QRコード生成成功！');
-                console.log('📊 設定: 256x256px, Error Correction Level M');
-                console.log('🎉 最適化完了 - スキャン性能向上');
+                console.log('📊 設定: セルサイズ', cellSize, 'px, エラー訂正 M');
+                console.log('🎉 qrcode-generator 使用 - シンプルで読み取りやすい');
             } catch (error) {
                 console.error('❌ QRコード生成エラー:', error);
                 alert('QRコードの生成に失敗しました: ' + error.message);
