@@ -42,6 +42,37 @@
             opacity: 0.9;
         }
         
+        .line-warning {
+            background: #fff3cd;
+            border: 3px solid #ffc107;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 12px;
+            display: none;
+        }
+        
+        .line-warning h3 {
+            color: #856404;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .line-warning p {
+            color: #856404;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+        
+        .line-warning ol {
+            margin-left: 20px;
+            color: #856404;
+            line-height: 2;
+        }
+        
+        .line-warning strong {
+            color: #d32f2f;
+        }
+        
         .debug-panel {
             background: #fff3cd;
             border: 2px solid #ffc107;
@@ -237,7 +268,20 @@
     <div class="container">
         <div class="header">
             <h1>⛵ 備前丸 スキャン管理</h1>
-            <p>係員用管理画面（完全修正版）</p>
+            <p>係員用管理画面（完全版）</p>
+        </div>
+
+        <!-- Android LINE内蔵ブラウザ警告 -->
+        <div id="lineWarning" class="line-warning">
+            <h3>⚠️ Android版LINEでは動作しません</h3>
+            <p><strong>カメラ機能を使用するには、外部ブラウザ（Chrome）で開く必要があります。</strong></p>
+            <p><strong>📱 開き方:</strong></p>
+            <ol>
+                <li>このページのURL（またはリンク）を<strong>長押し</strong></li>
+                <li><strong>「ブラウザで開く」</strong>または<strong>「Chromeで開く」</strong>を選択</li>
+                <li>Chromeで開いたら「📷 QRコードスキャンを開始」をタップ</li>
+            </ol>
+            <p>※ 手動入力機能は LINE 内でも使用できます</p>
         </div>
         
         <div class="debug-panel">
@@ -320,10 +364,34 @@
             console.log(`[${time}] ${message}`);
         };
         
-        // 初期化時にlocalStorageの内容を確認
+        // Android LINE内蔵ブラウザ検出（iPhoneは除外）
+        function detectAndroidLineApp() {
+            const ua = navigator.userAgent.toLowerCase();
+            const isLine = ua.includes('line/');
+            const isAndroid = ua.includes('android');
+            const isIPhone = ua.includes('iphone') || ua.includes('ipad');
+            
+            // Android + LINE の組み合わせのみ検出
+            if (isLine && isAndroid && !isIPhone) {
+                debugLog('⚠️ Android版LINE内蔵ブラウザを検出');
+                document.getElementById('lineWarning').style.display = 'block';
+                return true;
+            } else if (isLine && isIPhone) {
+                debugLog('✅ iPhone版LINE内蔵ブラウザ（動作可能）');
+                return false;
+            } else {
+                debugLog('✅ 標準ブラウザを検出');
+                return false;
+            }
+        }
+        
+        // 初期化
         debugLog('システム初期化完了');
         const existingEntries = JSON.parse(localStorage.getItem('entries') || '[]');
         debugLog(`既存エントリー数: ${existingEntries.length}件`);
+        
+        // Android LINE検出
+        const isAndroidLineApp = detectAndroidLineApp();
         
         function setMode(mode) {
             currentMode = mode;
@@ -344,6 +412,11 @@
         
         async function startCamera() {
             debugLog('カメラ起動開始...');
+            
+            // Android LINE警告を再表示
+            if (isAndroidLineApp) {
+                document.getElementById('lineWarning').style.display = 'block';
+            }
             
             // 権限ヘルプを非表示
             document.getElementById('permissionHelp').style.display = 'none';
@@ -381,8 +454,13 @@
             } catch (err) {
                 debugLog(`カメラ起動エラー: ${err.name || 'Unknown'} - ${err.message || err}`);
                 
+                // Android LINE内蔵ブラウザの場合
+                if (isAndroidLineApp) {
+                    showMessage('Android版LINEではカメラが使用できません。Chromeで開いてください。', 'error');
+                    document.getElementById('lineWarning').style.display = 'block';
+                }
                 // 権限エラーの場合
-                if (err.name === 'NotAllowedError' || err.message?.includes('Permission denied')) {
+                else if (err.name === 'NotAllowedError' || err.message?.includes('Permission denied')) {
                     document.getElementById('permissionHelp').style.display = 'block';
                     showMessage('カメラ権限が拒否されています。上記の手順で許可してください。', 'error');
                 } else {
@@ -443,7 +521,7 @@
                 debugLog(`新規エントリーとして登録: ${ticketId}`);
                 entry = {
                     id: ticketId,
-                    name: 'ゲスト',  // デフォルト名
+                    name: 'ゲスト',
                     timestamp: Date.now()
                 };
                 entries.push(entry);
