@@ -215,13 +215,29 @@
             font-weight: bold;
             color: #1A2B4A;
         }
+
+        .permission-help {
+            background: #e3f2fd;
+            border: 2px solid #2196f3;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.6;
+            display: none;
+        }
+
+        .permission-help h4 {
+            color: #1565c0;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>⛵ 備前丸 スキャン管理</h1>
-            <p>係員用管理画面（デバッグ強化版）</p>
+            <p>係員用管理画面（完全修正版）</p>
         </div>
         
         <div class="debug-panel">
@@ -229,6 +245,16 @@
             <div class="debug-log" id="debugLog">
                 システム初期化中...
             </div>
+        </div>
+
+        <div id="permissionHelp" class="permission-help">
+            <h4>📱 カメラ権限の設定方法</h4>
+            <strong>iPhone Safari:</strong><br>
+            1. URLバー左の「ぁあ」→「Webサイトの設定」→「カメラ」→「許可」<br>
+            2. または 設定→Safari→カメラ→「許可」<br><br>
+            <strong>Android Chrome:</strong><br>
+            1. URLバー左の鍵マーク→「権限」→「カメラ」→「許可」<br>
+            2. または 設定→サイトの設定→カメラ→「許可」
         </div>
         
         <div class="mode-selector">
@@ -294,7 +320,10 @@
             console.log(`[${time}] ${message}`);
         };
         
+        // 初期化時にlocalStorageの内容を確認
         debugLog('システム初期化完了');
+        const existingEntries = JSON.parse(localStorage.getItem('entries') || '[]');
+        debugLog(`既存エントリー数: ${existingEntries.length}件`);
         
         function setMode(mode) {
             currentMode = mode;
@@ -315,6 +344,9 @@
         
         async function startCamera() {
             debugLog('カメラ起動開始...');
+            
+            // 権限ヘルプを非表示
+            document.getElementById('permissionHelp').style.display = 'none';
             
             try {
                 // Html5Qrcode インスタンスを作成
@@ -347,8 +379,15 @@
                 debugLog('カメラ起動成功 - スキャン待機中');
                 
             } catch (err) {
-                debugLog(`カメラ起動エラー: ${err.message || err}`);
-                showMessage(`カメラ起動エラー: ${err.message || err}`, 'error');
+                debugLog(`カメラ起動エラー: ${err.name || 'Unknown'} - ${err.message || err}`);
+                
+                // 権限エラーの場合
+                if (err.name === 'NotAllowedError' || err.message?.includes('Permission denied')) {
+                    document.getElementById('permissionHelp').style.display = 'block';
+                    showMessage('カメラ権限が拒否されています。上記の手順で許可してください。', 'error');
+                } else {
+                    showMessage(`カメラエラー: ${err.message || err}`, 'error');
+                }
             }
         }
         
@@ -360,15 +399,9 @@
                     await html5QrCode.stop();
                     debugLog('カメラ停止成功');
                 }
-                
-                // UI更新
-                isScanning = false;
-                document.getElementById('reader').style.display = 'none';
-                document.getElementById('startBtn').textContent = '📷 QRコードスキャンを開始';
-                document.getElementById('startBtn').classList.remove('stop');
-                
             } catch (err) {
                 debugLog(`停止エラー: ${err.message || err}`);
+            } finally {
                 // エラーでも強制的にUI更新
                 isScanning = false;
                 document.getElementById('reader').style.display = 'none';
@@ -393,35 +426,47 @@
         
         function onScanFailure(error) {
             // スキャン失敗は正常（QRコードが見つからない）
-            // ログに出さない
         }
         
         function processTicket(ticketId) {
             debugLog(`チケット処理開始: ${ticketId}`);
             
-            // ローカルストレージからデータ取得
-            const entries = JSON.parse(localStorage.getItem('entries') || '[]');
-            const entry = entries.find(e => e.id === ticketId);
+            // ローカルストレージから全データ取得
+            let entries = JSON.parse(localStorage.getItem('entries') || '[]');
+            debugLog(`localStorage内のエントリー数: ${entries.length}`);
             
+            // チケットIDで検索
+            let entry = entries.find(e => e.id === ticketId);
+            
+            // 見つからない場合は新規作成
             if (!entry) {
-                debugLog(`エラー: チケットID未登録 ${ticketId}`);
-                showMessage('エラー: チケットが見つかりません', 'error');
-                return;
+                debugLog(`新規エントリーとして登録: ${ticketId}`);
+                entry = {
+                    id: ticketId,
+                    name: 'ゲスト',  // デフォルト名
+                    timestamp: Date.now()
+                };
+                entries.push(entry);
+            } else {
+                debugLog(`既存エントリー発見: ${entry.name || 'ゲスト'}`);
             }
             
             // 記録を追加
+            const displayName = entry.name || 'ゲスト';
+            
             if (currentMode === 'boarding') {
                 entry.boardingTime = Date.now();
-                debugLog(`✅ 乗船記録: ${entry.name}`);
-                showMessage(`✅ ${entry.name} さんの乗船を記録しました`, 'success');
+                debugLog(`✅ 乗船記録: ${displayName} (${ticketId})`);
+                showMessage(`✅ ${displayName} さんの乗船を記録しました`, 'success');
             } else {
                 entry.alightingTime = Date.now();
-                debugLog(`✅ 下船記録: ${entry.name}`);
-                showMessage(`✅ ${entry.name} さんの下船を記録しました`, 'success');
+                debugLog(`✅ 下船記録: ${displayName} (${ticketId})`);
+                showMessage(`✅ ${displayName} さんの下船を記録しました`, 'success');
             }
             
             // 保存
             localStorage.setItem('entries', JSON.stringify(entries));
+            debugLog(`localStorage更新完了 (合計${entries.length}件)`);
             
             // 統計更新
             updateStats();
