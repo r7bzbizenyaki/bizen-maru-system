@@ -303,6 +303,10 @@
                     <div class="stat-value" id="avgStay">-</div>
                 </div>
             </div>
+            
+            <button onclick="clearAllData()" style="width: 100%; margin-top: 20px; padding: 15px; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer;">
+                🗑️ 全データをクリア
+            </button>
         </div>
     </div>
     
@@ -540,6 +544,27 @@
         
         // 定期的に統計更新
         setInterval(updateStats, 5000);
+        
+        // 全データクリア機能
+        function clearAllData() {
+            if (confirm('本当に全データを削除しますか？\n\n⚠️ この操作は取り消せません。')) {
+                // localStorage から全データ削除
+                localStorage.removeItem('entries');
+                localStorage.removeItem('ticketEntries');
+                localStorage.removeItem('scanRecords');
+                
+                debugLog('🗑️ 全データを削除しました');
+                showMessage('✅ 全データを削除しました', 'success');
+                
+                // 統計を即座に更新
+                updateStats();
+                
+                // ページをリロードして完全に初期化
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            }
+        }
     </script>
 </body>
 </html>
