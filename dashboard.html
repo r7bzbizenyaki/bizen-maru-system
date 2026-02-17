@@ -41,6 +41,22 @@
             font-size: 14px;
         }
         
+        .sync-indicator {
+            display: inline-block;
+            padding: 5px 12px;
+            background: #4CAF50;
+            color: white;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-left: 10px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -162,6 +178,11 @@
             color: #E65100;
         }
         
+        .status-registered {
+            background: #E3F2FD;
+            color: #1565C0;
+        }
+        
         .chart-container {
             margin-top: 20px;
             padding: 20px;
@@ -257,7 +278,7 @@
 <body>
     <div class="dashboard-container">
         <div class="header">
-            <h1>⛵ 備前丸 内覧会 管理ダッシュボード</h1>
+            <h1>⛵ 備前丸 内覧会 管理ダッシュボード <span class="sync-indicator" id="syncIndicator">🔄 同期中</span></h1>
             <p>リアルタイム管理・統計・データエクスポート</p>
         </div>
         
@@ -348,38 +369,45 @@
         // 初期化
         window.onload = function() {
             loadData();
-            setInterval(loadData, 10000); // 10秒ごとに自動更新
+            // リアルタイム同期（他のタブでの変更を検知）
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'entries' || e.key === null) {
+                    console.log('他のタブでデータが更新されました');
+                    loadData();
+                    flashSyncIndicator();
+                }
+            });
+            
+            // 定期的な自動更新（5秒ごと）
+            setInterval(loadData, 5000);
         };
         
+        function flashSyncIndicator() {
+            const indicator = document.getElementById('syncIndicator');
+            indicator.style.background = '#FF9800';
+            indicator.textContent = '✅ 更新';
+            setTimeout(() => {
+                indicator.style.background = '#4CAF50';
+                indicator.textContent = '🔄 同期中';
+            }, 1000);
+        }
+        
         function loadData() {
-            // ローカルストレージからデータを読み込み
-            const scanData = JSON.parse(localStorage.getItem('scanData') || '{}');
+            // 統一されたデータキー 'entries' から読み込み
+            const entries = JSON.parse(localStorage.getItem('entries') || '[]');
             
-            allData = [];
-            for (const id in scanData) {
-                const record = scanData[id];
-                
-                // チケットデータを探す（複数参加者の場合を想定）
-                let ticketInfo = {};
-                const allTickets = JSON.parse(localStorage.getItem('allTickets') || '[]');
-                const found = allTickets.find(t => t.id === id);
-                if (found) {
-                    ticketInfo = found;
-                }
-                
-                allData.push({
-                    id: id,
-                    name: record.name || '-',
-                    age: ticketInfo.age || '-',
-                    gender: ticketInfo.gender || '-',
-                    phone: ticketInfo.phone || '-',
-                    email: ticketInfo.email || '-',
-                    address: ticketInfo.address || '-',
-                    entry_time: ticketInfo.timestamp || '-',
-                    boarding_time: record.boarding_time || null,
-                    disembark_time: record.disembark_time || null
-                });
-            }
+            allData = entries.map(entry => ({
+                id: entry.id,
+                name: entry.name || 'ゲスト',
+                age: entry.age || '-',
+                gender: entry.gender || '-',
+                phone: entry.phone || '-',
+                email: entry.email || '-',
+                address: entry.address || '-',
+                entry_time: entry.timestamp,
+                boarding_time: entry.boardingTime || null,
+                disembark_time: entry.alightingTime || null
+            }));
             
             updateStats();
             updateCharts();
@@ -390,11 +418,16 @@
         }
         
         function updateStats() {
-            const stats = JSON.parse(localStorage.getItem('stats') || '{"boarding": 0, "disembark": 0}');
-            
+            // 総エントリー数
             document.getElementById('totalVisitors').textContent = allData.length;
-            document.getElementById('totalBoarding').textContent = stats.boarding;
-            document.getElementById('totalDisembark').textContent = stats.disembark;
+            
+            // 乗船者数
+            const boarding = allData.filter(e => e.boarding_time).length;
+            document.getElementById('totalBoarding').textContent = boarding;
+            
+            // 下船者数
+            const disembark = allData.filter(e => e.disembark_time).length;
+            document.getElementById('totalDisembark').textContent = disembark;
             
             // 平均滞在時間
             let totalDuration = 0;
@@ -402,7 +435,7 @@
             
             allData.forEach(record => {
                 if (record.boarding_time && record.disembark_time) {
-                    const duration = (new Date(record.disembark_time) - new Date(record.boarding_time)) / 60000;
+                    const duration = (record.disembark_time - record.boarding_time) / 60000;
                     totalDuration += duration;
                     count++;
                 }
@@ -410,6 +443,8 @@
             
             if (count > 0) {
                 document.getElementById('avgStay').textContent = Math.round(totalDuration / count) + '分';
+            } else {
+                document.getElementById('avgStay').textContent = '-';
             }
         }
         
@@ -480,17 +515,17 @@
                 const disembarkTime = record.disembark_time ? new Date(record.disembark_time).toLocaleTimeString('ja-JP') : '-';
                 
                 let duration = '-';
-                let status = '未乗船';
-                let statusClass = 'status-badge';
+                let status = '登録済';
+                let statusClass = 'status-badge status-registered';
                 
                 if (record.boarding_time && record.disembark_time) {
-                    const durationMin = Math.round((new Date(record.disembark_time) - new Date(record.boarding_time)) / 60000);
+                    const durationMin = Math.round((record.disembark_time - record.boarding_time) / 60000);
                     duration = durationMin + '分';
                     status = '完了';
-                    statusClass += ' status-completed';
+                    statusClass = 'status-badge status-completed';
                 } else if (record.boarding_time) {
                     status = '乗船中';
-                    statusClass += ' status-onboard';
+                    statusClass = 'status-badge status-onboard';
                 }
                 
                 row.innerHTML = `
@@ -518,7 +553,7 @@
             
             // CSVヘッダー
             let csv = '\uFEFF'; // BOM for Excel
-            csv += 'チケットID,お名前,年代,性別,電話番号,メールアドレス,住所,エントリー日時,乗船時刻,下船時刻,滞在時間（分）\n';
+            csv += 'チケットID,お名前,年代,性別,電話番号,メールアドレス,住所,エントリー日時,乗船時刻,下船時刻,滞在時間（分）,ステータス\n';
             
             // データ行
             allData.forEach(record => {
@@ -527,11 +562,15 @@
                 const disembarkTime = record.disembark_time ? new Date(record.disembark_time).toLocaleString('ja-JP') : '';
                 
                 let duration = '';
+                let status = '登録済';
                 if (record.boarding_time && record.disembark_time) {
-                    duration = Math.round((new Date(record.disembark_time) - new Date(record.boarding_time)) / 60000);
+                    duration = Math.round((record.disembark_time - record.boarding_time) / 60000);
+                    status = '完了';
+                } else if (record.boarding_time) {
+                    status = '乗船中';
                 }
                 
-                csv += `"${record.id}","${record.name}","${record.age}","${record.gender}","${record.phone}","${record.email}","${record.address}","${entryTime}","${boardingTime}","${disembarkTime}","${duration}"\n`;
+                csv += `"${record.id}","${record.name}","${record.age}","${record.gender}","${record.phone}","${record.email}","${record.address}","${entryTime}","${boardingTime}","${disembarkTime}","${duration}","${status}"\n`;
             });
             
             // ダウンロード
@@ -550,25 +589,29 @@
         
         function refreshData() {
             loadData();
+            flashSyncIndicator();
             alert('データを更新しました');
         }
         
         function clearAllData() {
-            if (!confirm('全データを削除してもよろしいですか？この操作は取り消せません。')) {
+            if (!confirm('全データを削除してもよろしいですか？\n\n⚠️ この操作は取り消せません。\n\n- エントリーデータ\n- スキャン記録\n- 全統計情報\n\nすべて削除されます。')) {
                 return;
             }
             
-            if (!confirm('本当に削除しますか？')) {
-                return;
-            }
-            
+            // 統一されたデータキーを全削除
+            localStorage.removeItem('entries');
+            localStorage.removeItem('ticketEntries');
+            localStorage.removeItem('scanRecords');
             localStorage.removeItem('scanData');
             localStorage.removeItem('stats');
-            localStorage.removeItem('ticketData');
             localStorage.removeItem('allTickets');
             
+            // 他のタブにも通知（storageイベント発火のため一旦setしてremove）
+            localStorage.setItem('entries', '[]');
+            localStorage.removeItem('entries');
+            
             loadData();
-            alert('全データを削除しました');
+            alert('✅ 全データを削除しました');
         }
     </script>
 </body>
