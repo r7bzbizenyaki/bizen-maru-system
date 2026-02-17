@@ -486,6 +486,9 @@
             localStorage.setItem('entries', JSON.stringify(entries));
             debugLog(`localStorage更新完了 (合計${entries.length}件)`);
             
+            // 他のタブ（ダッシュボード）にリアルタイム通知
+            notifyOtherTabs();
+            
             // 統計更新
             updateStats();
         }
@@ -559,11 +562,22 @@
                 // 統計を即座に更新
                 updateStats();
                 
+                // 他のタブに削除を通知
+                notifyOtherTabs();
+                
                 // ページをリロードして完全に初期化
                 setTimeout(() => {
                     location.reload();
                 }, 1500);
             }
+        }
+        
+        // リアルタイム同期通知（他のタブのダッシュボードを更新）
+        function notifyOtherTabs() {
+            // storageイベントは同じタブでは発火しないため、
+            // ダミーの更新で他のタブに通知
+            const timestamp = Date.now();
+            localStorage.setItem('lastUpdate', timestamp.toString());
         }
     </script>
 </body>
