@@ -227,7 +227,7 @@
                 <div class="qr-section">
                     <div class="qr-label">
                         🚢 乗船用QRコード
-                        <div class="success-badge">✓ 高品質QRコード</div>
+                        <div class="success-badge">✓ 最適化QRコード</div>
                     </div>
                     <div id="qrcode"></div>
                 </div>
@@ -276,7 +276,7 @@
     </div>
     
     <script>
-        console.log('🚀 Ticket.html 起動');
+        console.log('🚀 Ticket.html 起動（最適化版）');
         console.log('📅 ' + new Date().toLocaleString('ja-JP'));
         
         // URLパラメータからIDを取得
@@ -305,7 +305,7 @@
             
             console.log('✓ 参加者情報表示完了');
             
-            // QRコード生成（シンプル版：チケットIDのみ）
+            // QRコード生成（最適化版）
             setTimeout(function() {
                 generateQRCode();
             }, 100);
@@ -315,26 +315,29 @@
         }
         
         function generateQRCode() {
-            console.log('🔄 QRコード生成開始（標準ライブラリ）');
+            console.log('🔄 QRコード生成開始（最適化版）');
             
             // シンプルにチケットIDだけをQRコードに
             const qrData = ticketId;
             
-            console.log('📝 QRデータ:', qrData);
+            console.log('📝 QRデータ:', qrData, '（長さ:', qrData.length, '文字）');
             
             try {
-                // 標準qrcode.jsライブラリを使用
+                // QRコード設定を最適化
+                // - Error Correction Level M（中程度）に変更
+                // - サイズを256x256に拡大（より読み取りやすく）
                 new QRCode(document.getElementById('qrcode'), {
                     text: qrData,
-                    width: 200,
-                    height: 200,
+                    width: 256,
+                    height: 256,
                     colorDark: '#000000',
                     colorLight: '#ffffff',
-                    correctLevel: QRCode.CorrectLevel.H  // 最高品質
+                    correctLevel: QRCode.CorrectLevel.M  // ⭐ 中程度に変更（H→M）
                 });
                 
                 console.log('✅ QRコード生成成功！');
-                console.log('🎉 標準ライブラリ使用 - 高品質QRコード');
+                console.log('📊 設定: 256x256px, Error Correction Level M');
+                console.log('🎉 最適化完了 - スキャン性能向上');
             } catch (error) {
                 console.error('❌ QRコード生成エラー:', error);
                 alert('QRコードの生成に失敗しました: ' + error.message);
