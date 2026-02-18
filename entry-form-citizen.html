@@ -566,6 +566,75 @@
         }
 
         function setupEventListeners() {
+    // 日付・時間帯選択
+    document.addEventListener('change', function(e) {
+        if (e.target.name === 'date') {
+            selectedDate = e.target.value;
+            console.log('📅 日付選択:', selectedDate);
+            renderTimeslots(selectedDate);
+        }
+
+        if (e.target.name === 'timeslot') {
+            selectedTimeslot = e.target.value;
+            console.log('⏰ 時間枠選択:', selectedTimeslot);
+        }
+    });
+
+    // 郵便番号フォーマット（全角対応・PC/スマホ両対応）
+    const postalInput = document.getElementById('postal');
+    let lastValue = '';
+    
+    postalInput.addEventListener('input', function(e) {
+        let value = e.target.value;
+        
+        // 前回と同じ値なら処理しない（iPhone重複防止）
+        if (value === lastValue) {
+            return;
+        }
+        
+        // 全角数字（０-９）を半角（0-9）に変換
+        value = value.replace(/[０-９]/g, function(s) {
+            return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
+        });
+        
+        // 数字以外を削除
+        value = value.replace(/[^0-9]/g, '');
+        
+        // 7桁まで制限
+        if (value.length > 7) {
+            value = value.slice(0, 7);
+        }
+        
+        // ハイフン挿入（3桁-4桁）
+        let formattedValue = value;
+        if (value.length > 3) {
+            formattedValue = value.slice(0, 3) + '-' + value.slice(3);
+        }
+        
+        // 値を設定
+        e.target.value = formattedValue;
+        lastValue = formattedValue;
+        
+        console.log('郵便番号入力:', formattedValue);
+    });
+
+    // 郵便番号検索（Enter キー対応）
+    postalInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            searchPostal();
+        }
+    });
+    
+    // 郵便番号検索ボタン
+    document.getElementById('postalSearchBtn').addEventListener('click', searchPostal);
+
+    // メール検証
+    document.getElementById('email').addEventListener('blur', validateEmail);
+
+    // フォーム送信
+    document.getElementById('entryForm').addEventListener('submit', handleSubmit);
+} {
             document.addEventListener('change', function(e) {
                 if (e.target.name === 'date') {
                     selectedDate = e.target.value;
