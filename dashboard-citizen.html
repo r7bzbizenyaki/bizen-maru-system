@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>備前丸 市民限定内覧会 管理ダッシュボード</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+            background: #f5f7fa;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 32px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .header .badge {
+            display: inline-block;
+            background: #27ae60;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card .icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .stat-card .label {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .value {
+            font-size: 36px;
+            font-weight: 700;
+            color: #2a5298;
+        }
+
+        .section {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 24px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .section-header h2 {
+            font-size: 20px;
+            color: #333;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #2a5298;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1e3c72;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: #c41e3a;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #a01729;
+            transform: translateY(-2px);
+        }
+
+        .date-tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .date-tab {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .date-tab.active {
+            color: #2a5298;
+            border-bottom-color: #2a5298;
+        }
+
+        .date-tab:hover {
+            color: #2a5298;
+        }
+
+        .timeslot-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .timeslot-card {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .timeslot-card:hover {
+            border-color: #2a5298;
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(42, 82, 152, 0.2);
+        }
+
+        .timeslot-time {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+        .timeslot-count {
+            font-size: 32px;
+            font-weight: 700;
+            color: #2a5298;
+            margin-bottom: 8px;
+        }
+
+        .timeslot-label {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .participant-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .participant-table th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .participant-table td {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+
+        .participant-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-reserved {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-boarded {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-completed {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-bar select {
+            padding: 10px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+        }
+
+        .sync-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .sync-badge.syncing {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .sync-badge.syncing::before {
+            content: '🔄';
+            animation: pulse 1s infinite;
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .timeslot-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .date-tabs {
+                flex-direction: column;
+            }
+
+            .participant-table {
+                font-size: 12px;
+            }
+
+            .participant-table th,
+            .participant-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="badge">🏛️ 市民限定</div>
+            <h1>🚢 備前丸 内覧会 管理ダッシュボード</h1>
+            <p>リアルタイム予約状況 | 最終更新: <span id="lastUpdateTime">-</span></p>
+            <div style="margin-top: 16px;">
+                <span class="sync-badge" id="syncBadge">✅ 同期中</span>
+            </div>
+        </div>
+
+        <!-- 統計カード -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="icon">📝</div>
+                <div class="label">総予約数</div>
+                <div class="value" id="totalReservations">0</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="icon">🚢</div>
+                <div class="label">乗船済み</div>
+                <div class="value" id="totalBoarded">0</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="icon">👋</div>
+                <div class="label">下船済み</div>
+                <div class="value" id="totalCompleted">0</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="icon">📊</div>
+                <div class="label">平均滞在時間</div>
+                <div class="value" id="avgStayTime">-</div>
+            </div>
+        </div>
+
+        <!-- 日付別予約状況 -->
+        <div class="section">
+            <div class="section-header">
+                <h2>📅 日付別予約状況</h2>
+            </div>
+
+            <div class="date-tabs">
+                <button class="date-tab active" data-date="2026-02-27" onclick="switchDate('2026-02-27')">
+                    2月27日（金）<span id="count-0227" style="margin-left: 8px;">0人</span>
+                </button>
+                <button class="date-tab" data-date="2026-03-27" onclick="switchDate('2026-03-27')">
+                    3月27日（金）<span id="count-0327" style="margin-left: 8px;">0人</span>
+                </button>
+                <button class="date-tab" data-date="2026-03-28" onclick="switchDate('2026-03-28')">
+                    3月28日（土）<span id="count-0328" style="margin-left: 8px;">0人</span>
+                </button>
+            </div>
+
+            <div class="timeslot-grid" id="timeslotGrid">
+                <!-- JavaScriptで動的生成 -->
+            </div>
+        </div>
+
+        <!-- 参加者一覧 -->
+        <div class="section">
+            <div class="section-header">
+                <h2>👥 参加者一覧</h2>
+                <div style="display: flex; gap: 12px;">
+                    <button class="btn btn-success" onclick="exportCSV()">📥 CSV出力</button>
+                    <button class="btn btn-primary" onclick="refreshData()">🔄 データを更新</button>
+                    <button class="btn btn-danger" onclick="clearAllData()">🗑️ 全データをクリア</button>
+                </div>
+            </div>
+
+            <div class="filter-bar">
+                <select id="filterDate" onchange="applyFilters()">
+                    <option value="">すべての日付</option>
+                    <option value="2026-02-27">2月27日（金）</option>
+                    <option value="2026-03-27">3月27日（金）</option>
+                    <option value="2026-03-28">3月28日（土）</option>
+                </select>
+
+                <select id="filterTimeslot" onchange="applyFilters()">
+                    <option value="">すべての時間</option>
+                    <option value="09:00">9:00〜10:00</option>
+                    <option value="10:00">10:00〜11:00</option>
+                    <option value="11:00">11:00〜12:00</option>
+                    <option value="13:00">13:00〜14:00</option>
+                    <option value="14:00">14:00〜15:00</option>
+                </select>
+
+                <select id="filterStatus" onchange="applyFilters()">
+                    <option value="">すべてのステータス</option>
+                    <option value="reserved">予約済み</option>
+                    <option value="boarded">乗船中</option>
+                    <option value="completed">下船済み</option>
+                </select>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table class="participant-table">
+                    <thead>
+                        <tr>
+                            <th>チケットID</th>
+                            <th>名前</th>
+                            <th>予約日時</th>
+                            <th>電話番号</th>
+                            <th>メール</th>
+                            <th>年齢層</th>
+                            <th>性別</th>
+                            <th>ステータス</th>
+                        </tr>
+                    </thead>
+                    <tbody id="participantTableBody">
+                        <!-- JavaScriptで動的生成 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentDate = '2026-02-27';
+        let allEntries = [];
+
+        // 時間枠定義
+        const TIMESLOTS = [
+            { start: '09:00', end: '10:00' },
+            { start: '10:00', end: '11:00' },
+            { start: '11:00', end: '12:00' },
+            { start: '13:00', end: '14:00' },
+            { start: '14:00', end: '15:00' }
+        ];
+
+        // 日付マッピング
+        const dateMap = {
+            '2026-02-27': '2月27日（金）',
+            '2026-03-27': '3月27日（金）',
+            '2026-03-28': '3月28日（土）'
+        };
+
+        // ステータスマッピング
+        const statusMap = {
+            'reserved': { text: '予約済み', class: 'status-reserved' },
+            'boarded': { text: '乗船中', class: 'status-boarded' },
+            'completed': { text: '下船済み', class: 'status-completed' }
+        };
+
+        // 初期化
+        function init() {
+            console.log('🚀 ダッシュボード初期化');
+            loadData();
+            updateUI();
+            startAutoRefresh();
+        }
+
+        // データ読み込み
+        function loadData() {
+            allEntries = JSON.parse(localStorage.getItem('citizenEntries') || '[]');
+            console.log('📊 データ読み込み:', allEntries.length, '件');
+        }
+
+        // UI更新
+        function updateUI() {
+            updateStats();
+            updateDateCounts();
+            updateTimeslotGrid();
+            updateParticipantTable();
+            updateLastUpdateTime();
+        }
+
+        // 統計更新
+        function updateStats() {
+            const total = allEntries.length;
+            const boarded = allEntries.filter(e => e.status === 'boarded' || e.status === 'completed').length;
+            const completed = allEntries.filter(e => e.status === 'completed').length;
+
+            document.getElementById('totalReservations').textContent = total;
+            document.getElementById('totalBoarded').textContent = boarded;
+            document.getElementById('totalCompleted').textContent = completed;
+
+            // 平均滞在時間
+            const completedEntries = allEntries.filter(e => e.status === 'completed' && e.boardingTime && e.alightingTime);
+            if (completedEntries.length > 0) {
+                const totalStayTime = completedEntries.reduce((sum, e) => {
+                    return sum + (e.alightingTime - e.boardingTime);
+                }, 0);
+                const avgMs = totalStayTime / completedEntries.length;
+                const avgMin = Math.round(avgMs / 60000);
+                document.getElementById('avgStayTime').textContent = avgMin + '分';
+            } else {
+                document.getElementById('avgStayTime').textContent = '-';
+            }
+
+            console.log('📊 統計更新完了');
+        }
+
+        // 日付別カウント更新
+        function updateDateCounts() {
+            ['2026-02-27', '2026-03-27', '2026-03-28'].forEach(date => {
+                const count = allEntries.filter(e => e.date === date).length;
+                const id = 'count-' + date.slice(5).replace('-', '');
+                const elem = document.getElementById(id);
+                if (elem) {
+                    elem.textContent = count + '人';
+                }
+            });
+        }
+
+        // 時間枠グリッド更新
+        function updateTimeslotGrid() {
+            const container = document.getElementById('timeslotGrid');
+            const dateEntries = allEntries.filter(e => e.date === currentDate);
+
+            let html = '';
+            TIMESLOTS.forEach(slot => {
+                const count = dateEntries.filter(e => e.timeslot === slot.start).length;
+                html += `
+                    <div class="timeslot-card">
+                        <div class="timeslot-time">${slot.start}〜${slot.end}</div>
+                        <div class="timeslot-count">${count}</div>
+                        <div class="timeslot-label">希望者</div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // 参加者テーブル更新
+        function updateParticipantTable() {
+            const tbody = document.getElementById('participantTableBody');
+            
+            if (allEntries.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: #999;">まだ予約がありません</td></tr>';
+                return;
+            }
+
+            let html = '';
+            allEntries.slice().reverse().forEach(entry => {
+                const status = statusMap[entry.status] || statusMap['reserved'];
+                const dateDisplay = dateMap[entry.date] || entry.date;
+                const slot = TIMESLOTS.find(s => s.start === entry.timeslot);
+                const timeDisplay = slot ? `${slot.start}〜${slot.end}` : entry.timeslot;
+
+                html += `
+                    <tr>
+                        <td><code>${entry.id}</code></td>
+                        <td><strong>${entry.name}</strong></td>
+                        <td>${dateDisplay}<br><small>${timeDisplay}</small></td>
+                        <td>${entry.phone}</td>
+                        <td>${entry.email}</td>
+                        <td>${entry.age}</td>
+                        <td>${entry.gender}</td>
+                        <td><span class="status-badge ${status.class}">${status.text}</span></td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        // 最終更新時刻
+        function updateLastUpdateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('ja-JP');
+            document.getElementById('lastUpdateTime').textContent = timeStr;
+        }
+
+        // 日付切り替え
+        function switchDate(date) {
+            currentDate = date;
+            
+            // タブの状態更新
+            document.querySelectorAll('.date-tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.dataset.date === date) {
+                    tab.classList.add('active');
+                }
+            });
+
+            updateTimeslotGrid();
+            console.log('📅 日付切替:', date);
+        }
+
+        // フィルタ適用
+        function applyFilters() {
+            const filterDate = document.getElementById('filterDate').value;
+            const filterTimeslot = document.getElementById('filterTimeslot').value;
+            const filterStatus = document.getElementById('filterStatus').value;
+
+            let filtered = allEntries;
+
+            if (filterDate) {
+                filtered = filtered.filter(e => e.date === filterDate);
+            }
+
+            if (filterTimeslot) {
+                filtered = filtered.filter(e => e.timeslot === filterTimeslot);
+            }
+
+            if (filterStatus) {
+                filtered = filtered.filter(e => e.status === filterStatus);
+            }
+
+            console.log('🔍 フィルタ適用:', filtered.length, '件');
+
+            // テーブル更新
+            const tbody = document.getElementById('participantTableBody');
+            
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: #999;">該当する予約がありません</td></tr>';
+                return;
+            }
+
+            let html = '';
+            filtered.slice().reverse().forEach(entry => {
+                const status = statusMap[entry.status] || statusMap['reserved'];
+                const dateDisplay = dateMap[entry.date] || entry.date;
+                const slot = TIMESLOTS.find(s => s.start === entry.timeslot);
+                const timeDisplay = slot ? `${slot.start}〜${slot.end}` : entry.timeslot;
+
+                html += `
+                    <tr>
+                        <td><code>${entry.id}</code></td>
+                        <td><strong>${entry.name}</strong></td>
+                        <td>${dateDisplay}<br><small>${timeDisplay}</small></td>
+                        <td>${entry.phone}</td>
+                        <td>${entry.email}</td>
+                        <td>${entry.age}</td>
+                        <td>${entry.gender}</td>
+                        <td><span class="status-badge ${status.class}">${status.text}</span></td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        // データ更新
+        function refreshData() {
+            const syncBadge = document.getElementById('syncBadge');
+            syncBadge.textContent = '🔄 同期中...';
+            syncBadge.classList.add('syncing');
+
+            setTimeout(() => {
+                loadData();
+                updateUI();
+                syncBadge.textContent = '✅ 更新完了';
+                syncBadge.classList.remove('syncing');
+                
+                setTimeout(() => {
+                    syncBadge.textContent = '✅ 同期中';
+                }, 2000);
+            }, 500);
+
+            console.log('🔄 データ更新');
+        }
+
+        // CSV出力
+        function exportCSV() {
+            if (allEntries.length === 0) {
+                alert('出力するデータがありません');
+                return;
+            }
+
+            const headers = ['チケットID', '名前', '予約日', '希望時間', '電話番号', 'メール', '郵便番号', '住所', '年齢層', '性別', 'ステータス', '予約日時'];
+            const rows = allEntries.map(e => {
+                const slot = TIMESLOTS.find(s => s.start === e.timeslot);
+                const timeDisplay = slot ? `${slot.start}〜${slot.end}` : e.timeslot;
+                const status = statusMap[e.status] || statusMap['reserved'];
+                const timestamp = new Date(e.timestamp).toLocaleString('ja-JP');
+
+                return [
+                    e.id,
+                    e.name,
+                    dateMap[e.date] || e.date,
+                    timeDisplay,
+                    e.phone,
+                    e.email,
+                    e.postal,
+                    e.address,
+                    e.age,
+                    e.gender,
+                    status.text,
+                    timestamp
+                ].join(',');
+            });
+
+            const csv = [headers.join(','), ...rows].join('\n');
+            const bom = '\uFEFF';
+            const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', `備前丸市民限定内覧会_予約一覧_${new Date().toISOString().slice(0,10)}.csv`);
+            link.click();
+
+            console.log('📥 CSV出力完了');
+        }
+
+        // 全データクリア
+        function clearAllData() {
+            if (!confirm('本当に全データを削除しますか？\nこの操作は取り消せません。')) {
+                return;
+            }
+
+            if (!confirm('最終確認：すべての予約データが削除されます。\n本当によろしいですか？')) {
+                return;
+            }
+
+            localStorage.removeItem('citizenEntries');
+            localStorage.setItem('lastUpdate', Date.now().toString());
+            
+            allEntries = [];
+            updateUI();
+
+            alert('✅ 全データを削除しました');
+            console.log('🗑️ 全データクリア完了');
+        }
+
+        // 自動更新
+        function startAutoRefresh() {
+            setInterval(() => {
+                loadData();
+                updateUI();
+                console.log('🔄 自動更新実行');
+            }, 5000);
+        }
+
+        // storage イベント監視（リアルタイム同期）
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'citizenEntries' || e.key === 'lastUpdate') {
+                console.log('🔄 他のタブからの更新検出');
+                refreshData();
+            }
+        });
+
+        // 初期化実行
+        init();
+
+        console.log('🚀 ダッシュボード起動完了');
+    </script>
+</body>
+</html>
