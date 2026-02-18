@@ -380,15 +380,69 @@
             console.log('✅ ローディング非表示');
         }
 
-        // 郵便番号の自動フォーマット
-        document.getElementById('postal').addEventListener('input', function(e) {
-            let value = e.target.value.replace(/[^0-9]/g, '');
-            if (value.length > 3) {
-                value = value.slice(0, 3) + '-' + value.slice(3, 7);
+         // 郵便番号入力処理（PC・iPhone・Android完全対応）
+            const postalInput = document.getElementById('postal');
+            let isFormatting = false;
+            let lastFormattedValue = '';
+            
+            // compositionend イベント（日本語入力確定時）
+            postalInput.addEventListener('compositionend', function(e) {
+                setTimeout(() => {
+                    formatPostalCode(e.target);
+                }, 0);
+            });
+            
+            // input イベント
+            postalInput.addEventListener('input', function(e) {
+                // 日本語入力中（composing）は処理しない
+                if (e.isComposing) {
+                    return;
+                }
+                
+                // フォーマット中なら処理しない
+                if (isFormatting) {
+                    return;
+                }
+                
+                formatPostalCode(e.target);
+            });
+            
+            // 郵便番号フォーマット関数
+            function formatPostalCode(input) {
+                isFormatting = true;
+                
+                let value = input.value;
+                
+                // 全角数字を半角に変換
+                value = value.replace(/[０-９]/g, function(s) {
+                    return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
+                });
+                
+                // 数字以外を削除
+                value = value.replace(/[^0-9]/g, '');
+                
+                // 7桁制限
+                if (value.length > 7) {
+                    value = value.slice(0, 7);
+                }
+                
+                // ハイフン挿入
+                let formattedValue = value;
+                if (value.length > 3) {
+                    formattedValue = value.slice(0, 3) + '-' + value.slice(3);
+                }
+                
+                // 値が変わった場合のみ更新
+                if (formattedValue !== lastFormattedValue) {
+                    input.value = formattedValue;
+                    lastFormattedValue = formattedValue;
+                    console.log('📮 郵便番号:', formattedValue);
+                }
+                
+                setTimeout(() => {
+                    isFormatting = false;
+                }, 10);
             }
-            e.target.value = value;
-            console.log('📮 郵便番号フォーマット:', value);
-        });
 
         // メールアドレスのリアルタイム検証
         document.getElementById('email').addEventListener('blur', function(e) {
