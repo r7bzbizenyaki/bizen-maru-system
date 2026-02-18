@@ -385,6 +385,9 @@
             // 他のタブにリアルタイム通知
             localStorage.setItem('lastUpdate', Date.now().toString());
             
+            // メール送信
+            sendTicketEmail(formData);
+            
             // オフライン時はキューに保存
             if (!navigator.onLine) {
                 saveOfflineData(formData);
@@ -394,6 +397,28 @@
             // チケット画面に遷移
             window.location.href = 'ticket.html?id=' + formData.id;
         });
+        
+        // メール送信機能
+        async function sendTicketEmail(formData) {
+            // Google Apps Script のデプロイURL
+            const GAS_URL = 'https://script.google.com/macros/s/AKfycbxLt1u81O35RJSpRCL30H5uS0AjWVjRUWAkuI539_jCp1fiddtLv8hg6jl4_0kyn27n/exec';
+            
+            try {
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                console.log('メール送信リクエスト完了');
+            } catch (error) {
+                console.error('メール送信エラー:', error);
+                // エラーでもチケット画面には遷移させる
+            }
+        }
         
         // オンライン復帰時の処理
         window.addEventListener('online', function() {
