@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>備前丸 市民限定内覧会 スキャン管理</title>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+            background: #f5f7fa;
+            padding: 20px;
+            padding-bottom: 100px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 24px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .header .badge {
+            display: inline-block;
+            background: #27ae60;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 16px;
+            border: 3px solid #e0e0e0;
+            border-radius: 12px;
+            background: white;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .mode-btn.active {
+            border-color: #2a5298;
+            background: #2a5298;
+            color: white;
+        }
+
+        .mode-btn.boarding.active {
+            border-color: #27ae60;
+            background: #27ae60;
+        }
+
+        .mode-btn.alighting.active {
+            border-color: #c41e3a;
+            background: #c41e3a;
+        }
+
+        .camera-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .camera-btn {
+            width: 100%;
+            padding: 16px;
+            background: #2a5298;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 16px;
+        }
+
+        .camera-btn:hover {
+            background: #1e3c72;
+            transform: translateY(-2px);
+        }
+
+        .camera-btn.active {
+            background: #c41e3a;
+        }
+
+        #reader {
+            border-radius: 12px;
+            overflow: hidden;
+            display: none;
+        }
+
+        #reader.active {
+            display: block;
+        }
+
+        .manual-input {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .manual-input h3 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: #333;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .input-group button {
+            padding: 12px 24px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .input-group button:hover {
+            background: #229954;
+        }
+
+        .message-box {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            display: none;
+        }
+
+        .message-box.show {
+            display: block;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message-box.success {
+            background: #e8f5e9;
+            border: 3px solid #27ae60;
+        }
+
+        .message-box.error {
+            background: #ffebee;
+            border: 3px solid #c41e3a;
+        }
+
+        .message-box.info {
+            background: #e3f2fd;
+            border: 3px solid #1976d2;
+        }
+
+        .message-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .message-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .message-text {
+            font-size: 16px;
+            color: #666;
+        }
+
+        .stats-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #2a5298;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .log-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .log-section h3 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: #333;
+        }
+
+        .log-item {
+            padding: 12px;
+            border-left: 4px solid #2a5298;
+            background: #f8f9fa;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .log-item.boarding {
+            border-left-color: #27ae60;
+        }
+
+        .log-item.alighting {
+            border-left-color: #c41e3a;
+        }
+
+        .log-time {
+            color: #999;
+            font-size: 12px;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 2px solid #e0e0e0;
+            padding: 12px 20px;
+            display: flex;
+            gap: 12px;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .nav-btn.dashboard {
+            background: #2a5298;
+            color: white;
+        }
+
+        .nav-btn.clear {
+            background: #c41e3a;
+            color: white;
+        }
+
+        @media (max-width: 600px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="badge">🏛️ 係員用</div>
+            <h1>🚢 備前丸 スキャン管理</h1>
+            <p>QRコードをスキャンして記録します</p>
+        </div>
+
+        <!-- モード選択 -->
+        <div class="mode-selector">
+            <button class="mode-btn boarding active" id="boardingBtn" onclick="setMode('boarding')">
+                🚢 乗船
+            </button>
+            <button class="mode-btn alighting" id="alightingBtn" onclick="setMode('alighting')">
+                👋 下船
+            </button>
+        </div>
+
+        <!-- カメラセクション -->
+        <div class="camera-section">
+            <button class="camera-btn" id="cameraBtn" onclick="toggleCamera()">
+                📷 カメラを起動
+            </button>
+            <div id="reader"></div>
+        </div>
+
+        <!-- 手動入力 -->
+        <div class="manual-input">
+            <h3>📝 手動入力</h3>
+            <div class="input-group">
+                <input type="text" id="manualInput" placeholder="チケットIDを入力（例: CM1234567890）">
+                <button onclick="recordManual()">記録</button>
+            </div>
+        </div>
+
+        <!-- メッセージボックス -->
+        <div class="message-box" id="messageBox">
+            <div class="message-icon" id="messageIcon"></div>
+            <div class="message-title" id="messageTitle"></div>
+            <div class="message-text" id="messageText"></div>
+        </div>
+
+        <!-- 統計 -->
+        <div class="stats-section">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalReservations">0</div>
+                    <div class="stat-label">総予約数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalBoarded">0</div>
+                    <div class="stat-label">乗船済み</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="currentOnboard">0</div>
+                    <div class="stat-label">現在乗船中</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalCompleted">0</div>
+                    <div class="stat-label">下船済み</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- スキャンログ -->
+        <div class="log-section">
+            <h3>📋 スキャンログ</h3>
+            <div id="logContainer">
+                <p style="text-align: center; color: #999; padding: 20px;">まだスキャン記録がありません</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 下部ナビゲーション -->
+    <div class="bottom-nav">
+        <button class="nav-btn dashboard" onclick="window.open('dashboard-citizen.html', '_blank')">
+            📊 ダッシュボード
+        </button>
+        <button class="nav-btn clear" onclick="clearAllData()">
+            🗑️ 全データクリア
+        </button>
+    </div>
+
+    <script>
+        let currentMode = 'boarding'; // 'boarding' or 'alighting'
+        let html5QrCode = null;
+        let isScanning = false;
+        let lastScannedId = null;
+        let lastScannedTime = 0;
+
+        // 初期化
+        function init() {
+            console.log('🚀 スキャン管理画面初期化');
+            updateStats();
+            loadLogs();
+            
+            // 5秒ごとに統計を更新
+            setInterval(updateStats, 5000);
+        }
+
+        // モード切替
+        function setMode(mode) {
+            currentMode = mode;
+            
+            document.getElementById('boardingBtn').classList.remove('active');
+            document.getElementById('alightingBtn').classList.remove('active');
+            
+            if (mode === 'boarding') {
+                document.getElementById('boardingBtn').classList.add('active');
+            } else {
+                document.getElementById('alightingBtn').classList.add('active');
+            }
+            
+            console.log('📝 モード切替:', mode);
+        }
+
+        // カメラ起動/停止
+        function toggleCamera() {
+            if (isScanning) {
+                stopCamera();
+            } else {
+                startCamera();
+            }
+        }
+
+        // カメラ起動
+        function startCamera() {
+            const reader = document.getElementById('reader');
+            const btn = document.getElementById('cameraBtn');
+            
+            reader.classList.add('active');
+            btn.textContent = '⏹️ カメラを停止';
+            btn.classList.add('active');
+            isScanning = true;
+
+            html5QrCode = new Html5Qrcode("reader");
+            
+            html5QrCode.start(
+                { facingMode: "environment" },
+                {
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 }
+                },
+                (decodedText) => {
+                    handleScan(decodedText);
+                },
+                (errorMessage) => {
+                    // エラーは無視（スキャン待機中は常にエラーが出る）
+                }
+            ).catch((err) => {
+                console.error('❌ カメラ起動エラー:', err);
+                showMessage('error', 'カメラエラー', 'カメラの起動に失敗しました');
+                stopCamera();
+            });
+
+            console.log('📷 カメラ起動');
+        }
+
+        // カメラ停止
+        function stopCamera() {
+            const reader = document.getElementById('reader');
+            const btn = document.getElementById('cameraBtn');
+            
+            if (html5QrCode) {
+                html5QrCode.stop().then(() => {
+                    reader.classList.remove('active');
+                    btn.textContent = '📷 カメラを起動';
+                    btn.classList.remove('active');
+                    isScanning = false;
+                    console.log('⏹️ カメラ停止');
+                }).catch((err) => {
+                    console.error('❌ カメラ停止エラー:', err);
+                });
+            }
+        }
+
+        // スキャン処理
+        function handleScan(ticketId) {
+            // 重複スキャン防止（2秒以内）
+            const now = Date.now();
+            if (ticketId === lastScannedId && now - lastScannedTime < 2000) {
+                console.log('⚠️ 重複スキャン防止:', ticketId);
+                return;
+            }
+            
+            lastScannedId = ticketId;
+            lastScannedTime = now;
+
+            console.log('📷 スキャン:', ticketId, 'モード:', currentMode);
+            processTicket(ticketId);
+        }
+
+        // 手動入力
+        function recordManual() {
+            const input = document.getElementById('manualInput');
+            const ticketId = input.value.trim();
+            
+            if (!ticketId) {
+                showMessage('error', '入力エラー', 'チケットIDを入力してください');
+                return;
+            }
+            
+            console.log('📝 手動入力:', ticketId, 'モード:', currentMode);
+            processTicket(ticketId);
+            input.value = '';
+        }
+
+        // チケット処理
+        function processTicket(ticketId) {
+            console.log('🔍 チケット処理開始:', ticketId);
+            
+            // データ取得
+            const entries = JSON.parse(localStorage.getItem('citizenEntries') || '[]');
+            const entryIndex = entries.findIndex(e => e.id === ticketId);
+            
+            if (entryIndex === -1) {
+                showMessage('error', 'エラー', 'チケットが見つかりません');
+                console.error('❌ チケットが見つかりません:', ticketId);
+                return;
+            }
+            
+            const entry = entries[entryIndex];
+            
+            // 日付マッピング
+            const dateMap = {
+                '2026-02-27': '2月27日（金）',
+                '2026-03-27': '3月27日（金）',
+                '2026-03-28': '3月28日（土）'
+            };
+            
+            if (currentMode === 'boarding') {
+                // 乗船処理
+                if (entry.boardingTime) {
+                    showMessage('info', '既に乗船済み', `${entry.name}さんは既に乗船済みです`);
+                    return;
+                }
+                
+                entry.boardingTime = Date.now();
+                entry.status = 'boarded';
+                entries[entryIndex] = entry;
+                localStorage.setItem('citizenEntries', JSON.stringify(entries));
+                localStorage.setItem('lastUpdate', Date.now().toString());
+                
+                showMessage('success', '乗船を記録しました', `${entry.name}さん\n予約: ${dateMap[entry.date]} ${entry.timeslot}〜`);
+                addLog('boarding', entry.name, ticketId);
+                
+            } else {
+                // 下船処理
+                if (!entry.boardingTime) {
+                    showMessage('error', 'エラー', `${entry.name}さんはまだ乗船していません`);
+                    return;
+                }
+                
+                if (entry.alightingTime) {
+                    showMessage('info', '既に下船済み', `${entry.name}さんは既に下船済みです`);
+                    return;
+                }
+                
+                entry.alightingTime = Date.now();
+                entry.status = 'completed';
+                entries[entryIndex] = entry;
+                localStorage.setItem('citizenEntries', JSON.stringify(entries));
+                localStorage.setItem('lastUpdate', Date.now().toString());
+                
+                const stayTime = Math.round((entry.alightingTime - entry.boardingTime) / 60000);
+                showMessage('success', '下船を記録しました', `${entry.name}さん\n滞在時間: ${stayTime}分`);
+                addLog('alighting', entry.name, ticketId);
+            }
+            
+            updateStats();
+            console.log('✅ チケット処理完了:', entry);
+        }
+
+        // メッセージ表示
+        function showMessage(type, title, text) {
+            const box = document.getElementById('messageBox');
+            const icon = document.getElementById('messageIcon');
+            const titleElem = document.getElementById('messageTitle');
+            const textElem = document.getElementById('messageText');
+            
+            box.className = 'message-box show ' + type;
+            
+            if (type === 'success') {
+                icon.textContent = '✅';
+                box.style.color = '#2e7d32';
+            } else if (type === 'error') {
+                icon.textContent = '❌';
+                box.style.color = '#c62828';
+            } else if (type === 'info') {
+                icon.textContent = 'ℹ️';
+                box.style.color = '#1976d2';
+            }
+            
+            titleElem.textContent = title;
+            textElem.textContent = text;
+            
+            setTimeout(() => {
+                box.classList.remove('show');
+            }, 3000);
+        }
+
+        // ログ追加
+        function addLog(type, name, ticketId) {
+            const logs = JSON.parse(localStorage.getItem('scanLogs') || '[]');
+            const now = new Date();
+            
+            logs.unshift({
+                type: type,
+                name: name,
+                ticketId: ticketId,
+                timestamp: now.getTime(),
+                timeStr: now.toLocaleTimeString('ja-JP')
+            });
+            
+            // 最新50件のみ保存
+            if (logs.length > 50) {
+                logs.splice(50);
+            }
+            
+            localStorage.setItem('scanLogs', JSON.stringify(logs));
+            loadLogs();
+        }
+
+        // ログ読み込み
+        function loadLogs() {
+            const logs = JSON.parse(localStorage.getItem('scanLogs') || '[]');
+            const container = document.getElementById('logContainer');
+            
+            if (logs.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">まだスキャン記録がありません</p>';
+                return;
+            }
+            
+            let html = '';
+            logs.slice(0, 10).forEach(log => {
+                const typeText = log.type === 'boarding' ? '🚢 乗船' : '👋 下船';
+                html += `
+                    <div class="log-item ${log.type}">
+                        <div><strong>${typeText}</strong> - ${log.name}</div>
+                        <div style="font-size: 12px; color: #999; margin-top: 4px;">
+                            ${log.timeStr} | ${log.ticketId}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // 統計更新
+        function updateStats() {
+            const entries = JSON.parse(localStorage.getItem('citizenEntries') || '[]');
+            
+            const total = entries.length;
+            const boarded = entries.filter(e => e.boardingTime).length;
+            const completed = entries.filter(e => e.alightingTime).length;
+            const onboard = boarded - completed;
+            
+            document.getElementById('totalReservations').textContent = total;
+            document.getElementById('totalBoarded').textContent = boarded;
+            document.getElementById('currentOnboard').textContent = onboard;
+            document.getElementById('totalCompleted').textContent = completed;
+            
+            console.log('📊 統計更新:', { total, boarded, onboard, completed });
+        }
+
+        // 全データクリア
+        function clearAllData() {
+            if (!confirm('本当に全データを削除しますか？\nこの操作は取り消せません。')) {
+                return;
+            }
+            
+            if (!confirm('最終確認：すべての予約データとスキャンログが削除されます。\n本当によろしいですか？')) {
+                return;
+            }
+            
+            localStorage.removeItem('citizenEntries');
+            localStorage.removeItem('scanLogs');
+            localStorage.setItem('lastUpdate', Date.now().toString());
+            
+            updateStats();
+            loadLogs();
+            
+            showMessage('success', '削除完了', '全データを削除しました');
+            console.log('🗑️ 全データクリア完了');
+        }
+
+        // storage イベント監視（リアルタイム同期）
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'citizenEntries' || e.key === 'lastUpdate') {
+                console.log('🔄 他のタブからの更新検出');
+                updateStats();
+            }
+            
+            if (e.key === 'scanLogs') {
+                loadLogs();
+            }
+        });
+
+        // 初期化実行
+        init();
+
+        console.log('🚀 スキャン管理画面起動完了');
+    </script>
+</body>
+</html>
