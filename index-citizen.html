@@ -818,9 +818,40 @@
                 return;
             }
 
-            if (!validateEmail()) {
-                alert('❌ 正しいメールアドレスを入力してください');
-                return;
+           if (!validateEmail()) {
+    alert('❌ 正しいメールアドレスを入力してください');
+    return;
+}
+
+// ドメインの検証（追加）
+const emailDomain = email.split('@')[1];
+const commonTypos = {
+    'i.softbank.jpp': 'i.softbank.jp',
+    'gmail.comm': 'gmail.com',
+    'yahoo.co.jpp': 'yahoo.co.jp',
+    'docomo.ne.jpp': 'docomo.ne.jp',
+    'ezweb.ne.jpp': 'ezweb.ne.jp'
+};
+
+// タイポ修正の提案
+if (commonTypos[emailDomain]) {
+    const correctDomain = commonTypos[emailDomain];
+    const correctedEmail = email.split('@')[0] + '@' + correctDomain;
+    
+    if (confirm(`⚠️ メールアドレスのドメインが正しくない可能性があります。\n\n入力: ${email}\n修正候補: ${correctedEmail}\n\n修正候補を使用しますか？`)) {
+        document.getElementById('email').value = correctedEmail;
+        email = correctedEmail;
+    } else {
+        alert('メールアドレスを確認してください');
+        return;
+    }
+}
+
+// 無効なドメインのチェック
+if (emailDomain.endsWith('.jpp') || emailDomain.endsWith('.comm')) {
+    alert('⚠️ メールアドレスのドメインが正しくありません。\n\n例:\n✅ i.softbank.jp\n✅ gmail.com\n❌ i.softbank.jpp\n❌ gmail.comm\n\n正しいドメインを入力してください。');
+    return;
+}
             }
 
             document.getElementById('loadingOverlay').classList.add('active');
