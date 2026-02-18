@@ -585,14 +585,38 @@
                 }
             });
 
-            // 郵便番号入力処理（PC・スマホ完全対応）
+            // 郵便番号入力処理（最終版：PC・iPhone・Android完全対応）
             const postalInput = document.getElementById('postal');
+            let isFormatting = false;
+            let lastFormattedValue = '';
             
+            // compositionend イベント（日本語入力確定時）
+            postalInput.addEventListener('compositionend', function(e) {
+                setTimeout(() => {
+                    formatPostalCode(e.target);
+                }, 0);
+            });
+            
+            // input イベント
             postalInput.addEventListener('input', function(e) {
-                const input = e.target;
-                let value = input.value;
+                // 日本語入力中（composing）は処理しない
+                if (e.isComposing) {
+                    return;
+                }
                 
-                console.log('入力前:', value);
+                // フォーマット中なら処理しない
+                if (isFormatting) {
+                    return;
+                }
+                
+                formatPostalCode(e.target);
+            });
+            
+            // 郵便番号フォーマット関数
+            function formatPostalCode(input) {
+                isFormatting = true;
+                
+                let value = input.value;
                 
                 // 全角数字を半角に変換
                 value = value.replace(/[０-９]/g, function(s) {
@@ -608,16 +632,22 @@
                 }
                 
                 // ハイフン挿入
+                let formattedValue = value;
                 if (value.length > 3) {
-                    value = value.slice(0, 3) + '-' + value.slice(3);
+                    formattedValue = value.slice(0, 3) + '-' + value.slice(3);
                 }
                 
-                console.log('変換後:', value);
+                // 値が変わった場合のみ更新
+                if (formattedValue !== lastFormattedValue) {
+                    input.value = formattedValue;
+                    lastFormattedValue = formattedValue;
+                    console.log('郵便番号:', formattedValue);
+                }
                 
-                // 値を設定
-                input.value = value;
-            });
-
+                setTimeout(() => {
+                    isFormatting = false;
+                }, 10);
+            }
             // 郵便番号検索
             document.getElementById('postalSearchBtn').addEventListener('click', function(e) {
                 e.preventDefault();
