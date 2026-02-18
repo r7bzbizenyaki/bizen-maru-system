@@ -580,15 +580,34 @@
             });
 
             document.getElementById('postal').addEventListener('input', function(e) {
-                let value = e.target.value.replace(/[０-９]/g, function(s) {
-                    return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
-                });
-                value = value.replace(/[^0-9]/g, '');
-                if (value.length > 3) {
-                    value = value.slice(0, 3) + '-' + value.slice(3, 7);
-                }
-                e.target.value = value;
-            });
+    // 全角数字を半角に変換
+    let value = e.target.value;
+    
+    // 全角数字（０-９）を半角（0-9）に変換
+    value = value.replace(/[０-９]/g, function(s) {
+        return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
+    });
+    
+    // 半角数字とハイフン以外を削除
+    value = value.replace(/[^0-9-]/g, '');
+    
+    // ハイフンを一旦削除
+    value = value.replace(/-/g, '');
+    
+    // 3桁以上の場合、3桁目の後にハイフンを挿入
+    if (value.length > 3) {
+        value = value.slice(0, 3) + '-' + value.slice(3, 7);
+    }
+    
+    // 最大8文字（7桁+ハイフン1つ）に制限
+    if (value.length > 8) {
+        value = value.slice(0, 8);
+    }
+    
+    e.target.value = value;
+    
+    console.log('郵便番号入力:', value);
+});
 
             document.getElementById('postalSearchBtn').addEventListener('click', searchPostal);
             document.getElementById('postal').addEventListener('keypress', function(e) {
