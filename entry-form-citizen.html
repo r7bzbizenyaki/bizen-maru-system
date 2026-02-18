@@ -740,43 +740,45 @@ document.getElementById('postal').addEventListener('input', function(e) {
         }
 
         async function searchPostal() {
-            const postalInput = document.getElementById('postal');
-            const addressInput = document.getElementById('address');
-            const messageDiv = document.getElementById('postalMessage');
-            const btn = document.getElementById('postalSearchBtn');
+    const postalInput = document.getElementById('postal');
+    const addressInput = document.getElementById('address');
+    const messageDiv = document.getElementById('postalMessage');
+    const btn = document.getElementById('postalSearchBtn');
 
-            const postal = postalInput.value.replace(/-/g, '');
+    // ハイフンを削除して7桁の数字のみ取得
+    const postal = postalInput.value.replace(/-/g, '');
 
-            if (postal.length !== 7) {
-                messageDiv.textContent = '❌ 7桁の郵便番号を入力してください';
-                messageDiv.className = 'postal-message error';
-                return;
-            }
+    if (postal.length !== 7) {
+        messageDiv.textContent = '❌ 7桁の郵便番号を入力してください';
+        messageDiv.className = 'postal-message error';
+        return;
+    }
 
-            btn.disabled = true;
-            btn.textContent = '検索中...';
+    btn.disabled = true;
+    btn.textContent = '検索中...';
 
-            try {
-                const response = await fetch(`https://zipcloud.ibsnet.co.jp/api/search?zipcode=${postal}`);
-                const data = await response.json();
+    try {
+        const response = await fetch(`https://zipcloud.ibsnet.co.jp/api/search?zipcode=${postal}`);
+        const data = await response.json();
 
-                if (data.results) {
-                    const result = data.results[0];
-                    addressInput.value = result.address1 + result.address2 + result.address3;
-                    messageDiv.textContent = '✅ 住所を自動入力しました';
-                    messageDiv.className = 'postal-message success';
-                } else {
-                    messageDiv.textContent = '❌ 該当する住所が見つかりませんでした';
-                    messageDiv.className = 'postal-message error';
-                }
-            } catch (error) {
-                messageDiv.textContent = '❌ 通信エラーが発生しました';
-                messageDiv.className = 'postal-message error';
-            } finally {
-                btn.disabled = false;
-                btn.textContent = '🔍 検索';
-            }
+        if (data.results) {
+            const result = data.results[0];
+            addressInput.value = result.address1 + result.address2 + result.address3;
+            messageDiv.textContent = '✅ 住所を自動入力しました';
+            messageDiv.className = 'postal-message success';
+        } else {
+            messageDiv.textContent = '❌ 該当する住所が見つかりませんでした';
+            messageDiv.className = 'postal-message error';
         }
+    } catch (error) {
+        console.error('郵便番号検索エラー:', error);
+        messageDiv.textContent = '❌ 通信エラーが発生しました';
+        messageDiv.className = 'postal-message error';
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '🔍 検索';
+    }
+}
 
         function validateEmail() {
             const email = document.getElementById('email').value.trim();
