@@ -632,7 +632,7 @@
 
     <script>
         // Google Apps Script URL（後で設定）
-        const GAS_URL = 'https://script.google.com/macros/s/AKfycbzQ4V4f8FF5q1nTVqYVMuopiGHWmMglhVzxJo-gVD-a41N7HGMbhasyAh6BFdNMgsBF/exec';
+        const GAS_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
 
         // 時間枠設定（12:00-13:00は除外）
         const TIMESLOTS = [
@@ -715,9 +715,15 @@
                 }
             });
 
-            // 郵便番号フォーマット
+            // 郵便番号フォーマット（全角対応）
             document.getElementById('postal').addEventListener('input', function(e) {
-                let value = e.target.value.replace(/[^0-9]/g, '');
+                // 全角数字を半角に変換
+                let value = e.target.value.replace(/[０-９]/g, function(s) {
+                    return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
+                });
+                // 半角数字以外を削除
+                value = value.replace(/[^0-9]/g, '');
+                // ハイフン挿入
                 if (value.length > 3) {
                     value = value.slice(0, 3) + '-' + value.slice(3, 7);
                 }
