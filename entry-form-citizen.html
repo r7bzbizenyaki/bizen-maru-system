@@ -234,6 +234,11 @@
             background: #1e3c72;
         }
 
+        .postal-search-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
         .postal-message {
             margin-top: 8px;
             font-size: 13px;
@@ -566,75 +571,7 @@
         }
 
         function setupEventListeners() {
-    // 日付・時間帯選択
-    document.addEventListener('change', function(e) {
-        if (e.target.name === 'date') {
-            selectedDate = e.target.value;
-            console.log('📅 日付選択:', selectedDate);
-            renderTimeslots(selectedDate);
-        }
-
-        if (e.target.name === 'timeslot') {
-            selectedTimeslot = e.target.value;
-            console.log('⏰ 時間枠選択:', selectedTimeslot);
-        }
-    });
-
-    // 郵便番号フォーマット（全角対応・PC/スマホ両対応）
-    const postalInput = document.getElementById('postal');
-    let lastValue = '';
-    
-    postalInput.addEventListener('input', function(e) {
-        let value = e.target.value;
-        
-        // 前回と同じ値なら処理しない（iPhone重複防止）
-        if (value === lastValue) {
-            return;
-        }
-        
-        // 全角数字（０-９）を半角（0-9）に変換
-        value = value.replace(/[０-９]/g, function(s) {
-            return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
-        });
-        
-        // 数字以外を削除
-        value = value.replace(/[^0-9]/g, '');
-        
-        // 7桁まで制限
-        if (value.length > 7) {
-            value = value.slice(0, 7);
-        }
-        
-        // ハイフン挿入（3桁-4桁）
-        let formattedValue = value;
-        if (value.length > 3) {
-            formattedValue = value.slice(0, 3) + '-' + value.slice(3);
-        }
-        
-        // 値を設定
-        e.target.value = formattedValue;
-        lastValue = formattedValue;
-        
-        console.log('郵便番号入力:', formattedValue);
-    });
-
-    // 郵便番号検索（Enter キー対応）
-    postalInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            searchPostal();
-        }
-    });
-    
-    // 郵便番号検索ボタン
-    document.getElementById('postalSearchBtn').addEventListener('click', searchPostal);
-
-    // メール検証
-    document.getElementById('email').addEventListener('blur', validateEmail);
-
-    // フォーム送信
-    document.getElementById('entryForm').addEventListener('submit', handleSubmit);
-} {
+            // 日付・時間帯選択
             document.addEventListener('change', function(e) {
                 if (e.target.name === 'date') {
                     selectedDate = e.target.value;
@@ -648,137 +585,109 @@
                 }
             });
 
-            document.getElementById('// 郵便番号入力処理（iPhone対応）
-let isProcessing = false; // 処理中フラグ
+            // 郵便番号入力処理（PC・スマホ完全対応）
+            const postalInput = document.getElementById('postal');
+            
+            postalInput.addEventListener('input', function(e) {
+                const input = e.target;
+                let value = input.value;
+                
+                console.log('入力前:', value);
+                
+                // 全角数字を半角に変換
+                value = value.replace(/[０-９]/g, function(s) {
+                    return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
+                });
+                
+                // 数字以外を削除
+                value = value.replace(/[^0-9]/g, '');
+                
+                // 7桁制限
+                if (value.length > 7) {
+                    value = value.slice(0, 7);
+                }
+                
+                // ハイフン挿入
+                if (value.length > 3) {
+                    value = value.slice(0, 3) + '-' + value.slice(3);
+                }
+                
+                console.log('変換後:', value);
+                
+                // 値を設定
+                input.value = value;
+            });
 
-document.getElementById('postal').addEventListener('input', function(e) {
-    // 処理中なら何もしない
-    if (isProcessing) {
-        return;
-    }
-    
-    isProcessing = true;
-    
-    // カーソル位置を保存
-    const cursorPosition = e.target.selectionStart;
-    
-    // 全角数字を半角に変換
-    let value = e.target.value;
-    
-    // 全角数字（０-９）を半角（0-9）に変換
-    value = value.replace(/[０-９]/g, function(s) {
-        return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
-    });
-    
-    // 半角数字以外を削除（ハイフンも一旦削除）
-    value = value.replace(/[^0-9]/g, '');
-    
-    // 最大7桁に制限
-    if (value.length > 7) {
-        value = value.slice(0, 7);
-    }
-    
-    // 3桁以上の場合、3桁目の後にハイフンを挿入
-    if (value.length > 3) {
-        value = value.slice(0, 3) + '-' + value.slice(3);
-    }
-    
-    // 値を設定
-    e.target.value = value;
-    
-    // カーソル位置を復元
-    setTimeout(() => {
-        e.target.setSelectionRange(cursorPosition, cursorPosition);
-    }, 0);
-    
-    console.log('郵便番号入力:', value);
-    
-    // 処理完了フラグをリセット
-    setTimeout(() => {
-        isProcessing = false;
-    }, 10);
-});, function(e) {
-    // 全角数字を半角に変換
-    let value = e.target.value;
-    
-    // 全角数字（０-９）を半角（0-9）に変換
-    value = value.replace(/[０-９]/g, function(s) {
-        return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
-    });
-    
-    // 半角数字とハイフン以外を削除
-    value = value.replace(/[^0-9-]/g, '');
-    
-    // ハイフンを一旦削除
-    value = value.replace(/-/g, '');
-    
-    // 3桁以上の場合、3桁目の後にハイフンを挿入
-    if (value.length > 3) {
-        value = value.slice(0, 3) + '-' + value.slice(3, 7);
-    }
-    
-    // 最大8文字（7桁+ハイフン1つ）に制限
-    if (value.length > 8) {
-        value = value.slice(0, 8);
-    }
-    
-    e.target.value = value;
-    
-    console.log('郵便番号入力:', value);
-});
-
-            document.getElementById('postalSearchBtn').addEventListener('click', searchPostal);
-            document.getElementById('postal').addEventListener('keypress', function(e) {
+            // 郵便番号検索
+            document.getElementById('postalSearchBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                searchPostal();
+            });
+            
+            postalInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     searchPostal();
                 }
             });
 
+            // メール検証
             document.getElementById('email').addEventListener('blur', validateEmail);
+
+            // フォーム送信
             document.getElementById('entryForm').addEventListener('submit', handleSubmit);
         }
 
         async function searchPostal() {
-    const postalInput = document.getElementById('postal');
-    const addressInput = document.getElementById('address');
-    const messageDiv = document.getElementById('postalMessage');
-    const btn = document.getElementById('postalSearchBtn');
+            const postalInput = document.getElementById('postal');
+            const addressInput = document.getElementById('address');
+            const messageDiv = document.getElementById('postalMessage');
+            const btn = document.getElementById('postalSearchBtn');
 
-    // ハイフンを削除して7桁の数字のみ取得
-    const postal = postalInput.value.replace(/-/g, '');
+            const postal = postalInput.value.replace(/-/g, '');
+            
+            console.log('検索する郵便番号:', postal);
 
-    if (postal.length !== 7) {
-        messageDiv.textContent = '❌ 7桁の郵便番号を入力してください';
-        messageDiv.className = 'postal-message error';
-        return;
-    }
+            if (postal.length !== 7) {
+                messageDiv.textContent = '❌ 7桁の郵便番号を入力してください';
+                messageDiv.className = 'postal-message error';
+                return;
+            }
 
-    btn.disabled = true;
-    btn.textContent = '検索中...';
+            btn.disabled = true;
+            btn.textContent = '検索中...';
+            messageDiv.className = 'postal-message';
+            messageDiv.style.display = 'none';
 
-    try {
-        const response = await fetch(`https://zipcloud.ibsnet.co.jp/api/search?zipcode=${postal}`);
-        const data = await response.json();
+            try {
+                const url = `https://zipcloud.ibsnet.co.jp/api/search?zipcode=${postal}`;
+                console.log('API URL:', url);
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                console.log('API レスポンス:', data);
 
-        if (data.results) {
-            const result = data.results[0];
-            addressInput.value = result.address1 + result.address2 + result.address3;
-            messageDiv.textContent = '✅ 住所を自動入力しました';
-            messageDiv.className = 'postal-message success';
-        } else {
-            messageDiv.textContent = '❌ 該当する住所が見つかりませんでした';
-            messageDiv.className = 'postal-message error';
+                if (data.results && data.results.length > 0) {
+                    const result = data.results[0];
+                    const fullAddress = result.address1 + result.address2 + result.address3;
+                    addressInput.value = fullAddress;
+                    messageDiv.textContent = '✅ 住所を自動入力しました';
+                    messageDiv.className = 'postal-message success';
+                    console.log('住所:', fullAddress);
+                } else {
+                    messageDiv.textContent = '❌ 該当する住所が見つかりませんでした';
+                    messageDiv.className = 'postal-message error';
+                }
+            } catch (error) {
+                console.error('郵便番号検索エラー:', error);
+                messageDiv.textContent = '❌ 通信エラーが発生しました';
+                messageDiv.className = 'postal-message error';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🔍 検索';
+            }
         }
-    } catch (error) {
-        console.error('郵便番号検索エラー:', error);
-        messageDiv.textContent = '❌ 通信エラーが発生しました';
-        messageDiv.className = 'postal-message error';
-    } finally {
-        btn.disabled = false;
-        btn.textContent = '🔍 検索';
-    }
-}
 
         function validateEmail() {
             const email = document.getElementById('email').value.trim();
