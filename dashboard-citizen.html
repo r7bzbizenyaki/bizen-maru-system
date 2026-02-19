@@ -483,10 +483,10 @@
 
         // データ読み込み
         function loadData() {
-            allEntries = JSON.parse(localStorage.getItem('citizenEntries') || '[]');
-            console.log('📊 データ読み込み:', allEntries.length, '件');
-        }
-
+    allEntries = JSON.parse(localStorage.getItem('citizenEntries') || '[]');
+    console.log('📊 データ読み込み:', allEntries.length, '件');
+    console.log('📋 読み込んだデータ:', allEntries);
+}
         // UI更新
         function updateUI() {
             updateStats();
@@ -498,29 +498,43 @@
 
         // 統計更新
         function updateStats() {
-            const total = allEntries.length;
-            const boarded = allEntries.filter(e => e.status === 'boarded' || e.status === 'completed').length;
-            const completed = allEntries.filter(e => e.status === 'completed').length;
+    console.log('📊 統計計算開始... エントリー数:', allEntries.length);
+    
+    const total = allEntries.length;
+    const boarded = allEntries.filter(e => e.scanStatus === 'boarded' || e.scanStatus === 'disembarked').length;
+    const completed = allEntries.filter(e => e.scanStatus === 'disembarked').length;
+    const pending = allEntries.filter(e => !e.scanStatus || e.scanStatus === 'pending').length;
 
-            document.getElementById('totalReservations').textContent = total;
-            document.getElementById('totalBoarded').textContent = boarded;
-            document.getElementById('totalCompleted').textContent = completed;
+    console.log('📊 統計結果:', { total, boarded, completed, pending });
 
-            // 平均滞在時間
-            const completedEntries = allEntries.filter(e => e.status === 'completed' && e.boardingTime && e.alightingTime);
-            if (completedEntries.length > 0) {
-                const totalStayTime = completedEntries.reduce((sum, e) => {
-                    return sum + (e.alightingTime - e.boardingTime);
-                }, 0);
-                const avgMs = totalStayTime / completedEntries.length;
-                const avgMin = Math.round(avgMs / 60000);
-                document.getElementById('avgStayTime').textContent = avgMin + '分';
-            } else {
-                document.getElementById('avgStayTime').textContent = '-';
-            }
+    // 統計カードを更新
+    const totalElem = document.getElementById('totalReservations');
+    const boardedElem = document.getElementById('totalBoarded');
+    const completedElem = document.getElementById('totalCompleted');
+    const pendingElem = document.getElementById('pendingCount');
 
-            console.log('📊 統計更新完了');
-        }
+    if (totalElem) totalElem.textContent = total;
+    if (boardedElem) boardedElem.textContent = boarded;
+    if (completedElem) completedElem.textContent = completed;
+    if (pendingElem) pendingElem.textContent = pending;
+
+    // 平均滞在時間
+    const completedEntries = allEntries.filter(e => e.scanStatus === 'disembarked' && e.boardingTime && e.alightingTime);
+    if (completedEntries.length > 0) {
+        const totalStayTime = completedEntries.reduce((sum, e) => {
+            return sum + (e.alightingTime - e.boardingTime);
+        }, 0);
+        const avgMs = totalStayTime / completedEntries.length;
+        const avgMin = Math.round(avgMs / 60000);
+        const avgElem = document.getElementById('avgStayTime');
+        if (avgElem) avgElem.textContent = avgMin + '分';
+    } else {
+        const avgElem = document.getElementById('avgStayTime');
+        if (avgElem) avgElem.textContent = '-';
+    }
+
+    console.log('📊 統計更新完了');
+}
 
         // 日付別カウント更新
         function updateDateCounts() {
