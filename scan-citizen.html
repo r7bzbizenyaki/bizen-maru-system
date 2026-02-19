@@ -453,36 +453,69 @@
         }
 
         // カメラ起動
-        function startCamera() {
+        async function startCamera() {
             const reader = document.getElementById('reader');
             const btn = document.getElementById('cameraBtn');
             
-            reader.classList.add('active');
-            btn.textContent = '⏹️ カメラを停止';
-            btn.classList.add('active');
-            isScanning = true;
-
-            html5QrCode = new Html5Qrcode("reader");
+            console.log('📷 カメラ起動開始...');
             
-            html5QrCode.start(
-                { facingMode: "environment" },
-                {
-                    fps: 10,
-                    qrbox: { width: 250, height: 250 }
-                },
-                (decodedText) => {
-                    handleScan(decodedText);
-                },
-                (errorMessage) => {
-                    // エラーは無視（スキャン待機中は常にエラーが出る）
-                }
-            ).catch((err) => {
-                console.error('❌ カメラ起動エラー:', err);
-                showMessage('error', 'カメラエラー', 'カメラの起動に失敗しました');
-                stopCamera();
-            });
+            try {
+                // まず、カメラの権限を確認
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                console.log('✅ カメラアクセス許可取得');
+                
+                // 権限取得後、すぐにストリームを停止（html5-qrcode が独自に管理するため）
+                stream.getTracks().forEach(track => track.stop());
+                
+                reader.classList.add('active');
+                btn.textContent = '⏹️ カメラを停止';
+                btn.classList.add('active');
+                isScanning = true;
 
-            console.log('📷 カメラ起動');
+                html5QrCode = new Html5Qrcode("reader");
+                
+                const config = {
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 },
+                    aspectRatio: 1.0
+                };
+                
+                console.log('📷 QRコードスキャナー起動中...');
+                
+                await html5QrCode.start(
+                    { facingMode: "environment" },
+                    config,
+                    (decodedText) => {
+                        console.log('📷 QRコード検出:', decodedText);
+                        handleScan(decodedText);
+                    },
+                    (errorMessage) => {
+                        // スキャン待機中のエラーは無視
+                    }
+                );
+
+                console.log('✅ カメラ起動完了');
+                
+            } catch (err) {
+                console.error('❌ カメラ起動エラー:', err);
+                
+                let errorMsg = 'カメラの起動に失敗しました。';
+                
+                if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                    errorMsg = 'カメラへのアクセスが拒否されました。\n\nブラウザの設定でカメラの許可を有効にしてください。';
+                } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+                    errorMsg = 'カメラが見つかりませんでした。\n\nデバイスにカメラが接続されているか確認してください。';
+                } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+                    errorMsg = 'カメラが他のアプリケーションで使用中です。\n\n他のアプリを閉じてから再度お試しください。';
+                } else if (err.name === 'OverconstrainedError' || err.name === 'ConstraintNotSatisfiedError') {
+                    errorMsg = 'カメラの設定に問題があります。\n\n別のカメラを試すか、ブラウザを再起動してください。';
+                } else if (err.name === 'TypeError') {
+                    errorMsg = 'カメラの初期化に失敗しました。\n\nページを再読み込みしてください。';
+                }
+                
+                showMessage('error', 'カメラエラー', errorMsg);
+                stopCamera();
+            }
         }
 
         // カメラ停止
