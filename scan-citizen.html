@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QRコードスキャン - 備前丸 市民限定内覧会</title>
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.4/html5-qrcode.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -79,8 +79,9 @@
         #reader {
             border-radius: 12px;
             overflow: hidden;
-            margin: 16px 0;
+            margin: 16px auto;
             max-width: 100%;
+            background: #000;
         }
 
         .primary-btn {
@@ -292,7 +293,7 @@
             </div>
 
             <div class="camera-section">
-                <div id="reader"></div>
+                <div id="reader" style="width: 100%; max-width: 500px;"></div>
                 <button id="cameraBtn" class="primary-btn" onclick="toggleCamera()">
                     📷 カメラを起動
                 </button>
@@ -392,42 +393,121 @@
             }
         }
 
-        // カメラ起動
+        // カメラ起動（Android完全対応版）
         async function startCamera() {
             console.log('📷 カメラ起動開始...');
             const btn = document.getElementById('cameraBtn');
+            btn.disabled = true;
             
             try {
+                // Step 1: 既存のインスタンスをクリーンアップ
+                if (html5QrCode) {
+                    try {
+                        await html5QrCode.stop();
+                        await html5QrCode.clear();
+                    } catch (e) {
+                        console.log('既存インスタンスのクリーンアップ:', e);
+                    }
+                    html5QrCode = null;
+                }
+
+                // Step 2: カメラ権限を明示的に要求
+                console.log('📱 カメラ権限を要求中...');
                 const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: 'environment' } 
+                    video: { 
+                        facingMode: { ideal: 'environment' },
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    } 
                 });
                 console.log('✅ カメラアクセス許可取得');
+                
+                // 権限取得後すぐにストリームを停止
                 stream.getTracks().forEach(track => track.stop());
 
+                // Step 3: 少し待機（Androidのカメラ初期化待ち）
+                await new Promise(resolve => setTimeout(resolve, 300));
+
+                // Step 4: Html5Qrcode インスタンス作成
                 html5QrCode = new Html5Qrcode("reader");
+
+                // Step 5: カメラデバイス一覧を取得
+                const devices = await Html5Qrcode.getCameras();
+                console.log('📷 利用可能なカメラ:', devices.length, '台');
                 
+                if (devices.length === 0) {
+                    throw new Error('カメラが見つかりません');
+                }
+
+                // 背面カメラを優先的に選択
+                let cameraId = devices[0].id;
+                for (let device of devices) {
+                    if (device.label.toLowerCase().includes('back') || 
+                        device.label.toLowerCase().includes('rear') ||
+                        device.label.toLowerCase().includes('背面')) {
+                        cameraId = device.id;
+                        console.log('✅ 背面カメラを選択:', device.label);
+                        break;
+                    }
+                }
+
+                // Step 6: QRコードスキャナー起動（Android最適化設定）
                 const config = {
-                    fps: 10,
-                    qrbox: { width: 250, height: 250 },
-                    aspectRatio: 1.0
+                    fps: 5,  // Android用に低FPS
+                    qrbox: function(viewfinderWidth, viewfinderHeight) {
+                        let minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+                        let qrboxSize = Math.floor(minEdge * 0.7);
+                        return {
+                            width: qrboxSize,
+                            height: qrboxSize
+                        };
+                    },
+                    aspectRatio: 1.0,
+                    disableFlip: false,
+                    videoConstraints: {
+                        facingMode: { ideal: 'environment' },
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
                 };
 
+                console.log('📷 QRコードスキャナー起動中...');
+                
                 await html5QrCode.start(
-                    { facingMode: "environment" },
+                    cameraId,
                     config,
                     handleScan,
-                    (error) => {}
+                    (errorMessage) => {
+                        // QRコード未検出は正常動作なので無視
+                    }
                 );
 
                 isScanning = true;
                 btn.textContent = '⏸️ カメラを停止';
                 btn.style.background = '#dc3545';
+                btn.disabled = false;
                 console.log('✅ カメラ起動完了');
 
             } catch (error) {
                 console.error('❌ カメラエラー:', error);
-                showMessage('error', 'カメラ起動エラー', 'カメラが起動できません。画像アップロードまたは手動入力をご利用ください。');
+                
+                let errorMsg = 'カメラの起動に失敗しました';
+                let suggestion = '画像アップロードまたは手動入力をご利用ください';
+                
+                if (error.name === 'NotAllowedError' || error.message.includes('Permission')) {
+                    errorMsg = 'カメラの許可が必要です';
+                    suggestion = 'ブラウザの設定でカメラへのアクセスを許可してください\n\n設定方法:\nChrome → 設定 → サイトの設定 → カメラ → このサイトを「許可」に変更';
+                } else if (error.name === 'NotFoundError') {
+                    errorMsg = 'カメラが見つかりません';
+                    suggestion = 'デバイスにカメラが接続されているか確認してください';
+                } else if (error.name === 'NotReadableError') {
+                    errorMsg = 'カメラが使用中です';
+                    suggestion = '他のアプリでカメラを使用している場合は終了してください';
+                }
+                
+                showMessage('error', errorMsg, suggestion);
                 await stopCamera();
+                btn.disabled = false;
             }
         }
 
@@ -436,15 +516,18 @@
             if (html5QrCode && isScanning) {
                 try {
                     await html5QrCode.stop();
-                    html5QrCode = null;
+                    await html5QrCode.clear();
+                    console.log('✅ カメラ停止完了');
                 } catch (error) {
                     console.error('カメラ停止エラー:', error);
                 }
             }
+            html5QrCode = null;
             isScanning = false;
             const btn = document.getElementById('cameraBtn');
             btn.textContent = '📷 カメラを起動';
             btn.style.background = '#667eea';
+            btn.disabled = false;
         }
 
         // QRコード検出時
@@ -610,7 +693,7 @@
         function showMessage(type, title, message) {
             const box = document.getElementById('messageBox');
             box.className = `message ${type}`;
-            box.innerHTML = `<strong>${title}</strong><br>${message}`;
+            box.innerHTML = `<strong>${title}</strong><br>${message.replace(/\n/g, '<br>')}`;
             box.style.display = 'block';
 
             setTimeout(() => {
@@ -630,6 +713,13 @@
                 }
             }
         }
+
+        // ページ離脱時にカメラを停止
+        window.addEventListener('beforeunload', async () => {
+            if (isScanning) {
+                await stopCamera();
+            }
+        });
 
         // 初期化実行
         init();
