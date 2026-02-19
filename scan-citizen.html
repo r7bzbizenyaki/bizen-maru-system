@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QRコードスキャン - 備前丸 市民限定内覧会</title>
-    <script src="https://unpkg.com/html5-qrcode@2.3.4/html5-qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -14,7 +14,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f5f7fa;
             min-height: 100vh;
             padding: 20px 20px 100px 20px;
         }
@@ -26,26 +26,26 @@
 
         .header {
             text-align: center;
-            color: white;
             margin-bottom: 24px;
         }
 
         .header h1 {
             font-size: 24px;
+            color: #333;
             margin-bottom: 8px;
         }
 
         .header p {
             font-size: 14px;
-            opacity: 0.9;
+            color: #666;
         }
 
         .card {
             background: white;
-            border-radius: 16px;
+            border-radius: 12px;
             padding: 24px;
             margin-bottom: 16px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .mode-selector {
@@ -58,7 +58,7 @@
             flex: 1;
             padding: 16px;
             border: 2px solid #e0e0e0;
-            border-radius: 12px;
+            border-radius: 8px;
             background: white;
             cursor: pointer;
             transition: all 0.3s;
@@ -67,9 +67,9 @@
         }
 
         .mode-btn.active {
-            background: #667eea;
+            background: #007bff;
             color: white;
-            border-color: #667eea;
+            border-color: #007bff;
         }
 
         .camera-section {
@@ -77,20 +77,18 @@
         }
 
         #reader {
-            border-radius: 12px;
+            border-radius: 8px;
             overflow: hidden;
-            margin: 16px auto;
-            max-width: 100%;
-            background: #000;
+            margin: 16px 0;
         }
 
         .primary-btn {
             width: 100%;
             padding: 16px;
-            background: #667eea;
+            background: #007bff;
             color: white;
             border: none;
-            border-radius: 12px;
+            border-radius: 8px;
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
@@ -98,12 +96,7 @@
         }
 
         .primary-btn:hover {
-            background: #5568d3;
-        }
-
-        .primary-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
+            background: #0056b3;
         }
 
         .manual-section {
@@ -137,7 +130,7 @@
         .stat-card {
             background: #f8f9fa;
             padding: 16px;
-            border-radius: 12px;
+            border-radius: 8px;
             text-align: center;
         }
 
@@ -150,12 +143,12 @@
         .stat-card .value {
             font-size: 28px;
             font-weight: bold;
-            color: #667eea;
+            color: #007bff;
         }
 
         .message {
             padding: 16px;
-            border-radius: 12px;
+            border-radius: 8px;
             margin: 16px 0;
             display: none;
         }
@@ -163,19 +156,16 @@
         .message.success {
             background: #d4edda;
             color: #155724;
-            border: 1px solid #c3e6cb;
         }
 
         .message.error {
             background: #f8d7da;
             color: #721c24;
-            border: 1px solid #f5c6cb;
         }
 
         .message.info {
             background: #d1ecf1;
             color: #0c5460;
-            border: 1px solid #bee5eb;
         }
 
         .bottom-nav {
@@ -185,7 +175,7 @@
             right: 0;
             background: white;
             padding: 12px 20px;
-            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
             display: flex;
             gap: 12px;
         }
@@ -194,84 +184,20 @@
             flex: 1;
             padding: 14px;
             border: none;
-            border-radius: 12px;
+            border-radius: 8px;
             font-size: 14px;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s;
         }
 
         .nav-btn.primary {
-            background: #667eea;
+            background: #007bff;
             color: white;
         }
 
         .nav-btn.danger {
             background: #dc3545;
             color: white;
-        }
-
-        .alternative-methods {
-            background: #fff3cd;
-            border: 1px solid #ffc107;
-            border-radius: 12px;
-            padding: 16px;
-            margin-top: 16px;
-        }
-
-        .alternative-methods h4 {
-            color: #856404;
-            margin-bottom: 12px;
-            font-size: 16px;
-        }
-
-        .alt-btn {
-            width: 100%;
-            padding: 12px;
-            background: white;
-            border: 2px solid #ffc107;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: bold;
-            color: #856404;
-            transition: all 0.3s;
-        }
-
-        .alt-btn:hover {
-            background: #ffc107;
-            color: white;
-        }
-
-        .search-result {
-            padding: 12px;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .search-result:hover {
-            background: #f8f9fa;
-            border-color: #667eea;
-        }
-
-        .search-result .name {
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 4px;
-        }
-
-        .search-result .details {
-            font-size: 12px;
-            color: #666;
-        }
-
-        #qrImageInput {
-            display: none;
         }
     </style>
 </head>
@@ -293,30 +219,15 @@
             </div>
 
             <div class="camera-section">
-                <div id="reader" style="width: 100%; max-width: 500px;"></div>
+                <div id="reader"></div>
                 <button id="cameraBtn" class="primary-btn" onclick="toggleCamera()">
                     📷 カメラを起動
                 </button>
-
-                <div class="alternative-methods">
-                    <h4>📱 カメラが起動しない場合</h4>
-                    <input type="file" id="qrImageInput" accept="image/*" capture="environment">
-                    <button class="alt-btn" onclick="document.getElementById('qrImageInput').click()">
-                        📸 画像からQRコードを読み取る
-                    </button>
-                </div>
 
                 <div class="manual-section">
                     <h3>📝 手動入力</h3>
                     <input type="text" id="manualInput" placeholder="チケットIDを入力">
                     <button class="primary-btn" onclick="recordManual()">記録</button>
-                </div>
-
-                <div class="manual-section">
-                    <h3>🔍 名前・電話番号で検索</h3>
-                    <input type="text" id="searchInput" placeholder="例: 田中太郎 または 090-1234-5678">
-                    <button class="primary-btn" onclick="searchEntry()">検索して記録</button>
-                    <div id="searchResults"></div>
                 </div>
             </div>
 
@@ -368,23 +279,19 @@
             '2026-03-28': '3月28日（土）'
         };
 
-        // 初期化
         function init() {
             updateStats();
             setInterval(updateStats, 5000);
         }
 
-        // モード切替
         function setMode(mode) {
             currentMode = mode;
             document.querySelectorAll('.mode-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
             event.target.classList.add('active');
-            console.log('モード切替:', mode);
         }
 
-        // カメラ切替
         async function toggleCamera() {
             if (isScanning) {
                 await stopCamera();
@@ -393,189 +300,78 @@
             }
         }
 
-        // カメラ起動（Android完全対応版）
         async function startCamera() {
-            console.log('📷 カメラ起動開始...');
             const btn = document.getElementById('cameraBtn');
-            btn.disabled = true;
-            
             try {
-                // Step 1: 既存のインスタンスをクリーンアップ
-                if (html5QrCode) {
-                    try {
-                        await html5QrCode.stop();
-                        await html5QrCode.clear();
-                    } catch (e) {
-                        console.log('既存インスタンスのクリーンアップ:', e);
-                    }
-                    html5QrCode = null;
-                }
-
-                // Step 2: カメラ権限を明示的に要求
-                console.log('📱 カメラ権限を要求中...');
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { 
-                        facingMode: { ideal: 'environment' },
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    } 
-                });
-                console.log('✅ カメラアクセス許可取得');
-                
-                // 権限取得後すぐにストリームを停止
-                stream.getTracks().forEach(track => track.stop());
-
-                // Step 3: 少し待機（Androidのカメラ初期化待ち）
-                await new Promise(resolve => setTimeout(resolve, 300));
-
-                // Step 4: Html5Qrcode インスタンス作成
                 html5QrCode = new Html5Qrcode("reader");
-
-                // Step 5: カメラデバイス一覧を取得
-                const devices = await Html5Qrcode.getCameras();
-                console.log('📷 利用可能なカメラ:', devices.length, '台');
-                
-                if (devices.length === 0) {
-                    throw new Error('カメラが見つかりません');
-                }
-
-                // 背面カメラを優先的に選択
-                let cameraId = devices[0].id;
-                for (let device of devices) {
-                    if (device.label.toLowerCase().includes('back') || 
-                        device.label.toLowerCase().includes('rear') ||
-                        device.label.toLowerCase().includes('背面')) {
-                        cameraId = device.id;
-                        console.log('✅ 背面カメラを選択:', device.label);
-                        break;
-                    }
-                }
-
-                // Step 6: QRコードスキャナー起動（Android最適化設定）
-                const config = {
-                    fps: 5,  // Android用に低FPS
-                    qrbox: function(viewfinderWidth, viewfinderHeight) {
-                        let minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-                        let qrboxSize = Math.floor(minEdge * 0.7);
-                        return {
-                            width: qrboxSize,
-                            height: qrboxSize
-                        };
-                    },
-                    aspectRatio: 1.0,
-                    disableFlip: false,
-                    videoConstraints: {
-                        facingMode: { ideal: 'environment' },
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    }
-                };
-
-                console.log('📷 QRコードスキャナー起動中...');
                 
                 await html5QrCode.start(
-                    cameraId,
-                    config,
-                    handleScan,
-                    (errorMessage) => {
-                        // QRコード未検出は正常動作なので無視
+                    { facingMode: "environment" },
+                    {
+                        fps: 10,
+                        qrbox: { width: 250, height: 250 }
+                    },
+                    (decodedText) => {
+                        const now = Date.now();
+                        if (decodedText === lastScannedId && now - lastScannedTime < 3000) {
+                            return;
+                        }
+                        lastScannedId = decodedText;
+                        lastScannedTime = now;
+                        processTicket(decodedText);
                     }
                 );
 
                 isScanning = true;
                 btn.textContent = '⏸️ カメラを停止';
                 btn.style.background = '#dc3545';
-                btn.disabled = false;
-                console.log('✅ カメラ起動完了');
 
             } catch (error) {
-                console.error('❌ カメラエラー:', error);
-                
-                let errorMsg = 'カメラの起動に失敗しました';
-                let suggestion = '画像アップロードまたは手動入力をご利用ください';
-                
-                if (error.name === 'NotAllowedError' || error.message.includes('Permission')) {
-                    errorMsg = 'カメラの許可が必要です';
-                    suggestion = 'ブラウザの設定でカメラへのアクセスを許可してください\n\n設定方法:\nChrome → 設定 → サイトの設定 → カメラ → このサイトを「許可」に変更';
-                } else if (error.name === 'NotFoundError') {
-                    errorMsg = 'カメラが見つかりません';
-                    suggestion = 'デバイスにカメラが接続されているか確認してください';
-                } else if (error.name === 'NotReadableError') {
-                    errorMsg = 'カメラが使用中です';
-                    suggestion = '他のアプリでカメラを使用している場合は終了してください';
-                }
-                
-                showMessage('error', errorMsg, suggestion);
+                console.error('カメラエラー:', error);
+                showMessage('error', 'カメラエラー', 'カメラの起動に失敗しました。手動入力をご利用ください。');
                 await stopCamera();
-                btn.disabled = false;
             }
         }
 
-        // カメラ停止
         async function stopCamera() {
             if (html5QrCode && isScanning) {
                 try {
                     await html5QrCode.stop();
-                    await html5QrCode.clear();
-                    console.log('✅ カメラ停止完了');
                 } catch (error) {
-                    console.error('カメラ停止エラー:', error);
+                    console.error('停止エラー:', error);
                 }
+                html5QrCode = null;
             }
-            html5QrCode = null;
             isScanning = false;
             const btn = document.getElementById('cameraBtn');
             btn.textContent = '📷 カメラを起動';
-            btn.style.background = '#667eea';
-            btn.disabled = false;
+            btn.style.background = '#007bff';
         }
 
-        // QRコード検出時
-        function handleScan(decodedText) {
-            const now = Date.now();
-            if (decodedText === lastScannedId && now - lastScannedTime < 3000) {
-                return;
-            }
-            lastScannedId = decodedText;
-            lastScannedTime = now;
-
-            console.log('📷 QRコード検出:', decodedText);
-            processTicket(decodedText);
-        }
-
-        // 手動入力
         function recordManual() {
             const ticketId = document.getElementById('manualInput').value.trim();
             if (!ticketId) {
                 showMessage('error', 'チケットIDを入力してください', '');
                 return;
             }
-            console.log('📝 手動入力:', ticketId);
             processTicket(ticketId);
             document.getElementById('manualInput').value = '';
         }
 
-        // チケット処理
         function processTicket(ticketId) {
-            console.log('🔍 チケット処理開始:', ticketId);
             const entries = JSON.parse(localStorage.getItem('citizenEntries') || '[]');
-            console.log('📋 読み込んだエントリー数:', entries.length);
-
             const entryIndex = entries.findIndex(e => e.id === ticketId);
             
             if (entryIndex === -1) {
                 showMessage('error', 'エラー', 'チケットが見つかりません');
-                console.error('❌ チケットが見つかりません:', ticketId);
                 return;
             }
 
             const entry = entries[entryIndex];
-            console.log('✅ エントリー見つかりました:', entry);
 
             if (currentMode === 'boarding') {
                 if (entry.boardingTime) {
                     showMessage('info', '既に乗船済み', `${entry.name}さんは既に乗船済みです`);
-                    console.log('⚠️ 既に乗船済み:', entry);
                     return;
                 }
 
@@ -583,21 +379,17 @@
                 entry.scanStatus = 'boarded';
                 entries[entryIndex] = entry;
                 localStorage.setItem('citizenEntries', JSON.stringify(entries));
-                localStorage.setItem('lastUpdate', Date.now().toString());
 
                 showMessage('success', '乗船を記録しました', `${entry.name}さん\n予約: ${dateMap[entry.date]} ${entry.timeslot}〜`);
-                console.log('✅ 乗船記録完了:', entry);
 
             } else {
                 if (!entry.boardingTime) {
                     showMessage('error', 'エラー', `${entry.name}さんはまだ乗船していません`);
-                    console.error('❌ まだ乗船していません:', entry);
                     return;
                 }
 
                 if (entry.alightingTime) {
                     showMessage('info', '既に下船済み', `${entry.name}さんは既に下船済みです`);
-                    console.log('⚠️ 既に下船済み:', entry);
                     return;
                 }
 
@@ -605,77 +397,14 @@
                 entry.scanStatus = 'disembarked';
                 entries[entryIndex] = entry;
                 localStorage.setItem('citizenEntries', JSON.stringify(entries));
-                localStorage.setItem('lastUpdate', Date.now().toString());
 
                 const stayTime = Math.round((entry.alightingTime - entry.boardingTime) / 60000);
                 showMessage('success', '下船を記録しました', `${entry.name}さん\n滞在時間: ${stayTime}分`);
-                console.log('✅ 下船記録完了:', entry);
             }
 
             updateStats();
-            console.log('💾 localStorage更新完了');
         }
 
-        // 画像からQRコード読み取り
-        document.getElementById('qrImageInput').addEventListener('change', async (event) => {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            console.log('📸 画像ファイル選択:', file.name);
-            showMessage('info', '画像を解析中...', 'QRコードを読み取っています');
-
-            try {
-                const tempHtml5QrCode = new Html5Qrcode("reader");
-                const result = await tempHtml5QrCode.scanFile(file, true);
-                console.log('✅ QRコード検出:', result);
-                processTicket(result);
-                document.getElementById('qrImageInput').value = '';
-            } catch (error) {
-                console.error('❌ 画像解析エラー:', error);
-                showMessage('error', 'QRコードを読み取れませんでした', 'QRコードが鮮明に写った画像をお試しください');
-            }
-        });
-
-        // 検索機能
-        function searchEntry() {
-            const query = document.getElementById('searchInput').value.trim();
-            if (!query) {
-                showMessage('error', '検索キーワードを入力してください', '');
-                return;
-            }
-
-            console.log('🔍 検索開始:', query);
-            const entries = JSON.parse(localStorage.getItem('citizenEntries') || '[]');
-            const results = entries.filter(e => 
-                e.name.includes(query) || 
-                e.phone.replace(/[-\s]/g, '').includes(query.replace(/[-\s]/g, ''))
-            );
-
-            console.log('🔍 検索結果:', results.length, '件');
-
-            if (results.length === 0) {
-                showMessage('error', '該当する予約が見つかりませんでした', '');
-                document.getElementById('searchResults').innerHTML = '';
-            } else if (results.length === 1) {
-                processTicket(results[0].id);
-            } else {
-                displaySearchResults(results);
-            }
-        }
-
-        // 検索結果表示
-        function displaySearchResults(results) {
-            const html = results.map(entry => `
-                <div class="search-result" onclick="processTicket('${entry.id}')">
-                    <div class="name">${entry.name}</div>
-                    <div class="details">${entry.phone} | ${dateMap[entry.date]} ${entry.timeslot}</div>
-                </div>
-            `).join('');
-            document.getElementById('searchResults').innerHTML = html;
-            showMessage('info', `${results.length}件の予約が見つかりました`, '該当する予約をタップしてください');
-        }
-
-        // 統計更新
         function updateStats() {
             const entries = JSON.parse(localStorage.getItem('citizenEntries') || '[]');
             const total = entries.length;
@@ -689,11 +418,10 @@
             document.getElementById('totalCompleted').textContent = completed;
         }
 
-        // メッセージ表示
         function showMessage(type, title, message) {
             const box = document.getElementById('messageBox');
             box.className = `message ${type}`;
-            box.innerHTML = `<strong>${title}</strong><br>${message.replace(/\n/g, '<br>')}`;
+            box.innerHTML = `<strong>${title}</strong><br>${message}`;
             box.style.display = 'block';
 
             setTimeout(() => {
@@ -701,27 +429,14 @@
             }, 5000);
         }
 
-        // データ削除
         function clearAllData() {
             if (confirm('本当に全データを削除しますか?\nこの操作は取り消せません。')) {
-                if (confirm('再確認: 全ての予約データとスキャンログが削除されます。')) {
-                    localStorage.removeItem('citizenEntries');
-                    localStorage.removeItem('scanLogs');
-                    localStorage.removeItem('lastUpdate');
-                    alert('✅ 全データを削除しました');
-                    location.reload();
-                }
+                localStorage.removeItem('citizenEntries');
+                alert('✅ 全データを削除しました');
+                location.reload();
             }
         }
 
-        // ページ離脱時にカメラを停止
-        window.addEventListener('beforeunload', async () => {
-            if (isScanning) {
-                await stopCamera();
-            }
-        });
-
-        // 初期化実行
         init();
     </script>
 </body>
