@@ -534,12 +534,15 @@
             input.value = '';
         }
 
-        // チケット処理
+       // チケット処理
         function processTicket(ticketId) {
             console.log('🔍 チケット処理開始:', ticketId);
             
-            // データ取得
+            // localStorage から市民限定エントリーデータを取得
             const entries = JSON.parse(localStorage.getItem('citizenEntries') || '[]');
+            console.log('📋 読み込んだエントリー数:', entries.length);
+            
+            // チケットIDで検索
             const entryIndex = entries.findIndex(e => e.id === ticketId);
             
             if (entryIndex === -1) {
@@ -549,6 +552,7 @@
             }
             
             const entry = entries[entryIndex];
+            console.log('✅ エントリー見つかりました:', entry);
             
             // 日付マッピング
             const dateMap = {
@@ -561,32 +565,36 @@
                 // 乗船処理
                 if (entry.boardingTime) {
                     showMessage('info', '既に乗船済み', `${entry.name}さんは既に乗船済みです`);
+                    console.log('⚠️ 既に乗船済み:', entry);
                     return;
                 }
                 
                 entry.boardingTime = Date.now();
-                entry.status = 'boarded';
+                entry.scanStatus = 'boarded';
                 entries[entryIndex] = entry;
                 localStorage.setItem('citizenEntries', JSON.stringify(entries));
                 localStorage.setItem('lastUpdate', Date.now().toString());
                 
                 showMessage('success', '乗船を記録しました', `${entry.name}さん\n予約: ${dateMap[entry.date]} ${entry.timeslot}〜`);
                 addLog('boarding', entry.name, ticketId);
+                console.log('✅ 乗船記録完了:', entry);
                 
             } else {
                 // 下船処理
                 if (!entry.boardingTime) {
                     showMessage('error', 'エラー', `${entry.name}さんはまだ乗船していません`);
+                    console.error('❌ まだ乗船していません:', entry);
                     return;
                 }
                 
                 if (entry.alightingTime) {
                     showMessage('info', '既に下船済み', `${entry.name}さんは既に下船済みです`);
+                    console.log('⚠️ 既に下船済み:', entry);
                     return;
                 }
                 
                 entry.alightingTime = Date.now();
-                entry.status = 'completed';
+                entry.scanStatus = 'disembarked';
                 entries[entryIndex] = entry;
                 localStorage.setItem('citizenEntries', JSON.stringify(entries));
                 localStorage.setItem('lastUpdate', Date.now().toString());
@@ -594,12 +602,12 @@
                 const stayTime = Math.round((entry.alightingTime - entry.boardingTime) / 60000);
                 showMessage('success', '下船を記録しました', `${entry.name}さん\n滞在時間: ${stayTime}分`);
                 addLog('alighting', entry.name, ticketId);
+                console.log('✅ 下船記録完了:', entry);
             }
             
             updateStats();
-            console.log('✅ チケット処理完了:', entry);
+            console.log('💾 localStorage更新完了');
         }
-
         // メッセージ表示
         function showMessage(type, title, text) {
             const box = document.getElementById('messageBox');
@@ -676,13 +684,14 @@
             container.innerHTML = html;
         }
 
-        // 統計更新
+         // 統計更新
         function updateStats() {
             const entries = JSON.parse(localStorage.getItem('citizenEntries') || '[]');
+            console.log('📊 統計計算中... エントリー数:', entries.length);
             
             const total = entries.length;
-            const boarded = entries.filter(e => e.boardingTime).length;
-            const completed = entries.filter(e => e.alightingTime).length;
+            const boarded = entries.filter(e => e.scanStatus === 'boarded' || e.scanStatus === 'disembarked').length;
+            const completed = entries.filter(e => e.scanStatus === 'disembarked').length;
             const onboard = boarded - completed;
             
             document.getElementById('totalReservations').textContent = total;
@@ -690,7 +699,7 @@
             document.getElementById('currentOnboard').textContent = onboard;
             document.getElementById('totalCompleted').textContent = completed;
             
-            console.log('📊 統計更新:', { total, boarded, onboard, completed });
+            console.log('📊 統計更新完了:', { total, boarded, onboard, completed });
         }
 
         // 全データクリア
