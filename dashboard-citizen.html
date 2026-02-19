@@ -579,7 +579,7 @@
 
             let html = '';
             allEntries.slice().reverse().forEach(entry => {
-                const status = statusMap[entry.status] || statusMap['reserved'];
+                const status = statusMap[entry.scanStatus] || statusMap['reserved'];
                 const dateDisplay = dateMap[entry.date] || entry.date;
                 const slot = TIMESLOTS.find(s => s.start === entry.timeslot);
                 const timeDisplay = slot ? `${slot.start}〜${slot.end}` : entry.timeslot;
