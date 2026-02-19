@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QRコードスキャン - 備前丸 市民限定内覧会</title>
-    <script src="https://unpkg.com/html5-qrcode@2.3.4/html5-qrcode.min.js"></script>
+    <script src="https://rawgit.com/schmich/instascan/master/dist/instascan.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -32,18 +32,14 @@
         }
         .mode-btn.active { background: #007bff; color: white; border-color: #007bff; }
         .camera-section { text-align: center; }
-        #reader {
-            width: 100% !important;
+        #preview {
+            width: 100%;
             max-width: 500px;
-            margin: 16px auto !important;
+            height: auto;
             border-radius: 12px;
-            overflow: hidden;
+            margin: 16px auto;
+            display: none;
             background: #000;
-        }
-        #reader video {
-            width: 100% !important;
-            height: auto !important;
-            border-radius: 12px;
         }
         .primary-btn {
             width: 100%; padding: 18px; background: #007bff; color: white;
@@ -51,6 +47,7 @@
             cursor: pointer; margin-bottom: 12px; transition: all 0.3s;
         }
         .primary-btn:active { transform: scale(0.98); }
+        .primary-btn.stop { background: #dc3545; }
         .manual-section { margin-top: 24px; padding-top: 24px; border-top: 2px solid #f0f0f0; }
         .manual-section h3 { font-size: 18px; margin-bottom: 12px; color: #333; }
         .manual-section input {
@@ -83,11 +80,6 @@
         .search-result:hover { background: #e9ecef; border-color: #007bff; }
         .search-result .name { font-weight: bold; color: #333; margin-bottom: 4px; }
         .search-result .details { font-size: 12px; color: #666; }
-        .debug-info {
-            background: #f8f9fa; padding: 12px; border-radius: 8px;
-            margin: 12px 0; font-size: 12px; color: #666;
-            font-family: monospace; display: none;
-        }
     </style>
 </head>
 <body>
@@ -104,11 +96,10 @@
             </div>
 
             <div class="camera-section">
-                <div id="reader"></div>
+                <video id="preview"></video>
                 <button id="cameraBtn" class="primary-btn" onclick="toggleCamera()">
                     📷 カメラを起動
                 </button>
-                <div id="debugInfo" class="debug-info"></div>
 
                 <div class="manual-section">
                     <h3>🔍 名前・電話番号で検索</h3>
@@ -157,7 +148,7 @@
 
     <script>
         let currentMode = 'boarding';
-        let html5QrCode = null;
+        let scanner = null;
         let isScanning = false;
         let lastScannedId = '';
         let lastScannedTime = 0;
@@ -168,16 +159,8 @@
             '2026-03-28': '3月28日（土）'
         };
 
-        function debug(msg) {
-            console.log(msg);
-            const debugDiv = document.getElementById('debugInfo');
-            debugDiv.style.display = 'block';
-            debugDiv.innerHTML += msg + '<br>';
-        }
-
         function init() {
-            debug('🔧 初期化開始...');
-            debug('User Agent: ' + navigator.userAgent);
+            console.log('🔧 初期化...');
             updateStats();
             setInterval(updateStats, 5000);
         }
@@ -186,12 +169,12 @@
             currentMode = mode;
             document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
-            debug('モード切替: ' + mode);
+            console.log('モード:', mode);
         }
 
         async function toggleCamera() {
             if (isScanning) {
-                await stopCamera();
+                stopCamera();
             } else {
                 await startCamera();
             }
@@ -199,157 +182,83 @@
 
         async function startCamera() {
             const btn = document.getElementById('cameraBtn');
-            btn.disabled = true;
-            debug('📷 カメラ起動プロセス開始...');
+            const video = document.getElementById('preview');
 
             try {
-                // Step 1: 既存インスタンスのクリーンアップ
-                if (html5QrCode) {
-                    debug('⚠️ 既存インスタンスを削除中...');
-                    try {
-                        await html5QrCode.stop();
-                        await html5QrCode.clear();
-                    } catch (e) {
-                        debug('既存インスタンス削除完了');
+                console.log('📷 カメラ起動中...');
+                
+                scanner = new Instascan.Scanner({ 
+                    video: video,
+                    mirror: false,
+                    captureImage: false
+                });
+
+                scanner.addListener('scan', function(content) {
+                    const now = Date.now();
+                    if (content === lastScannedId && now - lastScannedTime < 3000) {
+                        return;
                     }
-                    html5QrCode = null;
-                }
+                    lastScannedId = content;
+                    lastScannedTime = now;
+                    console.log('✅ QRコード検出:', content);
+                    processTicket(content);
+                });
 
-                // Step 2: カメラ権限の明示的な取得
-                debug('🔐 カメラ権限を要求中...');
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({
-                        video: {
-                            facingMode: { ideal: "environment" },
-                            width: { ideal: 1280 },
-                            height: { ideal: 720 }
-                        }
-                    });
-                    debug('✅ カメラ権限取得成功');
-                    stream.getTracks().forEach(track => track.stop());
-                } catch (permError) {
-                    debug('❌ カメラ権限エラー: ' + permError.message);
-                    throw permError;
-                }
+                const cameras = await Instascan.Camera.getCameras();
+                console.log('利用可能なカメラ:', cameras.length);
 
-                // Step 3: 少し待機（Android の準備時間）
-                await new Promise(resolve => setTimeout(resolve, 500));
-
-                // Step 4: カメラデバイスの取得
-                debug('📹 カメラデバイスを検索中...');
-                const devices = await Html5Qrcode.getCameras();
-                debug('利用可能なカメラ: ' + devices.length + '台');
-
-                if (devices.length === 0) {
+                if (cameras.length === 0) {
                     throw new Error('カメラが見つかりません');
                 }
 
-                // 背面カメラを優先選択
-                let cameraId = devices[0].id;
-                for (let device of devices) {
-                    debug('カメラ: ' + device.label);
-                    const label = device.label.toLowerCase();
-                    if (label.includes('back') || label.includes('rear') || 
-                        label.includes('背面') || label.includes('environment')) {
-                        cameraId = device.id;
-                        debug('✅ 背面カメラを選択: ' + device.label);
+                // 背面カメラを優先
+                let selectedCamera = cameras[0];
+                for (let camera of cameras) {
+                    if (camera.name.toLowerCase().includes('back') || 
+                        camera.name.toLowerCase().includes('rear') ||
+                        camera.name.toLowerCase().includes('環境')) {
+                        selectedCamera = camera;
                         break;
                     }
                 }
 
-                // Step 5: Html5Qrcode インスタンス作成
-                debug('🎥 QRコードスキャナーを初期化中...');
-                html5QrCode = new Html5Qrcode("reader", {
-                    formatsToSupport: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
-                    verbose: false
-                });
+                await scanner.start(selectedCamera);
 
-                // Step 6: カメラ起動（Android最適化設定）
-                const isAndroid = /Android/i.test(navigator.userAgent);
-                debug('Android判定: ' + isAndroid);
-
-                const config = {
-                    fps: isAndroid ? 5 : 10,
-                    qrbox: function(viewfinderWidth, viewfinderHeight) {
-                        const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-                        const qrboxSize = Math.floor(minEdge * 0.7);
-                        return { width: qrboxSize, height: qrboxSize };
-                    },
-                    aspectRatio: 1.0,
-                    disableFlip: false
-                };
-
-                debug('🚀 カメラ起動中... (fps: ' + config.fps + ')');
-
-                await html5QrCode.start(
-                    cameraId,
-                    config,
-                    (decodedText) => {
-                        const now = Date.now();
-                        if (decodedText === lastScannedId && now - lastScannedTime < 3000) {
-                            return;
-                        }
-                        lastScannedId = decodedText;
-                        lastScannedTime = now;
-                        debug('✅ QRコード検出: ' + decodedText.substring(0, 20) + '...');
-                        processTicket(decodedText);
-                    },
-                    (errorMessage) => {
-                        // QR未検出は正常動作
-                    }
-                );
-
+                video.style.display = 'block';
                 isScanning = true;
                 btn.textContent = '⏸️ カメラを停止';
-                btn.style.background = '#dc3545';
-                btn.disabled = false;
-                debug('✅ カメラ起動完了！');
+                btn.classList.add('stop');
+                console.log('✅ カメラ起動完了');
                 showMessage('success', 'カメラ起動成功', 'QRコードをカメラに映してください');
 
             } catch (error) {
-                debug('❌ カメラエラー: ' + error.name + ' - ' + error.message);
-                console.error('カメラエラー詳細:', error);
-
+                console.error('❌ カメラエラー:', error);
+                
                 let errorMsg = 'カメラの起動に失敗しました';
-                let suggestion = '';
+                let suggestion = '手動入力または検索機能をご利用ください';
 
-                if (error.name === 'NotAllowedError' || error.message.includes('Permission')) {
+                if (error.name === 'NotAllowedError') {
                     errorMsg = 'カメラの許可が必要です';
-                    suggestion = 'ブラウザの設定でカメラへのアクセスを「許可」にしてください';
-                } else if (error.name === 'NotFoundError') {
-                    errorMsg = 'カメラが見つかりません';
-                    suggestion = 'デバイスにカメラが接続されているか確認してください';
-                } else if (error.name === 'NotReadableError') {
-                    errorMsg = 'カメラが使用中です';
-                    suggestion = '他のアプリでカメラを使用している場合は終了してください';
-                } else if (error.name === 'OverconstrainedError') {
-                    errorMsg = 'カメラの設定に問題があります';
-                    suggestion = 'ブラウザを再起動してお試しください';
+                    suggestion = 'ブラウザの設定でカメラへのアクセスを許可してください';
                 }
 
                 showMessage('error', errorMsg, suggestion);
-                await stopCamera();
-                btn.disabled = false;
+                stopCamera();
             }
         }
 
-        async function stopCamera() {
-            debug('🛑 カメラ停止中...');
-            if (html5QrCode && isScanning) {
-                try {
-                    await html5QrCode.stop();
-                    await html5QrCode.clear();
-                    debug('✅ カメラ停止完了');
-                } catch (error) {
-                    debug('カメラ停止エラー: ' + error.message);
-                }
+        function stopCamera() {
+            console.log('🛑 カメラ停止');
+            if (scanner) {
+                scanner.stop();
+                scanner = null;
             }
-            html5QrCode = null;
+            const video = document.getElementById('preview');
+            video.style.display = 'none';
             isScanning = false;
             const btn = document.getElementById('cameraBtn');
             btn.textContent = '📷 カメラを起動';
-            btn.style.background = '#007bff';
-            btn.disabled = false;
+            btn.classList.remove('stop');
         }
 
         function searchEntry() {
@@ -397,7 +306,7 @@
         }
 
         function processTicket(ticketId) {
-            debug('🎫 チケット処理: ' + ticketId.substring(0, 20) + '...');
+            console.log('🎫 チケット処理:', ticketId);
             const entries = JSON.parse(localStorage.getItem('citizenEntries') || '[]');
             const entryIndex = entries.findIndex(e => e.id === ticketId);
             
@@ -466,8 +375,8 @@
             }
         }
 
-        window.addEventListener('beforeunload', async () => {
-            if (isScanning) await stopCamera();
+        window.addEventListener('beforeunload', () => {
+            if (isScanning) stopCamera();
         });
 
         init();
