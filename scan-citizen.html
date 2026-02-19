@@ -550,7 +550,8 @@
         return;
       }
 
-      const entries = JSON.parse(localStorage.getItem('citizenEntries') || '[]');
+      // ✅ 修正：citizenReservations から読み込み
+      const entries = JSON.parse(localStorage.getItem('citizenReservations') || '[]');
       const results = entries.filter(entry => 
         entry.name.includes(query) || entry.phone.includes(query)
       );
@@ -604,12 +605,14 @@
     function processTicket(ticketId) {
       console.log('🎫 チケット処理開始:', ticketId, 'モード:', currentMode);
       
-      const entries = JSON.parse(localStorage.getItem('citizenEntries') || '[]');
+      // ✅ 修正：citizenReservations から読み込み
+      const entries = JSON.parse(localStorage.getItem('citizenReservations') || '[]');
       const entry = entries.find(e => e.ticketId === ticketId);
 
       if (!entry) {
         showMessage('error', 'エラー', '該当する予約が見つかりません');
         console.error('❌ エントリー未検出:', ticketId);
+        console.log('📦 localStorage 内容:', entries);
         return;
       }
 
@@ -640,7 +643,8 @@
         console.log('✅ 下船記録完了:', entry.name);
       }
 
-      localStorage.setItem('citizenEntries', JSON.stringify(entries));
+      // ✅ 修正：citizenReservations に保存
+      localStorage.setItem('citizenReservations', JSON.stringify(entries));
       
       // 統計を即座に更新
       updateStats();
@@ -648,7 +652,8 @@
     }
 
     function updateStats() {
-      const entries = JSON.parse(localStorage.getItem('citizenEntries') || '[]');
+      // ✅ 修正：citizenReservations から読み込み
+      const entries = JSON.parse(localStorage.getItem('citizenReservations') || '[]');
       
       const total = entries.length;
       const boarded = entries.filter(e => e.boardedAt).length;
