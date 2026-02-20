@@ -586,36 +586,7 @@
         }
 
         // 郵便番号検索
-        async function searchPostal() {
-            const postal = document.getElementById('postal').value.replace(/-/g, '');
-            
-            if (postal.length !== 7) {
-                alert('郵便番号は7桁で入力してください');
-                return;
-            }
-
-            console.log('🔍 郵便番号検索:', postal);
-
-            try {
-                const response = await fetch(`https://zipcloud.ibsnet.co.jp/api/search?zipcode=${postal}`);
-                const data = await response.json();
-
-                if (data.results) {
-                    const result = data.results[0];
-                    const address = result.address1 + result.address2 + result.address3;
-                    document.getElementById('address').value = address;
-                    console.log('✅ 住所取得成功:', address);
-                } else {
-                    alert('該当する住所が見つかりませんでした');
-                    console.error('❌ 住所が見つかりません');
-                }
-            } catch (error) {
-                console.error('❌ 郵便番号検索エラー:', error);
-                alert('郵便番号検索に失敗しました');
-            }
-        }
-
-        // メールドメインチェック
+        undefined メールドメインチェック
         function checkEmailDomain() {
             const emailInput = document.getElementById('email');
             let email = emailInput.value.trim();
