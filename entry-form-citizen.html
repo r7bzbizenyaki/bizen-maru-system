@@ -446,8 +446,37 @@
     </div>
 
     <script>
-        // Google Apps Script のデプロイURL
-        const GAS_URL = 'https://script.google.com/macros/s/AKfycbzQ4V4f8FF5q1nTVqYVMuopiGHWmMglhVzxJo-gVD-a41N7HGMbhasyAh6BFdNMgsBF/exec';
+    // 設定
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbzQ4V4f8FF5q1nTVqYVMuopiGHWmMglhVzxJo-gVD-a41N7HGMbhasyAh6BFdNMgsBF/exec';
+    
+    const TIMESLOTS = [
+        { start: '09:00', end: '10:00' },
+        { start: '10:00', end: '11:00' },
+        { start: '11:00', end: '12:00' },
+        { start: '13:00', end: '14:00' },
+        { start: '14:00', end: '15:00' }
+    ];
+
+    // グローバル変数
+    let selectedDate = null;
+    let selectedTimeslot = null;
+
+    // 初期化
+    function init() {
+        console.log('🚀 初期化開始');
+        setupEventListeners();
+        updateReservationCounts();
+        console.log('✅ 初期化完了');
+    }
+
+    // ... (残りの全てのコード) ...
+    
+    // 初期化実行
+    init();
+
+    console.log('🚀 エントリーフォーム起動完了');
+</script>
+.google.com/macros/s/AKfycbzQ4V4f8FF5q1nTVqYVMuopiGHWmMglhVzxJo-gVD-a41N7HGMbhasyAh6BFdNMgsBF/exec';
 
         // 時間帯定義
         const TIMESLOTS = [
