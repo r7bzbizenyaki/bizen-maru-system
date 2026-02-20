@@ -470,101 +470,121 @@
 
         // イベントリスナー設定
         function setupEventListeners() {
-    // 日付選択
-    document.querySelectorAll('input[name="date"]').forEach(function(radio) {
-        radio.addEventListener('change', handleDateChange);
-    });
-
-    // 郵便番号入力時の自動検索
-    const postalInput = document.getElementById('postal');
-    if (postalInput) {
-        console.log('✅ 郵便番号フィールド検出');
-        
-        let isFormatting = false;
-        let lastFormattedValue = '';
-
-        // 全角→半角変換 & ハイフン自動挿入
-        postalInput.addEventListener('compositionend', function(e) {
-            setTimeout(function() { formatPostalCode(e.target); }, 0);
-        });
-
-        postalInput.addEventListener('input', function(e) {
-            if (e.isComposing) return;
-            if (isFormatting) return;
-            formatPostalCode(e.target);
-        });
-
-        function formatPostalCode(input) {
-            isFormatting = true;
-            let value = input.value;
+            console.log('🔥 setupEventListeners 開始');
             
-            // 全角数字を半角に変換
-            value = value.replace(/[０-９]/g, function(s) {
-                return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
+            // 日付選択
+            document.querySelectorAll('input[name="date"]').forEach(function(radio) {
+                radio.addEventListener('change', handleDateChange);
             });
+
+            // 郵便番号入力時の自動検索
+            const postalInput = document.getElementById('postal');
             
-            // 数字以外を削除
-            value = value.replace(/[^0-9]/g, '');
-            
-            // 7桁まで
-            if (value.length > 7) value = value.slice(0, 7);
-            
-            // ハイフン挿入
-            let formatted = value.length > 3 ? value.slice(0, 3) + '-' + value.slice(3) : value;
-            
-            if (formatted !== lastFormattedValue) {
-                input.value = formatted;
-                lastFormattedValue = formatted;
-                console.log('📮 郵便番号:', formatted, '（', value.length, '桁）');
-                
-                // ★ 7桁入力されたら自動検索
-                if (value.length === 7) {
-                    console.log('✅ 7桁入力完了 → 自動検索開始');
-                    setTimeout(function() { searchPostal(); }, 100);
-                }
+            if (!postalInput) {
+                console.error('❌ 郵便番号フィールドが見つかりません');
+                return;
             }
             
-            setTimeout(function() { isFormatting = false; }, 10);
+            console.log('✅ 郵便番号フィールド検出');
+            
+            let isFormatting = false;
+            let lastFormattedValue = '';
+            let lastSearchedValue = '';
+
+            // 全角→半角変換 & ハイフン自動挿入
+            function formatPostalCode(input) {
+                if (isFormatting) return;
+                isFormatting = true;
+                
+                let value = input.value;
+                
+                // 全角数字を半角に変換
+                value = value.replace(/[０-９]/g, function(s) {
+                    return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
+                });
+                
+                // 数字以外を削除
+                const cleanValue = value.replace(/[^0-9]/g, '');
+                
+                // 7桁まで
+                const truncated = cleanValue.slice(0, 7);
+                
+                // ハイフン挿入
+                const formatted = truncated.length > 3 
+                    ? truncated.slice(0, 3) + '-' + truncated.slice(3) 
+                    : truncated;
+                
+                if (formatted !== lastFormattedValue) {
+                    input.value = formatted;
+                    lastFormattedValue = formatted;
+                    console.log('📝 入力: ' + truncated + ' (' + truncated.length + '桁)');
+                }
+                
+                // ★ 7桁入力されたら自動検索（重複検索を防ぐ）
+                if (truncated.length === 7 && truncated !== lastSearchedValue) {
+                    lastSearchedValue = truncated;
+                    console.log('✅ 7桁入力完了 → 自動検索開始');
+                    setTimeout(function() {
+                        searchPostal();
+                    }, 300);
+                }
+                
+                isFormatting = false;
+            }
+
+            // input イベント
+            postalInput.addEventListener('input', function(e) {
+                if (e.isComposing) return;
+                formatPostalCode(e.target);
+            });
+
+            // compositionend イベント（日本語入力確定時）
+            postalInput.addEventListener('compositionend', function(e) {
+                setTimeout(function() { formatPostalCode(e.target); }, 0);
+            });
+
+            // Enter キーで郵便番号検索
+            postalInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    console.log('🔥 Enterキー押下 → searchPostal()実行');
+                    searchPostal();
+                }
+            });
+
+            // 郵便番号検索ボタン
+            const searchBtn = document.getElementById('searchPostalBtn');
+            if (searchBtn) {
+                searchBtn.addEventListener('click', function() {
+                    console.log('🔥 検索ボタンクリック → searchPostal()実行');
+                    searchPostal();
+                });
+            }
+
+            // メールアドレスのドメインチェック
+            const emailInput = document.getElementById('email');
+            if (emailInput) {
+                emailInput.addEventListener('blur', checkEmailDomain);
+            }
+
+            // フォーム送信
+            const form = document.getElementById('entryForm');
+            if (form) {
+                form.addEventListener('submit', handleSubmit);
+            }
+
+            console.log('✅ イベントリスナー設定完了');
         }
 
-        // Enter キーで郵便番号検索
-        postalInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                searchPostal();
-            }
-        });
-    } else {
-        console.error('❌ 郵便番号フィールドが見つかりません');
-    }
-
-    // 郵便番号検索ボタン
-    const searchBtn = document.getElementById('searchPostalBtn');
-    if (searchBtn) {
-        searchBtn.addEventListener('click', searchPostal);
-    }
-
-    // メールアドレスのドメインチェック
-    const emailInput = document.getElementById('email');
-    if (emailInput) {
-        emailInput.addEventListener('blur', checkEmailDomain);
-    }
-
-    // フォーム送信
-    const form = document.getElementById('entryForm');
-    if (form) {
-        form.addEventListener('submit', handleSubmit);
-    }
-
-    console.log('✅ イベントリスナー設定完了');
-}
-
+        // 日付変更
         function handleDateChange(e) {
             selectedDate = e.target.value;
             console.log('📅 選択された日付:', selectedDate);
 
             // 日付カードの選択状態を更新
-            document.querySelectorAll('.date-card').forEach(card => card.classList.remove('selected'));
+            document.querySelectorAll('.date-card').forEach(function(card) {
+                card.classList.remove('selected');
+            });
             e.target.closest('.date-card').classList.add('selected');
 
             // 時間帯セクションを表示
@@ -581,23 +601,23 @@
             grid.innerHTML = '';
 
             const entries = JSON.parse(localStorage.getItem('citizenEntries') || '[]');
-            const dateEntries = entries.filter(e => e.date === selectedDate);
+            const dateEntries = entries.filter(function(e) { return e.date === selectedDate; });
 
-            TIMESLOTS.forEach(slot => {
-                const count = dateEntries.filter(e => e.timeslot === slot.start).length;
+            TIMESLOTS.forEach(function(slot) {
+                const count = dateEntries.filter(function(e) { return e.timeslot === slot.start; }).length;
 
                 const card = document.createElement('label');
                 card.className = 'timeslot-card';
-                card.innerHTML = `
-                    <input type="radio" name="timeslot" value="${slot.start}" required>
-                    <div class="timeslot-time">${slot.start}〜${slot.end}</div>
-                    <div class="timeslot-count">${count}件予約</div>
-                `;
+                card.innerHTML = '<input type="radio" name="timeslot" value="' + slot.start + '" required>' +
+                    '<div class="timeslot-time">' + slot.start + '〜' + slot.end + '</div>' +
+                    '<div class="timeslot-count">' + count + '件予約</div>';
 
-                card.querySelector('input').addEventListener('change', e => {
+                card.querySelector('input').addEventListener('change', function(e) {
                     selectedTimeslot = e.target.value;
                     console.log('⏰ 選択された時間帯:', selectedTimeslot);
-                    document.querySelectorAll('.timeslot-card').forEach(c => c.classList.remove('selected'));
+                    document.querySelectorAll('.timeslot-card').forEach(function(c) {
+                        c.classList.remove('selected');
+                    });
                     card.classList.add('selected');
                 });
 
@@ -609,19 +629,73 @@
         function updateReservationCounts() {
             const entries = JSON.parse(localStorage.getItem('citizenEntries') || '[]');
 
-            ['2026-02-27', '2026-03-27', '2026-03-28'].forEach(date => {
-                const count = entries.filter(e => e.date === date).length;
-                const badge = document.getElementById(`badge-${date}`);
+            ['2026-02-27', '2026-03-27', '2026-03-28'].forEach(function(date) {
+                const count = entries.filter(function(e) { return e.date === date; }).length;
+                const badge = document.getElementById('badge-' + date);
                 if (badge) {
-                    badge.textContent = `${count}件予約`;
+                    badge.textContent = count + '件予約';
                 }
             });
 
             console.log('📊 予約数更新完了');
         }
 
-        // 郵便番号検索
-        undefined メールドメインチェック
+        // ★ 郵便番号検索（テストページと同じロジック）
+        async function searchPostal() {
+            console.log('🔥 searchPostal() 開始');
+            
+            const postalInput = document.getElementById('postal');
+            const addressInput = document.getElementById('address');
+            
+            if (!postalInput || !addressInput) {
+                console.error('❌ フィールドが見つかりません');
+                return;
+            }
+            
+            // ハイフンを含むすべての非数字を削除
+            const postal = postalInput.value.replace(/[^0-9]/g, '');
+            
+            console.log('📮 郵便番号: ' + postal + ' (' + postal.length + '桁)');
+            
+            if (postal.length !== 7) {
+                console.log('⚠️ 7桁ではありません');
+                return;
+            }
+            
+            // ローディング表示
+            addressInput.value = '検索中...';
+            addressInput.disabled = true;
+            
+            try {
+                const url = 'https://zipcloud.ibsnet.co.jp/api/search?zipcode=' + postal;
+                console.log('🌐 API呼び出し: ' + url);
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                console.log('📦 API応答:', data);
+                
+                if (data.status === 200 && data.results && data.results.length > 0) {
+                    const result = data.results[0];
+                    const address = result.address1 + result.address2 + result.address3;
+                    addressInput.value = address;
+                    addressInput.disabled = false;
+                    console.log('✅ 住所取得成功: ' + address);
+                } else {
+                    addressInput.value = '';
+                    addressInput.disabled = false;
+                    addressInput.placeholder = '該当する住所が見つかりませんでした';
+                    console.log('❌ 該当する住所なし');
+                }
+            } catch (error) {
+                console.error('❌ 郵便番号検索エラー:', error);
+                addressInput.value = '';
+                addressInput.disabled = false;
+                addressInput.placeholder = '検索に失敗しました';
+            }
+        }
+
+        // メールドメインチェック
         function checkEmailDomain() {
             const emailInput = document.getElementById('email');
             let email = emailInput.value.trim();
@@ -635,11 +709,12 @@
                 '.yahoo.co.jpp': '.yahoo.co.jp'
             };
 
-            for (const [wrong, correct] of Object.entries(corrections)) {
+            for (const wrong in corrections) {
                 if (email.includes(wrong)) {
+                    const correct = corrections[wrong];
                     email = email.replace(wrong, correct);
                     emailInput.value = email;
-                    alert(`メールアドレスを修正しました: ${wrong} → ${correct}`);
+                    alert('メールアドレスを修正しました: ' + wrong + ' → ' + correct);
                     console.log('📧 メールドメイン修正:', email);
                     break;
                 }
@@ -647,4 +722,109 @@
         }
 
         // フォーム送信
-        undefined
+        async function handleSubmit(e) {
+            e.preventDefault();
+
+            if (!selectedDate || !selectedTimeslot) {
+                alert('⚠️ 日付と時間帯を選択してください');
+                return;
+            }
+
+            // ローディング表示
+            document.getElementById('loadingOverlay').classList.add('active');
+            document.getElementById('loadingSubtext').textContent = '予約を処理しています...';
+
+            try {
+                const formElement = e.target;
+                
+                // ★ チケットIDを1回だけ生成
+                const ticketId = 'CM' + Date.now() + Math.random().toString(36).substring(2, 9).toUpperCase();
+                
+                // ★ このオブジェクトを localStorage と GAS 両方で使う
+                const formData = {
+                    id: ticketId,
+                    type: 'citizen',
+                    date: selectedDate,
+                    timeslot: selectedTimeslot,
+                    name: formElement.name.value.trim(),
+                    postal: formElement.postal.value.trim(),
+                    address: formElement.address.value.trim(),
+                    phone: formElement.phone.value.trim(),
+                    email: formElement.email.value.trim(),
+                    age: formElement.age.value,
+                    gender: formElement.gender.value,
+                    timestamp: new Date().toISOString(),
+                    boardedAt: null,
+                    disembarkedAt: null
+                };
+
+                console.log('📝 予約データ:', formData);
+
+                // localStorage に保存
+                const entries = JSON.parse(localStorage.getItem('citizenEntries') || '[]');
+                entries.push(formData);
+                localStorage.setItem('citizenEntries', JSON.stringify(entries));
+                localStorage.setItem('lastUpdate', Date.now().toString());
+                
+                console.log('💾 localStorage保存完了:', entries.length, '件');
+                
+                // 保存を確実にするため少し待つ
+                await new Promise(function(resolve) { setTimeout(resolve, 200); });
+
+                // ★ Google Apps Script へ送信（同じ formData を送信）
+                console.log('📧 メール送信開始...');
+                document.getElementById('loadingSubtext').textContent = 'メールを送信しています...';
+
+                await fetch(GAS_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                console.log('✅ メール送信処理完了');
+                
+                await new Promise(function(resolve) { setTimeout(resolve, 1000); });
+
+                document.getElementById('loadingOverlay').classList.remove('active');
+
+                // 予約完了メッセージ
+                const dateMap = {
+                    '2026-02-27': '2月27日（金）',
+                    '2026-03-27': '3月27日（金）',
+                    '2026-03-28': '3月28日（土）'
+                };
+
+                const slotInfo = TIMESLOTS.find(function(s) { return s.start === selectedTimeslot; });
+                const timeDisplay = slotInfo ? slotInfo.start + '〜' + slotInfo.end : selectedTimeslot;
+
+                alert(
+                    '✅ 予約が完了しました！\n\n' +
+                    '【予約内容】\n' +
+                    'お名前: ' + formData.name + '\n' +
+                    '日時: ' + dateMap[formData.date] + ' ' + timeDisplay + '\n' +
+                    'チケットID: ' + formData.id + '\n\n' +
+                    'メールでQRコード付きチケットをお送りします。\n' +
+                    '当日はQRコードをご提示ください。\n\n' +
+                    '※ 迷惑メールフォルダもご確認ください。'
+                );
+
+                // チケット表示ページへ遷移
+                window.location.href = 'ticket-citizen.html?id=' + formData.id;
+
+            } catch (error) {
+                console.error('❌ 送信エラー:', error);
+                document.getElementById('loadingOverlay').classList.remove('active');
+                alert('⚠️ 予約の送信中にエラーが発生しました。\n\nローカルには保存されましたので、\n後ほど再度お試しください。');
+            }
+        }
+
+        // 初期化実行
+        init();
+
+        console.log('🚀 エントリーフォーム起動完了');
+    </script>
+</body>
+</html>
