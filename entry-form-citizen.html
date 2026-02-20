@@ -578,6 +578,21 @@
 
         // 日付変更
         function handleDateChange(e) {
+    console.log('📅 日付選択:', e.target.value);
+    selectedDate = e.target.value;
+    console.log('✅ selectedDate更新:', selectedDate);
+    
+    const timeslotSection = document.getElementById('timeslotSection');
+    if (timeslotSection) {
+        timeslotSection.classList.add('active');
+        console.log('✅ timeslotSection に active クラス追加');
+    } else {
+        console.error('❌ timeslotSection が見つかりません');
+    }
+    
+    generateTimeslots();
+}
+
             selectedDate = e.target.value;
             console.log('📅 選択された日付:', selectedDate);
 
@@ -597,6 +612,47 @@
 
         // 時間帯生成
         function generateTimeslots() {
+    console.log('⏰ 時間帯生成開始, selectedDate:', selectedDate);
+    
+    const grid = document.getElementById('timeslotGrid');
+    if (!grid) {
+        console.error('❌ timeslotGrid が見つかりません');
+        return;
+    }
+    
+    grid.innerHTML = '';
+    console.log('✅ timeslotGrid をクリア');
+
+    const entries = JSON.parse(localStorage.getItem('citizenEntries') || '[]');
+    const dateEntries = entries.filter(e => e.date === selectedDate);
+    console.log('📊 この日の予約数:', dateEntries.length);
+
+    TIMESLOTS.forEach(function(slot) {
+        const count = dateEntries.filter(e => e.timeslot === slot.start).length;
+        
+        const card = document.createElement('label');
+        card.className = 'timeslot-card';
+        card.innerHTML = 
+            '<input type="radio" name="timeslot" value="' + slot.start + '" required>' +
+            '<div class="timeslot-time">' + slot.start + '〜' + slot.end + '</div>' +
+            '<div class="timeslot-count">' + count + '件予約</div>';
+        
+        card.querySelector('input').addEventListener('change', function(ev) {
+            selectedTimeslot = ev.target.value;
+            console.log('✅ 時間帯選択:', selectedTimeslot);
+            document.querySelectorAll('.timeslot-card').forEach(function(c) {
+                c.classList.remove('selected');
+            });
+            card.classList.add('selected');
+        });
+        
+        grid.appendChild(card);
+        console.log('✅ 時間帯カード追加:', slot.start + '〜' + slot.end);
+    });
+    
+    console.log('✅ 時間帯生成完了');
+}
+
             const grid = document.getElementById('timeslotGrid');
             grid.innerHTML = '';
 
