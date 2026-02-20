@@ -470,60 +470,95 @@
 
         // イベントリスナー設定
         function setupEventListeners() {
-            // 日付選択
-            document.querySelectorAll('input[name="date"]').forEach(radio => {
-                radio.addEventListener('change', handleDateChange);
+    // 日付選択
+    document.querySelectorAll('input[name="date"]').forEach(function(radio) {
+        radio.addEventListener('change', handleDateChange);
+    });
+
+    // 郵便番号入力時の自動検索
+    const postalInput = document.getElementById('postal');
+    if (postalInput) {
+        console.log('✅ 郵便番号フィールド検出');
+        
+        let isFormatting = false;
+        let lastFormattedValue = '';
+
+        // 全角→半角変換 & ハイフン自動挿入
+        postalInput.addEventListener('compositionend', function(e) {
+            setTimeout(function() { formatPostalCode(e.target); }, 0);
+        });
+
+        postalInput.addEventListener('input', function(e) {
+            if (e.isComposing) return;
+            if (isFormatting) return;
+            formatPostalCode(e.target);
+        });
+
+        function formatPostalCode(input) {
+            isFormatting = true;
+            let value = input.value;
+            
+            // 全角数字を半角に変換
+            value = value.replace(/[０-９]/g, function(s) {
+                return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
             });
-
-            // 郵便番号入力（全角→半角変換 & ハイフン自動挿入）
-            const postalInput = document.getElementById('postal');
-            let isFormatting = false;
-            let lastFormattedValue = '';
-
-            postalInput.addEventListener('compositionend', e => {
-                setTimeout(() => formatPostalCode(e.target), 0);
-            });
-
-            postalInput.addEventListener('input', e => {
-                if (e.isComposing) return;
-                if (isFormatting) return;
-                formatPostalCode(e.target);
-            });
-
-            function formatPostalCode(input) {
-                isFormatting = true;
-                let value = input.value;
-                value = value.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
-                value = value.replace(/[^0-9]/g, '');
-                if (value.length > 7) value = value.slice(0, 7);
-                let formatted = value.length > 3 ? value.slice(0, 3) + '-' + value.slice(3) : value;
-                if (formatted !== lastFormattedValue) {
-                    input.value = formatted;
-                    lastFormattedValue = formatted;
-                    console.log('📮 郵便番号:', formatted);
+            
+            // 数字以外を削除
+            value = value.replace(/[^0-9]/g, '');
+            
+            // 7桁まで
+            if (value.length > 7) value = value.slice(0, 7);
+            
+            // ハイフン挿入
+            let formatted = value.length > 3 ? value.slice(0, 3) + '-' + value.slice(3) : value;
+            
+            if (formatted !== lastFormattedValue) {
+                input.value = formatted;
+                lastFormattedValue = formatted;
+                console.log('📮 郵便番号:', formatted, '（', value.length, '桁）');
+                
+                // ★ 7桁入力されたら自動検索
+                if (value.length === 7) {
+                    console.log('✅ 7桁入力完了 → 自動検索開始');
+                    setTimeout(function() { searchPostal(); }, 100);
                 }
-                setTimeout(() => { isFormatting = false; }, 10);
             }
-
-            // Enter キーで郵便番号検索
-            postalInput.addEventListener('keypress', e => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    searchPostal();
-                }
-            });
-
-            // 郵便番号検索ボタン
-            document.getElementById('searchPostalBtn').addEventListener('click', searchPostal);
-
-            // メールアドレスのドメインチェック
-            document.getElementById('email').addEventListener('blur', checkEmailDomain);
-
-            // フォーム送信
-            document.getElementById('entryForm').addEventListener('submit', handleSubmit);
+            
+            setTimeout(function() { isFormatting = false; }, 10);
         }
 
-        // 日付変更
+        // Enter キーで郵便番号検索
+        postalInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                searchPostal();
+            }
+        });
+    } else {
+        console.error('❌ 郵便番号フィールドが見つかりません');
+    }
+
+    // 郵便番号検索ボタン
+    const searchBtn = document.getElementById('searchPostalBtn');
+    if (searchBtn) {
+        searchBtn.addEventListener('click', searchPostal);
+    }
+
+    // メールアドレスのドメインチェック
+    const emailInput = document.getElementById('email');
+    if (emailInput) {
+        emailInput.addEventListener('blur', checkEmailDomain);
+    }
+
+    // フォーム送信
+    const form = document.getElementById('entryForm');
+    if (form) {
+        form.addEventListener('submit', handleSubmit);
+    }
+
+    console.log('✅ イベントリスナー設定完了');
+}
+
         function handleDateChange(e) {
             selectedDate = e.target.value;
             console.log('📅 選択された日付:', selectedDate);
