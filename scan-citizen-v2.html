@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>備前丸 市民限定内覧会 スキャン V2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .cloud-status {
+            display: inline-block;
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        .cloud-status.online {
+            background: rgba(76, 175, 80, 0.3);
+        }
+        .cloud-status.offline {
+            background: rgba(244, 67, 54, 0.3);
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+        .tab-container {
+            display: flex;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            background: white;
+            border: none;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        .tab:hover {
+            background: #f5f5f5;
+        }
+        .tab.active {
+            background: #667eea;
+            color: white;
+            font-weight: bold;
+        }
+        .content {
+            padding: 30px;
+        }
+        .scan-area {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .video-container {
+            position: relative;
+            max-width: 500px;
+            margin: 0 auto;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        #video {
+            width: 100%;
+            display: block;
+        }
+        .scan-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 250px;
+            height: 250px;
+            border: 3px solid #4caf50;
+            border-radius: 10px;
+            box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
+        }
+        .scan-btn {
+            margin-top: 20px;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .scan-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        .scan-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .result-card {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+        }
+        .result-card.success {
+            display: block;
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+        .result-card.error {
+            display: block;
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+        }
+        .result-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        .result-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .result-info {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .line-browser-warning {
+            display: none;
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .line-browser-warning.show {
+            display: block;
+        }
+        .warning-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        .warning-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        .warning-text {
+            font-size: 14px;
+            color: #856404;
+            line-height: 1.6;
+        }
+    </style>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚢 備前丸 市民限定内覧会</h1>
+            <p>スキャンシステム V2</p>
+            <div class="cloud-status" id="cloudStatus">
+                ☁️ クラウド接続: 確認中...
+            </div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalCount">0</div>
+                <div class="stat-label">総予約数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="boardedCount">0</div>
+                <div class="stat-label">乗船済み</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="onboardCount">0</div>
+                <div class="stat-label">現在乗船中</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="disembarkedCount">0</div>
+                <div class="stat-label">下船完了</div>
+            </div>
+        </div>
+        
+        <div class="tab-container">
+            <button class="tab active" onclick="switchTab('board')">🚢 乗船記録</button>
+            <button class="tab" onclick="switchTab('disembark')">🏠 下船記録</button>
+        </div>
+        
+        <div class="content">
+            <div class="line-browser-warning" id="lineBrowserWarning">
+                <div class="warning-icon">⚠️</div>
+                <div class="warning-title">LINE内ブラウザではカメラが使用できません</div>
+                <div class="warning-text">
+                    右上の「…」メニューから「Chromeで開く」または「Safariで開く」を選択してください。
+                </div>
+            </div>
+            
+            <div class="scan-area">
+                <div class="video-container" id="videoContainer" style="display: none;">
+                    <div id="reader"></div>
+                </div>
+                
+                <button class="scan-btn" id="scanBtn" onclick="startScan()">
+                    📷 カメラを起動してスキャン
+                </button>
+                
+                <div class="result-card" id="resultCard"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ⚠️ 重要: デプロイ後に新しい GAS URL に書き換えてください
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbyM05I37fBlb_Ey5-6M8pN65t8pAkg6T8FHeSS_cBfKrHjeamm2GRrG4TtFLDTym_V-uw/exec';
+        
+        let currentMode = 'board'; // 'board' or 'disembark'
+        let isCloudOnline = false;
+        let allReservations = [];
+        let html5QrCode = null;
+        let isScanning = false;
+        
+        // 初期化
+        window.addEventListener('DOMContentLoaded', async () => {
+            checkLineBrowser();
+            await checkCloudConnection();
+            await fetchAllReservations();
+            updateStats();
+        });
+        
+        // LINE内ブラウザ検出
+        function checkLineBrowser() {
+            if (/Line/i.test(navigator.userAgent)) {
+                document.getElementById('lineBrowserWarning').classList.add('show');
+            }
+        }
+        
+        // クラウド接続確認
+        async function checkCloudConnection() {
+            try {
+                const response = await fetch(`${GAS_URL}?action=ping`, {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                const data = await response.json();
+                isCloudOnline = data.success;
+                updateCloudStatus();
+            } catch (error) {
+                console.error('Cloud connection error:', error);
+                isCloudOnline = false;
+                updateCloudStatus();
+            }
+        }
+        
+        // クラウドステータス更新
+        function updateCloudStatus() {
+            const statusEl = document.getElementById('cloudStatus');
+            if (isCloudOnline) {
+                statusEl.textContent = '☁️ クラウド接続: オンライン';
+                statusEl.classList.add('online');
+                statusEl.classList.remove('offline');
+            } else {
+                statusEl.textContent = '☁️ クラウド接続: オフライン';
+                statusEl.classList.add('offline');
+                statusEl.classList.remove('online');
+            }
+        }
+        
+        // 全予約データ取得
+        async function fetchAllReservations() {
+            try {
+                const response = await fetch(`${GAS_URL}?action=getAllCitizenV2`, {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                const data = await response.json();
+                if (data.success) {
+                    allReservations = data.data || [];
+                }
+            } catch (error) {
+                console.error('Failed to fetch reservations:', error);
+            }
+        }
+        
+        // 統計情報更新
+        function updateStats() {
+            const totalCount = allReservations.length;
+            const boardedCount = allReservations.filter(r => r.boardedAt).length;
+            const disembarkedCount = allReservations.filter(r => r.disembarkedAt).length;
+            const onboardCount = boardedCount - disembarkedCount;
+            
+            document.getElementById('totalCount').textContent = totalCount;
+            document.getElementById('boardedCount').textContent = boardedCount;
+            document.getElementById('onboardCount').textContent = onboardCount;
+            document.getElementById('disembarkedCount').textContent = disembarkedCount;
+        }
+        
+        // タブ切り替え
+        function switchTab(mode) {
+            currentMode = mode;
+            
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            stopScan();
+            document.getElementById('resultCard').style.display = 'none';
+        }
+        
+        // スキャン開始
+        async function startScan() {
+            if (isScanning) {
+                stopScan();
+                return;
+            }
+            
+            const videoContainer = document.getElementById('videoContainer');
+            const scanBtn = document.getElementById('scanBtn');
+            
+            videoContainer.style.display = 'block';
+            scanBtn.textContent = '⏹️ スキャンを停止';
+            isScanning = true;
+            
+            html5QrCode = new Html5Qrcode("reader");
+            
+            try {
+                await html5QrCode.start(
+                    { facingMode: "environment" },
+                    {
+                        fps: 10,
+                        qrbox: { width: 250, height: 250 }
+                    },
+                    onScanSuccess,
+                    onScanFailure
+                );
+            } catch (error) {
+                console.error('Camera error:', error);
+                alert('カメラの起動に失敗しました。ブラウザの設定でカメラの使用を許可してください。');
+                stopScan();
+            }
+        }
+        
+        // スキャン停止
+        function stopScan() {
+            if (html5QrCode && isScanning) {
+                html5QrCode.stop().then(() => {
+                    document.getElementById('videoContainer').style.display = 'none';
+                    document.getElementById('scanBtn').textContent = '📷 カメラを起動してスキャン';
+                    isScanning = false;
+                }).catch(err => console.error('Stop scan error:', err));
+            }
+        }
+        
+        // スキャン成功
+        async function onScanSuccess(decodedText) {
+            stopScan();
+            
+            const reservation = allReservations.find(r => r.id === decodedText);
+            
+            if (!reservation) {
+                showResult('error', '❌ 該当する予約が見つかりません', `チケットID: ${decodedText}`);
+                return;
+            }
+            
+            if (currentMode === 'board') {
+                await recordBoarding(reservation);
+            } else {
+                await recordDisembark(reservation);
+            }
+        }
+        
+        function onScanFailure(error) {
+            // スキャン失敗は無視（連続スキャン中）
+        }
+        
+        // 乗船記録
+        async function recordBoarding(reservation) {
+            if (reservation.boardedAt) {
+                showResult('error', '⚠️ すでに乗船記録済みです', `
+                    お名前: ${reservation.name}<br>
+                    乗船時刻: ${new Date(reservation.boardedAt).toLocaleString('ja-JP')}
+                `);
+                return;
+            }
+            
+            try {
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'updateCitizenV2',
+                        id: reservation.id,
+                        updateType: 'board'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showResult('success', '✅ 乗船を記録しました', `
+                        お名前: ${reservation.name}<br>
+                        日付: ${new Date(reservation.date).toLocaleDateString('ja-JP')}<br>
+                        時間: ${reservation.timeslot}<br>
+                        乗船時刻: ${new Date().toLocaleString('ja-JP')}
+                    `);
+                    
+                    await fetchAllReservations();
+                    updateStats();
+                } else {
+                    throw new Error(result.message || '記録に失敗しました');
+                }
+            } catch (error) {
+                console.error('Boarding error:', error);
+                showResult('error', '❌ 記録に失敗しました', error.message);
+            }
+        }
+        
+        // 下船記録
+        async function recordDisembark(reservation) {
+            if (!reservation.boardedAt) {
+                showResult('error', '⚠️ まだ乗船記録がありません', `お名前: ${reservation.name}`);
+                return;
+            }
+            
+            if (reservation.disembarkedAt) {
+                showResult('error', '⚠️ すでに下船記録済みです', `
+                    お名前: ${reservation.name}<br>
+                    下船時刻: ${new Date(reservation.disembarkedAt).toLocaleString('ja-JP')}
+                `);
+                return;
+            }
+            
+            try {
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'updateCitizenV2',
+                        id: reservation.id,
+                        updateType: 'disembark'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showResult('success', '✅ 下船を記録しました', `
+                        お名前: ${reservation.name}<br>
+                        乗船時刻: ${new Date(reservation.boardedAt).toLocaleString('ja-JP')}<br>
+                        下船時刻: ${new Date().toLocaleString('ja-JP')}
+                    `);
+                    
+                    await fetchAllReservations();
+                    updateStats();
+                } else {
+                    throw new Error(result.message || '記録に失敗しました');
+                }
+            } catch (error) {
+                console.error('Disembark error:', error);
+                showResult('error', '❌ 記録に失敗しました', error.message);
+            }
+        }
+        
+        // 結果表示
+        function showResult(type, title, info) {
+            const resultCard = document.getElementById('resultCard');
+            resultCard.className = `result-card ${type}`;
+            resultCard.innerHTML = `
+                <div class="result-icon">${type === 'success' ? '✅' : '❌'}</div>
+                <div class="result-title">${title}</div>
+                <div class="result-info">${info}</div>
+            `;
+            
+            setTimeout(() => {
+                resultCard.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

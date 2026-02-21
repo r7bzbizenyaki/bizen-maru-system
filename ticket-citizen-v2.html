@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>予約完了 - 備前丸 市民限定内覧会 V2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .success-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+        .content {
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .message {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .qr-container {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            display: inline-block;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .qr-code {
+            width: 280px;
+            height: 280px;
+            margin: 0 auto;
+            display: block;
+        }
+        .ticket-id {
+            font-size: 16px;
+            color: #667eea;
+            font-weight: bold;
+            margin-top: 15px;
+            padding: 12px 20px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+            word-break: break-all;
+        }
+        .info-section {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #666;
+        }
+        .info-value {
+            color: #333;
+        }
+        .note {
+            font-size: 14px;
+            color: #888;
+            line-height: 1.6;
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff9e6;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+        }
+        .btn-home {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 14px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            transition: transform 0.3s;
+        }
+        .btn-home:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="success-icon">✅</div>
+            <h1>予約が完了しました</h1>
+            <p>備前丸 市民限定内覧会 V2</p>
+        </div>
+        
+        <div class="content">
+            <div class="message">
+                ご予約ありがとうございます。<br>
+                当日は下記のQRコードをご提示ください。
+            </div>
+            
+            <div class="qr-container">
+                <div id="qrcode" class="qr-code"></div>
+            </div>
+            
+            <div class="ticket-id">
+                チケットID<br>
+                <span id="ticketIdDisplay"></span>
+            </div>
+            
+            <div class="info-section" id="reservationInfo"></div>
+            
+            <div class="note">
+                ⚠️ このQRコードのスクリーンショットを保存するか、印刷してお持ちください。<br>
+                📧 予約確認メールも送信しています。
+            </div>
+            
+            <a href="entry-citizen-v2.html" class="btn-home">トップページに戻る</a>
+        </div>
+    </div>
+    
+    <script>
+        // ⚠️ 重要: デプロイ後に新しい GAS URL に書き換えてください
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbyM05I37fBlb_Ey5-6M8pN65t8pAkg6T8FHeSS_cBfKrHjeamm2GRrG4TtFLDTym_V-uw/exec';
+        
+        window.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const ticketId = urlParams.get('id');
+            
+            if (!ticketId) {
+                alert('チケットIDが見つかりません');
+                window.location.href = 'entry-citizen-v2.html';
+                return;
+            }
+            
+            // チケットID表示
+            document.getElementById('ticketIdDisplay').textContent = ticketId;
+            
+            // QRコード生成
+            new QRCode(document.getElementById('qrcode'), {
+                text: ticketId,
+                width: 280,
+                height: 280,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            
+            // 予約情報取得
+            await fetchReservationInfo(ticketId);
+        });
+        
+        async function fetchReservationInfo(ticketId) {
+            try {
+                const response = await fetch(`${GAS_URL}?action=getAllCitizenV2`, {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const reservation = data.data.find(r => r.id === ticketId);
+                    
+                    if (reservation) {
+                        displayReservationInfo(reservation);
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to fetch reservation info:', error);
+            }
+        }
+        
+        function displayReservationInfo(reservation) {
+            const container = document.getElementById('reservationInfo');
+            
+            const dateObj = new Date(reservation.date);
+            const dateStr = `${dateObj.getFullYear()}年${dateObj.getMonth() + 1}月${dateObj.getDate()}日`;
+            
+            container.innerHTML = `
+                <div class="info-row">
+                    <span class="info-label">お名前</span>
+                    <span class="info-value">${reservation.name || '-'}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">日付</span>
+                    <span class="info-value">${dateStr}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">時間</span>
+                    <span class="info-value">${reservation.timeslot || '-'}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">メールアドレス</span>
+                    <span class="info-value">${reservation.email || '-'}</span>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
