@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>備前丸 市民限定内覧会 - スキャン TEST</title>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', 'Yu Gothic', 'Meiryo', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .header .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .status-bar {
+            background: #f8f9fa;
+            padding: 15px 30px;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .status-online {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .status-offline {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .scanner-section {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .scanner-section h2 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        #reader {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .manual-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .manual-section h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .search-box input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .reservation-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .reservation-card h4 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+        
+        .reservation-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .info-label {
+            font-size: 13px;
+            color: #6c757d;
+        }
+        
+        .info-value {
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .stats-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 25px;
+            color: white;
+        }
+        
+        .stats-section h3 {
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                padding: 20px;
+            }
+            
+            .search-box {
+                flex-direction: column;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚢 備前丸 市民限定内覧会</h1>
+            <div class="subtitle">スキャンシステム TEST VERSION</div>
+        </div>
+        
+        <div class="status-bar">
+            <div class="status-item">
+                <span id="cloudStatus" class="status-offline">☁️ クラウド接続: 確認中...</span>
+            </div>
+            <div class="status-item">
+                <span id="totalReservations">総予約数: --</span>
+            </div>
+            <div class="status-item">
+                <span id="boardedCount">乗船済: --</span>
+            </div>
+            <div class="status-item">
+                <span id="disembarkedCount">下船済: --</span>
+            </div>
+        </div>
+        
+        <div class="content">
+            <!-- QRコードスキャナー -->
+            <div class="scanner-section">
+                <h2>📷 QRコードスキャン</h2>
+                <div id="reader"></div>
+                <div style="text-align: center; margin-top: 15px;">
+                    <button id="toggleCamera" class="btn btn-primary">カメラを起動</button>
+                </div>
+            </div>
+            
+            <!-- 手動検索 -->
+            <div class="manual-section">
+                <h3>🔍 チケットID検索</h3>
+                <div class="search-box">
+                    <input type="text" id="ticketIdInput" placeholder="チケットIDを入力 (例: CM1771693152189)">
+                    <button onclick="searchTicket()" class="btn btn-primary">検索</button>
+                </div>
+            </div>
+            
+            <!-- 検索結果 -->
+            <div id="searchResult"></div>
+            
+            <!-- 統計 -->
+            <div class="stats-section">
+                <h3>📊 本日の統計</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="statTotal">--</div>
+                        <div class="stat-label">総予約数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statBoarded">--</div>
+                        <div class="stat-label">乗船済</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statDisembarked">--</div>
+                        <div class="stat-label">下船済</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statOnboard">--</div>
+                        <div class="stat-label">船内人数</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // GAS URL
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbzzOH-FNNc5gw8lsjxLYanpFWNgFNo7e9A_RiP8cY6JJxZyULxexjEi9glvE8CXl60TtA/exec';
+        
+        let reservationsData = [];
+        let html5QrCode = null;
+        let cameraRunning = false;
+        
+        // 初期化
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkCloudConnection();
+            await loadReservations();
+            updateStats();
+            
+            document.getElementById('toggleCamera').addEventListener('click', toggleCamera);
+        });
+        
+        // クラウド接続確認
+        async function checkCloudConnection() {
+            try {
+                const response = await fetch(`${GAS_URL}?action=ping`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('cloudStatus').textContent = '☁️ クラウド接続: オンライン';
+                    document.getElementById('cloudStatus').className = 'status-online';
+                } else {
+                    throw new Error('Ping failed');
+                }
+            } catch (error) {
+                console.error('Cloud connection error:', error);
+                document.getElementById('cloudStatus').textContent = '☁️ クラウド接続: オフライン';
+                document.getElementById('cloudStatus').className = 'status-offline';
+            }
+        }
+        
+        // 予約データ取得
+        async function loadReservations() {
+            try {
+                const response = await fetch(`${GAS_URL}?action=getAll`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    reservationsData = data.data || [];
+                    updateStats();
+                }
+            } catch (error) {
+                console.error('Load reservations error:', error);
+            }
+        }
+        
+        // 統計更新
+        function updateStats() {
+            const total = reservationsData.length;
+            const boarded = reservationsData.filter(r => r.status === 'boarded' || r.status === 'disembarked').length;
+            const disembarked = reservationsData.filter(r => r.status === 'disembarked').length;
+            const onboard = boarded - disembarked;
+            
+            document.getElementById('totalReservations').textContent = `総予約数: ${total}件`;
+            document.getElementById('boardedCount').textContent = `乗船済: ${boarded}件`;
+            document.getElementById('disembarkedCount').textContent = `下船済: ${disembarked}件`;
+            
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statBoarded').textContent = boarded;
+            document.getElementById('statDisembarked').textContent = disembarked;
+            document.getElementById('statOnboard').textContent = onboard;
+        }
+        
+        // カメラ切り替え
+        function toggleCamera() {
+            if (cameraRunning) {
+                stopCamera();
+            } else {
+                startCamera();
+            }
+        }
+        
+        // カメラ起動
+        function startCamera() {
+            html5QrCode = new Html5Qrcode("reader");
+            
+            html5QrCode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 250, height: 250 } },
+                (decodedText) => {
+                    console.log(`QR Code detected: ${decodedText}`);
+                    handleScan(decodedText);
+                }
+            ).then(() => {
+                cameraRunning = true;
+                document.getElementById('toggleCamera').textContent = 'カメラを停止';
+                document.getElementById('toggleCamera').className = 'btn btn-danger';
+            }).catch((err) => {
+                console.error('Camera start error:', err);
+                alert('カメラの起動に失敗しました。ブラウザの権限設定を確認してください。');
+            });
+        }
+        
+        // カメラ停止
+        function stopCamera() {
+            if (html5QrCode) {
+                html5QrCode.stop().then(() => {
+                    cameraRunning = false;
+                    document.getElementById('toggleCamera').textContent = 'カメラを起動';
+                    document.getElementById('toggleCamera').className = 'btn btn-primary';
+                }).catch((err) => {
+                    console.error('Camera stop error:', err);
+                });
+            }
+        }
+        
+        // QRコードスキャン処理
+        function handleScan(ticketId) {
+            stopCamera();
+            searchAndDisplay(ticketId);
+        }
+        
+        // チケット検索（手動入力）
+        function searchTicket() {
+            const ticketId = document.getElementById('ticketIdInput').value.trim();
+            if (!ticketId) {
+                alert('チケットIDを入力してください');
+                return;
+            }
+            searchAndDisplay(ticketId);
+        }
+        
+        // 検索と表示
+        function searchAndDisplay(ticketId) {
+            const reservation = reservationsData.find(r => r.id === ticketId);
+            
+            if (!reservation) {
+                document.getElementById('searchResult').innerHTML = `
+                    <div class="alert alert-danger">
+                        ❌ チケットID「${ticketId}」が見つかりません
+                    </div>
+                `;
+                return;
+            }
+            
+            displayReservation(reservation);
+        }
+        
+        // 予約情報表示
+        function displayReservation(reservation) {
+            const dateObj = new Date(reservation.date);
+            const dateStr = `${dateObj.getFullYear()}年${dateObj.getMonth() + 1}月${dateObj.getDate()}日`;
+            
+            let statusBadge = '';
+            let actionButtons = '';
+            
+            if (reservation.status === 'reserved') {
+                statusBadge = '<span style="background:#ffc107;color:#000;padding:5px 10px;border-radius:5px;">予約済</span>';
+                actionButtons = `<button onclick="recordBoarding('${reservation.id}')" class="btn btn-success">✅ 乗船記録</button>`;
+            } else if (reservation.status === 'boarded') {
+                statusBadge = '<span style="background:#28a745;color:#fff;padding:5px 10px;border-radius:5px;">乗船済</span>';
+                actionButtons = `<button onclick="recordDisembark('${reservation.id}')" class="btn btn-danger">⬇️ 下船記録</button>`;
+            } else if (reservation.status === 'disembarked') {
+                statusBadge = '<span style="background:#6c757d;color:#fff;padding:5px 10px;border-radius:5px;">下船済</span>';
+                actionButtons = '<p style="color:#6c757d;">この予約は完了しています</p>';
+            }
+            
+            document.getElementById('searchResult').innerHTML = `
+                <div class="reservation-card">
+                    <h4>📋 予約情報 ${statusBadge}</h4>
+                    <div class="reservation-info">
+                        <div class="info-item">
+                            <span class="info-label">チケットID</span>
+                            <span class="info-value">${reservation.id}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">お名前</span>
+                            <span class="info-value">${reservation.name}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">日付</span>
+                            <span class="info-value">${dateStr}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">時間</span>
+                            <span class="info-value">${reservation.timeslot}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">電話番号</span>
+                            <span class="info-value">${reservation.phone}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">メール</span>
+                            <span class="info-value">${reservation.email}</span>
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        ${actionButtons}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // 乗船記録
+        async function recordBoarding(ticketId) {
+            if (!confirm('乗船を記録しますか？')) return;
+            
+            try {
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
+                        action: 'update',
+                        data: JSON.stringify({ id: ticketId, updateType: 'board' })
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('✅ 乗船を記録しました！');
+                    await loadReservations();
+                    searchAndDisplay(ticketId);
+                } else {
+                    alert('❌ 記録に失敗しました: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Boarding record error:', error);
+                alert('❌ 記録に失敗しました');
+            }
+        }
+        
+        // 下船記録
+        async function recordDisembark(ticketId) {
+            if (!confirm('下船を記録しますか？')) return;
+            
+            try {
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
+                        action: 'update',
+                        data: JSON.stringify({ id: ticketId, updateType: 'disembark' })
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('✅ 下船を記録しました！');
+                    await loadReservations();
+                    searchAndDisplay(ticketId);
+                } else {
+                    alert('❌ 記録に失敗しました: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Disembark record error:', error);
+                alert('❌ 記録に失敗しました');
+            }
+        }
+    </script>
+</body>
+</html>
