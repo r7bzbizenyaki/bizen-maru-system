@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google" content="notranslate">
-    <title>備前丸　市民向内覧会 QRスキャン（市民）</title>
+    <title>備前市 市民限定内覧会 QRスキャン</title>
     <style>
         * {
             margin: 0;
@@ -49,7 +49,6 @@
             font-weight: bold;
         }
 
-        /* QRスキャナー */
         .scanner-section {
             background: white;
             border-radius: 20px;
@@ -70,6 +69,7 @@
             border-radius: 10px;
             overflow: hidden;
             background: #f5f5f5;
+            min-height: 300px;
         }
 
         .scanner-status {
@@ -95,7 +95,6 @@
             color: #C62828;
         }
 
-        /* 手動入力 */
         .manual-section {
             background: white;
             border-radius: 20px;
@@ -108,9 +107,6 @@
             color: #333;
             font-size: 20px;
             margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
 
         .input-group {
@@ -123,7 +119,6 @@
             border: 2px solid #E0E0E0;
             border-radius: 10px;
             font-size: 16px;
-            transition: all 0.3s;
         }
 
         .input-group input:focus {
@@ -142,18 +137,12 @@
             font-size: 18px;
             font-weight: bold;
             cursor: pointer;
-            transition: transform 0.2s;
         }
 
         .btn:hover {
             transform: translateY(-2px);
         }
 
-        .btn:active {
-            transform: translateY(0);
-        }
-
-        /* 統計カード */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -181,7 +170,6 @@
             color: #667eea;
         }
 
-        /* 成功メッセージ */
         .success-message {
             background: #E8F5E9;
             border: 2px solid #4CAF50;
@@ -193,18 +181,6 @@
 
         .success-message.show {
             display: block;
-            animation: slideDown 0.5s;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
 
         .success-message h3 {
@@ -213,13 +189,6 @@
             margin-bottom: 10px;
         }
 
-        .success-message p {
-            color: #333;
-            font-size: 16px;
-            line-height: 1.6;
-        }
-
-        /* ナビゲーション */
         .nav-buttons {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -235,57 +204,26 @@
             text-align: center;
             font-weight: bold;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            transition: all 0.3s;
         }
 
         .nav-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        }
-
-        /* デバッグ情報 */
-        .debug-section {
-            background: #FFF3E0;
-            border-radius: 15px;
-            padding: 20px;
-            margin-top: 20px;
-            display: none;
-        }
-
-        .debug-section.show {
-            display: block;
-        }
-
-        .debug-section h3 {
-            color: #E65100;
-            margin-bottom: 10px;
-        }
-
-        .debug-section pre {
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            overflow-x: auto;
-            font-size: 12px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- ヘッダー -->
         <div class="header">
             <span class="badge">🏛️ 市民限定</span>
-            <h1>🚢 備前丸 市民向内覧会</h1>
+            <h1>🚢 備前市 市民限定内覧会</h1>
             <p>QRスキャン・乗船管理</p>
         </div>
 
-        <!-- 成功メッセージ -->
         <div class="success-message" id="successMessage">
             <h3>✅ 乗船を記録しました</h3>
             <p id="successDetails"></p>
         </div>
 
-        <!-- 統計カード -->
         <div class="stats-grid">
             <div class="stat-card">
                 <h3>総予約数</h3>
@@ -305,7 +243,6 @@
             </div>
         </div>
 
-        <!-- QRスキャナー -->
         <div class="scanner-section">
             <h2>📷 QRコードをスキャン</h2>
             <div id="reader"></div>
@@ -314,7 +251,6 @@
             </div>
         </div>
 
-        <!-- 手動入力 -->
         <div class="manual-section">
             <h2>✏️ チケットIDを手動入力</h2>
             <div class="input-group">
@@ -328,128 +264,49 @@
             <button class="btn" onclick="recordManualId()">記録する</button>
         </div>
 
-        <!-- ナビゲーション -->
         <div class="nav-buttons">
             <a href="dashboard-citizen.html" class="nav-btn">📊 ダッシュボード</a>
             <a href="index.html" class="nav-btn">🏠 トップへ</a>
         </div>
-
-        <!-- デバッグ情報 -->
-        <div class="debug-section" id="debugSection">
-            <h3>🔧 デバッグ情報</h3>
-            <pre id="debugInfo"></pre>
-        </div>
     </div>
 
-    <!-- html5-qrcode ライブラリ -->
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
     <script>
-        console.log('🚀 QRスキャンページ起動');
-
-        let html5QrcodeScanner = null;
+        let html5QrcodeScanner;
         let isProcessing = false;
 
-        // ========================================
-        // 初期化
-        // ========================================
         function init() {
-            console.log('📱 初期化開始');
-            
-            // 統計更新
             updateStats();
-            
-            // QRスキャナー起動
-            initQRScanner();
-            
-            // デバッグ情報表示 (開発時のみ)
-            showDebugInfo();
-            
-            console.log('✅ 初期化完了');
+            startScanner();
         }
 
-        // ========================================
-        // QRスキャナー初期化 (iOS互換)
-        // ========================================
-        function initQRScanner() {
-            console.log('📷 QRスキャナー初期化開始');
-            
-            const statusEl = document.getElementById('scannerStatus');
-            
-            try {
-                // html5-qrcode 設定 (iOS Safari 対応)
-                html5QrcodeScanner = new Html5Qrcode("reader");
-                
-                const config = {
-                    fps: 10,
-                    qrbox: { width: 250, height: 250 },
-                    aspectRatio: 1.0,
-                    // iOS Safari 対応
-                    experimentalFeatures: {
-                        useBarCodeDetectorIfSupported: true
-                    }
-                };
-                
-                // カメラ起動 (背面カメラ優先)
-                html5QrcodeScanner.start(
-                    { facingMode: "environment" },  // 背面カメラ
-                    config,
-                    onScanSuccess,
-                    onScanError
-                ).then(() => {
-                    console.log('✅ QRスキャナー起動成功');
-                    statusEl.textContent = '✅ スキャン中... 次のQRコードをお待ちしています';
-                    statusEl.className = 'scanner-status waiting';
-                }).catch(err => {
-                    console.error('❌ カメラ起動エラー:', err);
-                    
-                    // フロントカメラで再試行
-                    html5QrcodeScanner.start(
-                        { facingMode: "user" },  // フロントカメラ
-                        config,
-                        onScanSuccess,
-                        onScanError
-                    ).then(() => {
-                        console.log('✅ フロントカメラで起動成功');
-                        statusEl.textContent = '✅ スキャン中 (フロントカメラ)';
-                        statusEl.className = 'scanner-status waiting';
-                    }).catch(err2 => {
-                        console.error('❌ フロントカメラも失敗:', err2);
-                        statusEl.textContent = '❌ カメラが使用できません。手動入力をご利用ください。';
-                        statusEl.className = 'scanner-status error';
-                        
-                        // デバッグ情報表示
-                        showCameraError(err2);
-                    });
-                });
-                
-            } catch (error) {
-                console.error('❌ QRスキャナー初期化エラー:', error);
-                statusEl.textContent = '❌ エラーが発生しました。手動入力をご利用ください。';
-                statusEl.className = 'scanner-status error';
-            }
+        function startScanner() {
+            const config = {
+                fps: 10,
+                qrbox: { width: 250, height: 250 }
+            };
+
+            html5QrcodeScanner = new Html5QrcodeScanner(
+                "reader",
+                config,
+                false
+            );
+
+            html5QrcodeScanner.render(onScanSuccess, onScanError);
+            document.getElementById('scannerStatus').textContent = '✅ スキャン中... QRコードをお待ちしています';
         }
 
-        // ========================================
-        // QRコード読み取り成功
-        // ========================================
         function onScanSuccess(decodedText, decodedResult) {
-            if (isProcessing) {
-                console.log('⏳ 処理中のためスキップ');
-                return;
-            }
-            
+            if (isProcessing) return;
             isProcessing = true;
-            console.log('🎫 QRコード検出:', decodedText);
-            
+
             const statusEl = document.getElementById('scannerStatus');
-            statusEl.textContent = '🔍 チケット処理中...';
+            statusEl.textContent = '🔍 処理中...';
             statusEl.className = 'scanner-status waiting';
-            
-            // チケット処理
+
             processTicket(decodedText);
-            
-            // 3秒後に再スキャン可能にする
+
             setTimeout(() => {
                 isProcessing = false;
                 statusEl.textContent = '✅ スキャン中... 次のQRコードをお待ちしています';
@@ -457,197 +314,85 @@
             }, 3000);
         }
 
-        // ========================================
-        // QRコード読み取りエラー (無視)
-        // ========================================
-        function onScanError(errorMessage) {
-            // QRコードが検出されない場合は無視 (ログ出力しない)
+        function onScanError(error) {
+            // 無視
         }
 
-        // ========================================
-        // チケット処理
-        // ========================================
         function processTicket(ticketId) {
-            console.log('🎫 チケット処理開始:', ticketId);
-            
-            // localStorage からエントリー取得
             const entries = JSON.parse(localStorage.getItem('citizenEntries') || '[]');
-            console.log('📋 全エントリー数:', entries.length);
-            console.log('📋 全エントリー:', entries);
-            
-            // チケットID検索
             const entry = entries.find(e => e.id === ticketId);
-            
+
             if (!entry) {
-                console.error('❌ チケットが見つかりません:', ticketId);
                 showError('該当する予約が見つかりません');
-                showDebugInfo();  // デバッグ情報表示
                 return;
             }
-            
-            console.log('✅ チケット発見:', entry);
-            
-            // 乗船記録
+
             if (!entry.boardedAt) {
                 entry.boardedAt = new Date().toISOString();
-                console.log('✅ 乗船記録:', entry.boardedAt);
-            } else {
-                console.log('⚠️ すでに乗船済み:', entry.boardedAt);
             }
-            
-            // localStorage 更新
+
             localStorage.setItem('citizenEntries', JSON.stringify(entries));
             localStorage.setItem('lastUpdate', Date.now().toString());
-            console.log('💾 localStorage保存完了');
-            
-            // 成功メッセージ表示
+
             showSuccess(entry);
-            
-            // 統計更新
             updateStats();
         }
 
-        // ========================================
-        // 手動ID入力
-        // ========================================
         function recordManualId() {
             const input = document.getElementById('manualIdInput');
             const ticketId = input.value.trim();
-            
+
             if (!ticketId) {
                 alert('⚠️ チケットIDを入力してください');
                 return;
             }
-            
-            console.log('✏️ 手動入力:', ticketId);
-            
-            // チケット処理
+
             processTicket(ticketId);
-            
-            // 入力欄クリア
             input.value = '';
         }
 
-        // ========================================
-        // 成功メッセージ表示
-        // ========================================
         function showSuccess(entry) {
             const messageEl = document.getElementById('successMessage');
             const detailsEl = document.getElementById('successDetails');
-            
+
             const dateObj = new Date(entry.date + 'T00:00:00');
             const dateStr = `${dateObj.getMonth() + 1}月${dateObj.getDate()}日`;
             const dayOfWeek = ['日', '月', '火', '水', '木', '金', '土'][dateObj.getDay()];
-            
-            detailsEl.innerHTML = `
-                <strong>${entry.name}</strong> 様<br>
-                ${dateStr} (${dayOfWeek}) ${entry.timeslot}
-            `;
-            
+
+            detailsEl.innerHTML = `<strong>${entry.name}</strong> 様<br>${dateStr} (${dayOfWeek}) ${entry.timeslot}`;
             messageEl.classList.add('show');
-            
-            // 5秒後に非表示
+
             setTimeout(() => {
                 messageEl.classList.remove('show');
             }, 5000);
         }
 
-        // ========================================
-        // エラーメッセージ表示
-        // ========================================
         function showError(message) {
             const statusEl = document.getElementById('scannerStatus');
             statusEl.textContent = `❌ ${message}`;
             statusEl.className = 'scanner-status error';
-            
-            // 5秒後に元に戻す
+
             setTimeout(() => {
                 statusEl.textContent = '✅ スキャン中... 次のQRコードをお待ちしています';
                 statusEl.className = 'scanner-status waiting';
             }, 5000);
         }
 
-        // ========================================
-        // 統計更新
-        // ========================================
         function updateStats() {
-            console.log('📊 統計更新開始');
-            
             const entries = JSON.parse(localStorage.getItem('citizenEntries') || '[]');
-            
+
             const total = entries.length;
             const boarded = entries.filter(e => e.boardedAt).length;
             const disembarked = entries.filter(e => e.disembarkedAt).length;
             const onboard = entries.filter(e => e.boardedAt && !e.disembarkedAt).length;
-            
-            console.log('📊 統計:', { total, boarded, disembarked, onboard });
-            
+
             document.getElementById('totalCount').textContent = total;
             document.getElementById('boardedCount').textContent = boarded;
             document.getElementById('onboardCount').textContent = onboard;
             document.getElementById('disembarkedCount').textContent = disembarked;
-            
-            console.log('✅ 統計更新完了');
         }
 
-        // ========================================
-        // カメラエラー表示
-        // ========================================
-        function showCameraError(error) {
-            const debugSection = document.getElementById('debugSection');
-            const debugInfo = document.getElementById('debugInfo');
-            
-            debugInfo.textContent = `
-カメラエラー:
-${error.toString()}
-
-ブラウザ: ${navigator.userAgent}
-HTTPS: ${location.protocol === 'https:' ? 'はい' : 'いいえ'}
-
-対処方法:
-1. ブラウザのカメラ権限を許可してください
-2. HTTPSでアクセスしてください
-3. プライベートブラウジングモードを解除してください
-4. 手動入力をご利用ください
-            `.trim();
-            
-            debugSection.classList.add('show');
-        }
-
-        // ========================================
-        // デバッグ情報表示
-        // ========================================
-        function showDebugInfo() {
-            const entries = JSON.parse(localStorage.getItem('citizenEntries') || '[]');
-            const debugInfo = document.getElementById('debugInfo');
-            
-            debugInfo.textContent = `
-localStorage エントリー数: ${entries.length}
-
-チケットID一覧:
-${entries.map(e => `- ${e.id} (${e.name}, ${e.date} ${e.timeslot})`).join('\n') || '(なし)'}
-
-ブラウザ: ${navigator.userAgent}
-HTTPS: ${location.protocol === 'https:' ? 'はい' : 'いいえ'}
-            `.trim();
-        }
-
-        // ========================================
-        // ページ離脱時にスキャナー停止
-        // ========================================
-        window.addEventListener('beforeunload', () => {
-            if (html5QrcodeScanner) {
-                html5QrcodeScanner.stop().catch(err => {
-                    console.error('スキャナー停止エラー:', err);
-                });
-            }
-        });
-
-        // ========================================
-        // 起動
-        // ========================================
         init();
-        console.log('🚀 QRスキャンページ起動完了');
     </script>
 </body>
 </html>
