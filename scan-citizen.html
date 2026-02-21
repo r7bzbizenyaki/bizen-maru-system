@@ -338,25 +338,20 @@
     isProcessing = true;
     
     console.log('📷 QRコード検出:', decodedText);
-    console.log('📷 文字列の長さ:', decodedText.length);
-    console.log('📷 文字列の型:', typeof decodedText);
     
-    // ⭐️ デバッグ: 読み取った内容を画面に表示
-    const status = document.getElementById('scannerStatus');
-    status.textContent = '🔍 読み取り: ' + decodedText.substring(0, 30) + '...';
-    status.className = 'scanner-status waiting';
+    // ⭐️ アラートで内容を表示
+    alert('QRコード読み取り成功:\n\n' + decodedText);
     
-    // ⭐️ 重要: トリミング（前後の空白を削除）
+    // トリミング
     const trimmedText = decodedText.trim();
-    console.log('✂️ トリミング後:', trimmedText);
     
     processTicket(trimmedText);
     
     setTimeout(() => {
         isProcessing = false;
-        status.textContent = '✅ スキャン中...';
-    }, 5000);
+    }, 3000);
 }
+
 
 
         // QRコード読み取りエラー（無視）
