@@ -12,6 +12,9 @@
         .header h1 { color: #c41e3a; font-size: 26px; margin-bottom: 8px; }
         .header .badge { display: inline-block; background: #27ae60; color: white; padding: 6px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; margin-bottom: 12px; }
         .header p { color: #666; font-size: 14px; }
+        .cloud-status { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-top: 12px; }
+        .cloud-status.online { background: #d4edda; color: #155724; }
+        .cloud-status.offline { background: #f8d7da; color: #721c24; }
         .form-section { margin-bottom: 32px; }
         .section-title { font-size: 18px; font-weight: 700; color: #333; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid #f0f0f0; }
         .date-selection { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
@@ -60,6 +63,10 @@
             <div class="badge">🏛️ 市民限定</div>
             <h1>🚢 備前丸 内覧会エントリー</h1>
             <p>以下のフォームに必要事項を入力してください</p>
+            <div class="cloud-status" id="cloudStatus">
+                <span id="cloudIcon">☁️</span>
+                <span id="cloudText">クラウド接続: 確認中...</span>
+            </div>
         </div>
         <form id="entryForm">
             <div class="form-section">
@@ -91,32 +98,324 @@
     <script>
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbzQ4V4f8FF5q1nTVqYVMuopiGHWmMglhVzxJo-gVD-a41N7HGMbhasyAh6BFdNMgsBF/exec';
         const TIMESLOTS = [{start:'09:00',end:'10:00'},{start:'10:00',end:'11:00'},{start:'11:00',end:'12:00'},{start:'13:00',end:'14:00'},{start:'14:00',end:'15:00'}];
-        let selectedDate=null,selectedTimeslot=null;
-        function init(){console.log('🚀 初期化開始');setupEventListeners();updateReservationCounts();console.log('✅ 初期化完了');}
-        function setupEventListeners(){console.log('📡 イベントリスナー設定開始');document.querySelectorAll('input[name="date"]').forEach(r=>r.addEventListener('change',handleDateChange));const postalInput=document.getElementById('postal');if(postalInput){let isFormatting=false,lastSearchedValue='';postalInput.addEventListener('input',function(e){if(e.isComposing||isFormatting)return;isFormatting=true;let value=e.target.value.replace(/[０-９]/g,s=>String.fromCharCode(s.charCodeAt(0)-0xFEE0));const cleanValue=value.replace(/[^0-9]/g,'');const truncated=cleanValue.slice(0,7);const formatted=truncated.length>3?truncated.slice(0,3)+'-'+truncated.slice(3):truncated;e.target.value=formatted;if(truncated.length===7&&truncated!==lastSearchedValue){lastSearchedValue=truncated;console.log('✅ 7桁入力完了 → 自動検索開始');setTimeout(searchPostal,300);}isFormatting=false;});postalInput.addEventListener('keypress',function(e){if(e.key==='Enter'){e.preventDefault();searchPostal();}});}const searchBtn=document.getElementById('searchPostalBtn');if(searchBtn)searchBtn.addEventListener('click',searchPostal);const emailInput=document.getElementById('email');if(emailInput)emailInput.addEventListener('blur',checkEmailDomain);const form=document.getElementById('entryForm');if(form)form.addEventListener('submit',handleSubmit);console.log('✅ イベントリスナー設定完了');}
-        function handleDateChange(e){console.log('📅 日付選択:',e.target.value);selectedDate=e.target.value;console.log('✅ selectedDate更新:',selectedDate);document.querySelectorAll('.date-card').forEach(card=>card.classList.remove('selected'));e.target.closest('.date-card').classList.add('selected');const timeslotSection=document.getElementById('timeslotSection');if(timeslotSection){timeslotSection.classList.add('active');console.log('✅ timeslotSection に active クラス追加');}else{console.error('❌ timeslotSection が見つかりません');}generateTimeslots();}
-        function generateTimeslots(){console.log('⏰ 時間帯生成開始, selectedDate:',selectedDate);const grid=document.getElementById('timeslotGrid');if(!grid){console.error('❌ timeslotGrid が見つかりません');return;}grid.innerHTML='';console.log('✅ timeslotGrid をクリア');const entries=JSON.parse(localStorage.getItem('citizenEntries')||'[]');const dateEntries=entries.filter(e=>e.date===selectedDate);console.log('📊 この日の予約数:',dateEntries.length);TIMESLOTS.forEach(slot=>{const count=dateEntries.filter(e=>e.timeslot===slot.start).length;const card=document.createElement('label');card.className='timeslot-card';card.innerHTML='<input type="radio" name="timeslot" value="'+slot.start+'" required><div class="timeslot-time">'+slot.start+'〜'+slot.end+'</div><div class="timeslot-count">'+count+'件予約</div>';card.querySelector('input').addEventListener('change',function(ev){selectedTimeslot=ev.target.value;console.log('✅ 時間帯選択:',selectedTimeslot);document.querySelectorAll('.timeslot-card').forEach(c=>c.classList.remove('selected'));card.classList.add('selected');});grid.appendChild(card);console.log('✅ 時間帯カード追加:',slot.start+'〜'+slot.end);});console.log('✅ 時間帯生成完了');}
-        function updateReservationCounts(){const entries=JSON.parse(localStorage.getItem('citizenEntries')||'[]');['2026-02-27','2026-03-27','2026-03-28'].forEach(date=>{const count=entries.filter(e=>e.date===date).length;const badge=document.getElementById('badge-'+date);if(badge)badge.textContent=count+'件予約';});}
-        async function searchPostal(){console.log('🔥 searchPostal() 開始');const postalInput=document.getElementById('postal');const addressInput=document.getElementById('address');if(!postalInput||!addressInput){console.error('❌ フィールドが見つかりません');return;}const postal=postalInput.value.replace(/[^0-9]/g,'');console.log('📮 郵便番号:',postal);if(postal.length!==7){console.log('⚠️ 7桁ではありません');return;}addressInput.value='検索中...';addressInput.disabled=true;try{const url='https://zipcloud.ibsnet.co.jp/api/search?zipcode='+postal;console.log('🌐 API呼び出し:',url);const response=await fetch(url);const data=await response.json();console.log('📦 API応答:',data);if(data.status===200&&data.results&&data.results.length>0){const result=data.results[0];const address=result.address1+result.address2+result.address3;addressInput.value=address;addressInput.disabled=false;console.log('✅ 住所取得成功:',address);}else{addressInput.value='';addressInput.disabled=false;addressInput.placeholder='該当する住所が見つかりませんでした';console.log('❌ 該当する住所なし');}}catch(error){console.error('❌ 郵便番号検索エラー:',error);addressInput.value='';addressInput.disabled=false;addressInput.placeholder='検索に失敗しました';}}
-        function checkEmailDomain(){const emailInput=document.getElementById('email');const email=emailInput.value.trim();const typos={'gmial.com':'gmail.com','gmai.com':'gmail.com','yahooo.co.jp':'yahoo.co.jp','yaho.co.jp':'yahoo.co.jp'};for(let typo in typos){if(email.endsWith('@'+typo)){const correct=email.replace(typo,typos[typo]);if(confirm('メールアドレスを「'+correct+'」に修正しますか？')){emailInput.value=correct;}break;}}}
-        async function handleSubmit(e){e.preventDefault();if(!selectedDate||!selectedTimeslot){alert('⚠️ 日付と時間帯を選択してください');return;}console.log('📝 フォーム送信開始');const loadingOverlay=document.getElementById('loadingOverlay');loadingOverlay.classList.add('active');try{
-// ✅ 修正: より短く、読み取りやすいチケットID生成
-// フォーマット: CM + 10桁の秒単位タイムスタンプ + 6桁のランダム文字列 = 18文字
-const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
-let randomStr = '';
-for (let i = 0; i < 6; i++) {
-    randomStr += chars.charAt(Math.floor(Math.random() * chars.length));
-}
-// 秒単位のタイムスタンプ（10桁）
-const timestamp = Math.floor(Date.now() / 1000).toString();
-const ticketId = 'CM' + timestamp + randomStr;
-
-console.log('🎫 タイムスタンプ(秒):', timestamp, '(長さ:', timestamp.length + ')');
-console.log('🎫 ランダム文字列:', randomStr, '(長さ:', randomStr.length + ')');
-console.log('🎫 生成したチケットID:', ticketId, '(長さ:', ticketId.length + ')');
-
-const formElement=e.target;const formData={id:ticketId,type:'citizen',date:selectedDate,timeslot:selectedTimeslot,name:formElement.name.value.trim(),postal:formElement.postal.value.trim(),address:formElement.address.value.trim(),phone:formElement.phone.value.trim(),email:formElement.email.value.trim(),age:formElement.age.value,gender:formElement.gender.value,timestamp:new Date().toISOString(),status:'reserved',boardedAt:null,disembarkedAt:null};console.log('📋 予約データ:',formData);const entries=JSON.parse(localStorage.getItem('citizenEntries')||'[]');entries.push(formData);localStorage.setItem('citizenEntries',JSON.stringify(entries));localStorage.setItem('lastUpdate',Date.now().toString());console.log('💾 localStorage保存完了:',entries.length,'件');console.log('📦 保存されたデータ:',entries);try{await fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(formData)});console.log('✅ メール送信処理完了');}catch(emailError){console.log('⚠️ メール送信エラー（続行）:',emailError);}loadingOverlay.classList.remove('active');alert('✅ 予約が完了しました！\n\n【予約内容】\nお名前: '+formData.name+'\n日時: '+formData.date+' '+formData.timeslot+'\nチケットID: '+formData.id+'\n\n次の画面でQRコードをご確認ください。');window.location.href='ticket-citizen.html?id='+formData.id;}catch(error){console.error('❌ エラー発生:',error);loadingOverlay.classList.remove('active');alert('⚠️ エラーが発生しました。もう一度お試しください。');}}
-        init();console.log('🚀 エントリーフォーム起動完了');
+        let selectedDate=null,selectedTimeslot=null, isCloudOnline = false;
+        
+        async function checkCloudConnection() {
+            console.log('☁️ クラウド接続チェック開始...');
+            const statusEl = document.getElementById('cloudStatus');
+            const textEl = document.getElementById('cloudText');
+            const iconEl = document.getElementById('cloudIcon');
+            
+            try {
+                const response = await fetch(GAS_URL + '?action=ping', {
+                    method: 'GET',
+                    mode: 'no-cors'
+                });
+                isCloudOnline = true;
+                statusEl.className = 'cloud-status online';
+                textEl.textContent = 'クラウド接続: オンライン';
+                iconEl.textContent = '✅';
+                console.log('✅ クラウド接続成功');
+                
+                // クラウドからデータを取得して予約件数を更新
+                await loadCloudData();
+            } catch (error) {
+                isCloudOnline = false;
+                statusEl.className = 'cloud-status offline';
+                textEl.textContent = 'クラウド接続: オフライン';
+                iconEl.textContent = '⚠️';
+                console.log('⚠️ クラウド接続失敗:', error);
+            }
+        }
+        
+        async function loadCloudData() {
+            try {
+                console.log('📥 クラウドデータ取得開始...');
+                const response = await fetch(GAS_URL + '?action=getAllCitizen');
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    console.log('✅ クラウドデータ取得成功:', data.data.length, '件');
+                    // LocalStorageに保存（ローカルとクラウドを統合）
+                    const localEntries = JSON.parse(localStorage.getItem('citizenEntries') || '[]');
+                    const cloudIds = data.data.map(e => e.id);
+                    const localOnly = localEntries.filter(e => !cloudIds.includes(e.id));
+                    const mergedEntries = [...data.data, ...localOnly];
+                    
+                    localStorage.setItem('citizenEntries', JSON.stringify(mergedEntries));
+                    console.log('✅ データ統合完了:', mergedEntries.length, '件');
+                    updateReservationCounts();
+                }
+            } catch (error) {
+                console.log('⚠️ クラウドデータ取得失敗:', error);
+                // LocalStorageのデータのみ使用
+                updateReservationCounts();
+            }
+        }
+        
+        function init(){
+            console.log('🚀 初期化開始');
+            checkCloudConnection();
+            setupEventListeners();
+            updateReservationCounts();
+            console.log('✅ 初期化完了');
+        }
+        
+        function setupEventListeners(){
+            console.log('📡 イベントリスナー設定開始');
+            document.querySelectorAll('input[name="date"]').forEach(r=>r.addEventListener('change',handleDateChange));
+            const postalInput=document.getElementById('postal');
+            if(postalInput){
+                let isFormatting=false,lastSearchedValue='';
+                postalInput.addEventListener('input',function(e){
+                    if(e.isComposing||isFormatting)return;
+                    isFormatting=true;
+                    let value=e.target.value.replace(/[０-９]/g,s=>String.fromCharCode(s.charCodeAt(0)-0xFEE0));
+                    const cleanValue=value.replace(/[^0-9]/g,'');
+                    const truncated=cleanValue.slice(0,7);
+                    const formatted=truncated.length>3?truncated.slice(0,3)+'-'+truncated.slice(3):truncated;
+                    e.target.value=formatted;
+                    if(truncated.length===7&&truncated!==lastSearchedValue){
+                        lastSearchedValue=truncated;
+                        console.log('✅ 7桁入力完了 → 自動検索開始');
+                        setTimeout(searchPostal,300);
+                    }
+                    isFormatting=false;
+                });
+                postalInput.addEventListener('keypress',function(e){
+                    if(e.key==='Enter'){
+                        e.preventDefault();
+                        searchPostal();
+                    }
+                });
+            }
+            const searchBtn=document.getElementById('searchPostalBtn');
+            if(searchBtn)searchBtn.addEventListener('click',searchPostal);
+            const emailInput=document.getElementById('email');
+            if(emailInput)emailInput.addEventListener('blur',checkEmailDomain);
+            const form=document.getElementById('entryForm');
+            if(form)form.addEventListener('submit',handleSubmit);
+            console.log('✅ イベントリスナー設定完了');
+        }
+        
+        function handleDateChange(e){
+            console.log('📅 日付選択:',e.target.value);
+            selectedDate=e.target.value;
+            console.log('✅ selectedDate更新:',selectedDate);
+            document.querySelectorAll('.date-card').forEach(card=>card.classList.remove('selected'));
+            e.target.closest('.date-card').classList.add('selected');
+            const timeslotSection=document.getElementById('timeslotSection');
+            if(timeslotSection){
+                timeslotSection.classList.add('active');
+                console.log('✅ timeslotSection に active クラス追加');
+            }else{
+                console.error('❌ timeslotSection が見つかりません');
+            }
+            generateTimeslots();
+        }
+        
+        function generateTimeslots(){
+            console.log('⏰ 時間帯生成開始, selectedDate:',selectedDate);
+            const grid=document.getElementById('timeslotGrid');
+            if(!grid){
+                console.error('❌ timeslotGrid が見つかりません');
+                return;
+            }
+            grid.innerHTML='';
+            console.log('✅ timeslotGrid をクリア');
+            const entries=JSON.parse(localStorage.getItem('citizenEntries')||'[]');
+            const dateEntries=entries.filter(e=>e.date===selectedDate);
+            console.log('📊 この日の予約数:',dateEntries.length);
+            TIMESLOTS.forEach(slot=>{
+                const count=dateEntries.filter(e=>e.timeslot===slot.start).length;
+                const card=document.createElement('label');
+                card.className='timeslot-card';
+                card.innerHTML='<input type="radio" name="timeslot" value="'+slot.start+'" required><div class="timeslot-time">'+slot.start+'〜'+slot.end+'</div><div class="timeslot-count">'+count+'件予約</div>';
+                card.querySelector('input').addEventListener('change',function(ev){
+                    selectedTimeslot=ev.target.value;
+                    console.log('✅ 時間帯選択:',selectedTimeslot);
+                    document.querySelectorAll('.timeslot-card').forEach(c=>c.classList.remove('selected'));
+                    card.classList.add('selected');
+                });
+                grid.appendChild(card);
+                console.log('✅ 時間帯カード追加:',slot.start+'〜'+slot.end);
+            });
+            console.log('✅ 時間帯生成完了');
+        }
+        
+        function updateReservationCounts(){
+            const entries=JSON.parse(localStorage.getItem('citizenEntries')||'[]');
+            ['2026-02-27','2026-03-27','2026-03-28'].forEach(date=>{
+                const count=entries.filter(e=>e.date===date).length;
+                const badge=document.getElementById('badge-'+date);
+                if(badge)badge.textContent=count+'件予約';
+            });
+        }
+        
+        async function searchPostal(){
+            console.log('🔥 searchPostal() 開始');
+            const postalInput=document.getElementById('postal');
+            const addressInput=document.getElementById('address');
+            if(!postalInput||!addressInput){
+                console.error('❌ フィールドが見つかりません');
+                return;
+            }
+            const postal=postalInput.value.replace(/[^0-9]/g,'');
+            console.log('📮 郵便番号:',postal);
+            if(postal.length!==7){
+                console.log('⚠️ 7桁ではありません');
+                return;
+            }
+            addressInput.value='検索中...';
+            addressInput.disabled=true;
+            try{
+                const url='https://zipcloud.ibsnet.co.jp/api/search?zipcode='+postal;
+                console.log('🌐 API呼び出し:',url);
+                const response=await fetch(url);
+                const data=await response.json();
+                console.log('📦 API応答:',data);
+                if(data.status===200&&data.results&&data.results.length>0){
+                    const result=data.results[0];
+                    const address=result.address1+result.address2+result.address3;
+                    addressInput.value=address;
+                    addressInput.disabled=false;
+                    console.log('✅ 住所取得成功:',address);
+                }else{
+                    addressInput.value='';
+                    addressInput.disabled=false;
+                    addressInput.placeholder='該当する住所が見つかりませんでした';
+                    console.log('❌ 該当する住所なし');
+                }
+            }catch(error){
+                console.error('❌ 郵便番号検索エラー:',error);
+                addressInput.value='';
+                addressInput.disabled=false;
+                addressInput.placeholder='検索に失敗しました';
+            }
+        }
+        
+        function checkEmailDomain(){
+            const emailInput=document.getElementById('email');
+            const email=emailInput.value.trim();
+            const typos={'gmial.com':'gmail.com','gmai.com':'gmail.com','yahooo.co.jp':'yahoo.co.jp','yaho.co.jp':'yahoo.co.jp'};
+            for(let typo in typos){
+                if(email.endsWith('@'+typo)){
+                    const correct=email.replace(typo,typos[typo]);
+                    if(confirm('メールアドレスを「'+correct+'」に修正しますか？')){
+                        emailInput.value=correct;
+                    }
+                    break;
+                }
+            }
+        }
+        
+        async function handleSubmit(e){
+            e.preventDefault();
+            if(!selectedDate||!selectedTimeslot){
+                alert('⚠️ 日付と時間帯を選択してください');
+                return;
+            }
+            console.log('📝 フォーム送信開始');
+            const loadingOverlay=document.getElementById('loadingOverlay');
+            const loadingSubtext=document.getElementById('loadingSubtext');
+            loadingOverlay.classList.add('active');
+            
+            try{
+                // ✅ チケットID生成（18文字）
+                const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+                let randomStr = '';
+                for (let i = 0; i < 6; i++) {
+                    randomStr += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                const timestamp = Math.floor(Date.now() / 1000).toString();
+                const ticketId = 'CM' + timestamp + randomStr;
+                
+                console.log('🎫 生成したチケットID:', ticketId, '(長さ:', ticketId.length + ')');
+                
+                const formElement=e.target;
+                const formData={
+                    id:ticketId,
+                    type:'citizen',
+                    date:selectedDate,
+                    timeslot:selectedTimeslot,
+                    name:formElement.name.value.trim(),
+                    postal:formElement.postal.value.trim(),
+                    address:formElement.address.value.trim(),
+                    phone:formElement.phone.value.trim(),
+                    email:formElement.email.value.trim(),
+                    age:formElement.age.value,
+                    gender:formElement.gender.value,
+                    timestamp:new Date().toISOString(),
+                    status:'reserved',
+                    boardedAt:null,
+                    disembarkedAt:null
+                };
+                
+                console.log('📋 予約データ:', formData);
+                
+                // ✅ LocalStorageに保存
+                const entries=JSON.parse(localStorage.getItem('citizenEntries')||'[]');
+                entries.push(formData);
+                localStorage.setItem('citizenEntries',JSON.stringify(entries));
+                localStorage.setItem('lastUpdate',Date.now().toString());
+                console.log('💾 localStorage保存完了:',entries.length,'件');
+                
+                // ✅ Google Spreadsheetに送信（クラウド連携）
+                if (isCloudOnline) {
+                    try {
+                        loadingSubtext.textContent = 'クラウドに保存中...';
+                        console.log('☁️ クラウド送信開始...');
+                        
+                        const response = await fetch(GAS_URL + '?action=addCitizen', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: new URLSearchParams(formData)
+                        });
+                        
+                        const result = await response.json();
+                        console.log('☁️ クラウド応答:', result);
+                        
+                        if (result.success) {
+                            console.log('✅ クラウド保存成功');
+                        } else {
+                            console.log('⚠️ クラウド保存失敗（ローカルには保存済み）:', result.message);
+                        }
+                    } catch (cloudError) {
+                        console.log('⚠️ クラウド送信エラー（ローカルには保存済み）:', cloudError);
+                    }
+                } else {
+                    console.log('⚠️ クラウドオフライン（ローカルにのみ保存）');
+                }
+                
+                // ✅ メール送信（オプション）
+                try{
+                    loadingSubtext.textContent = 'メール送信中...';
+                    await fetch(GAS_URL,{
+                        method:'POST',
+                        mode:'no-cors',
+                        headers:{'Content-Type':'application/json'},
+                        body:JSON.stringify(formData)
+                    });
+                    console.log('✅ メール送信処理完了');
+                }catch(emailError){
+                    console.log('⚠️ メール送信エラー（続行）:',emailError);
+                }
+                
+                loadingOverlay.classList.remove('active');
+                alert('✅ 予約が完了しました！\n\n【予約内容】\nお名前: '+formData.name+'\n日時: '+formData.date+' '+formData.timeslot+'\nチケットID: '+formData.id+'\n\n次の画面でQRコードをご確認ください。');
+                window.location.href='ticket-citizen.html?id='+formData.id;
+                
+            }catch(error){
+                console.error('❌ エラー発生:',error);
+                loadingOverlay.classList.remove('active');
+                alert('⚠️ エラーが発生しました。もう一度お試しください。');
+            }
+        }
+        
+        init();
+        console.log('🚀 エントリーフォーム起動完了');
     </script>
 </body>
 </html>
