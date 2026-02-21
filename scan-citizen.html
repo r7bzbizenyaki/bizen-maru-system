@@ -43,6 +43,25 @@
             color: #64748b;
         }
 
+        .cloud-status {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .cloud-status.online {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .cloud-status.offline {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -126,6 +145,11 @@
         .scanner-status.waiting {
             background: #dbeafe;
             color: #1e40af;
+        }
+
+        .scanner-status.loading {
+            background: #fef3c7;
+            color: #92400e;
         }
 
         .scanner-status.success {
@@ -267,6 +291,7 @@
         <div class="header">
             <h1>🚢 備前丸 市民スキャン</h1>
             <p>QRコードをスキャンして乗船・下船記録</p>
+            <div class="cloud-status offline" id="cloudStatus">☁️ クラウド接続確認中...</div>
         </div>
 
         <div class="stats-grid">
@@ -320,28 +345,150 @@
 
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script>
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbzQ4V4f8FF5q1nTVqYVMuopiGHWmMglhVzxJo-gVD-a41N7HGMbhasyAh6BFdNMgsBF/exec';
         let html5QrCode;
         let isProcessing = false;
         let currentMode = 'board'; // 'board' or 'disembark'
+        let cloudAvailable = false;
 
         function init() {
             console.log('🚀 初期化開始');
+            checkCloudConnection();
+            syncWithCloud();
             updateStats();
             startScanner();
             showDebugInfo();
+        }
+
+        async function checkCloudConnection() {
+            console.log('☁️ クラウド接続チェック開始');
+            const statusElement = document.getElementById('cloudStatus');
+            
+            try {
+                const response = await fetch(GAS_URL + '?action=ping', {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                
+                if (response.ok) {
+                    cloudAvailable = true;
+                    statusElement.textContent = '☁️ クラウド接続: オンライン';
+                    statusElement.className = 'cloud-status online';
+                    console.log('✅ クラウド接続成功');
+                } else {
+                    throw new Error('Connection failed');
+                }
+            } catch (error) {
+                cloudAvailable = false;
+                statusElement.textContent = '☁️ クラウド接続: オフライン（ローカルのみ）';
+                statusElement.className = 'cloud-status offline';
+                console.log('⚠️ クラウド接続失敗。ローカルモードで動作します');
+            }
+        }
+
+        async function syncWithCloud() {
+            if (!cloudAvailable) {
+                console.log('⚠️ クラウド未接続のため同期スキップ');
+                return;
+            }
+
+            console.log('🔄 クラウドからデータ取得開始');
+            try {
+                const response = await fetch(GAS_URL + '?action=getAllCitizen', {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+
+                if (response.ok) {
+                    const cloudData = await response.json();
+                    console.log('📦 クラウドデータ取得成功:', cloudData.length, '件');
+                    
+                    // LocalStorageに同期
+                    localStorage.setItem('citizenEntries', JSON.stringify(cloudData));
+                    console.log('💾 LocalStorageに同期完了');
+                    
+                    updateStats();
+                }
+            } catch (error) {
+                console.error('❌ クラウド同期エラー:', error);
+            }
+        }
+
+        async function searchTicketInCloud(ticketId) {
+            if (!cloudAvailable) {
+                console.log('⚠️ クラウド未接続');
+                return null;
+            }
+
+            console.log('🔍 クラウドで検索:', ticketId);
+            const statusElement = document.getElementById('scannerStatus');
+            statusElement.textContent = '☁️ クラウドで検索中...';
+            statusElement.className = 'scanner-status loading';
+
+            try {
+                const response = await fetch(GAS_URL + '?action=searchById&id=' + encodeURIComponent(ticketId), {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.id) {
+                        console.log('✅ クラウドで見つかりました:', data.name);
+                        
+                        // LocalStorageにキャッシュ
+                        const entries = JSON.parse(localStorage.getItem('citizenEntries') || '[]');
+                        const existing = entries.find(e => e.id === data.id);
+                        if (!existing) {
+                            entries.push(data);
+                            localStorage.setItem('citizenEntries', JSON.stringify(entries));
+                            console.log('💾 LocalStorageにキャッシュしました');
+                        }
+                        
+                        return data;
+                    }
+                }
+            } catch (error) {
+                console.error('❌ クラウド検索エラー:', error);
+            }
+
+            return null;
+        }
+
+        async function updateCloudRecord(entry) {
+            if (!cloudAvailable) {
+                console.log('⚠️ クラウド未接続のため更新スキップ');
+                return;
+            }
+
+            console.log('☁️ クラウドに記録を更新:', entry.id);
+            try {
+                await fetch(GAS_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'updateStatus',
+                        ...entry
+                    })
+                });
+                console.log('✅ クラウド更新完了');
+            } catch (error) {
+                console.error('❌ クラウド更新エラー:', error);
+            }
         }
 
         function switchMode(mode) {
             currentMode = mode;
             console.log('🔄 モード切り替え:', mode);
             
-            // タブのアクティブ状態を更新
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
             event.target.classList.add('active');
             
-            // ステータスメッセージを更新
             const statusElement = document.getElementById('scannerStatus');
             if (mode === 'board') {
                 statusElement.textContent = '✅ 乗船スキャン中...';
@@ -392,24 +539,35 @@
         }
 
         function onScanError(error) {
-            // スキャンエラーは無視（頻繁に発生するため）
+            // スキャンエラーは無視
         }
 
-        function processTicket(ticketId) {
+        async function processTicket(ticketId) {
             console.log('🎫 チケット処理開始:', ticketId);
             console.log('📍 現在のモード:', currentMode);
 
-            const entries = JSON.parse(localStorage.getItem('citizenEntries') || '[]');
+            let entries = JSON.parse(localStorage.getItem('citizenEntries') || '[]');
             console.log('💾 LocalStorageデータ件数:', entries.length);
 
-            const entry = entries.find(e => e.id === ticketId);
-            console.log('🔍 検索結果:', entry ? '✅ 見つかった' : '❌ 見つからない');
+            let entry = entries.find(e => e.id === ticketId);
+            console.log('🔍 LocalStorage検索結果:', entry ? '✅ 見つかった' : '❌ 見つからない');
+
+            // LocalStorageに無ければクラウドで検索
+            if (!entry && cloudAvailable) {
+                console.log('☁️ クラウドで検索を試みます');
+                entry = await searchTicketInCloud(ticketId);
+                
+                if (entry) {
+                    // クラウドで見つかったのでLocalStorageを再読み込み
+                    entries = JSON.parse(localStorage.getItem('citizenEntries') || '[]');
+                }
+            }
 
             if (!entry) {
                 console.error('❌ チケットが見つかりません');
                 console.log('📋 LocalStorageのID一覧:');
                 entries.forEach((e, i) => console.log(`  ${i + 1}. ${e.id}`));
-                showError('該当する予約が見つかりません', `チケットID: ${ticketId}`);
+                showError('該当する予約が見つかりません', `チケットID: ${ticketId}\n\nローカルにもクラウドにもデータがありません`);
                 return;
             }
 
@@ -421,11 +579,11 @@
             const dateText = dateMap[entry.date] || entry.date;
 
             if (currentMode === 'board') {
-                // 乗船処理
                 if (!entry.boardedAt) {
                     entry.status = 'boarded';
                     entry.boardedAt = new Date().toISOString();
                     localStorage.setItem('citizenEntries', JSON.stringify(entries));
+                    await updateCloudRecord(entry);
                     console.log('✅ 乗船記録を保存しました');
                     showSuccess(entry.name, `${dateText} ${entry.timeslot}`, '乗船');
                 } else {
@@ -433,11 +591,11 @@
                     showError('すでに乗船済みです', `乗船時刻: ${new Date(entry.boardedAt).toLocaleString('ja-JP')}`);
                 }
             } else {
-                // 下船処理
                 if (entry.boardedAt && !entry.disembarkedAt) {
                     entry.status = 'completed';
                     entry.disembarkedAt = new Date().toISOString();
                     localStorage.setItem('citizenEntries', JSON.stringify(entries));
+                    await updateCloudRecord(entry);
                     console.log('✅ 下船記録を保存しました');
                     showSuccess(entry.name, `${dateText} ${entry.timeslot}`, '下船');
                 } else if (!entry.boardedAt) {
@@ -514,6 +672,7 @@
         function showDebugInfo() {
             const entries = JSON.parse(localStorage.getItem('citizenEntries') || '[]');
             const info = {
+                'クラウド接続': cloudAvailable ? 'オンライン' : 'オフライン',
                 '予約件数': entries.length,
                 'チケットID一覧': entries.map(e => e.id),
                 '現在のモード': currentMode === 'board' ? '乗船記録' : '下船記録',
