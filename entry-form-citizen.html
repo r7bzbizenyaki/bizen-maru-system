@@ -697,40 +697,7 @@
         }
 
         // フォーム送信処理
-        async function handleSubmit(e) {
-            e.preventDefault();
-            
-            if (!selectedDate || !selectedTimeslot) {
-                alert('⚠️ 日付と時間帯を選択してください');
-                return;
-            }
-
-            console.log('📝 フォーム送信開始');
-            
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            loadingOverlay.classList.add('active');
-
-            try {
-                const ticketId = 'CM' + Date.now() + Math.random().toString(36).substring(2, 9).toUpperCase();
-                console.log('🎫 チケットID生成:', ticketId);
-
-                const formElement = e.target;
-                const formData = {
-                    id: ticketId,
-                    type: 'citizen',
-                    date: selectedDate,
-                    timeslot: selectedTimeslot,
-                    name: formElement.name.value.trim(),
-                    postal: formElement.postal.value.trim(),
-                    address: formElement.address.value.trim(),
-                    phone: formElement.phone.value.trim(),
-                    email: formElement.email.value.trim(),
-                    age: formElement.age.value,
-                    gender: formElement.gender.value,
-                    timestamp: new Date().toISOString(),
-                    boardedAt: null,
-                    disembarkedAt: null
-                };
+        undefined
 
                 console.log('📋 予約データ:', formData);
 
