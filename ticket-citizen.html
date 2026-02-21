@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>備前丸 市民限定内覧会チケット</title>
+    <title>備前市 市民限定内覧会チケット</title>
     <style>
         * {
             margin: 0;
@@ -60,36 +60,37 @@
         }
 
         .qr-section {
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    border-radius: 16px;
-    padding: 32px;
-    margin: 0 auto 24px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-}
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 16px;
+            padding: 32px;
+            margin: 0 auto 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
 
-.qr-code {
-    background: white;
-    padding: 20px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    width: fit-content;
-    max-width: 100%;
-}
+        .qr-code {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: fit-content;
+            max-width: 100%;
+        }
 
-.qr-code img {
-    display: block;
-    width: 200px;
-    height: 200px;
-    margin: 0 auto;
-}
+        .qr-code img {
+            display: block;
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+        }
+
         .qr-text {
             margin-top: 16px;
             font-size: 14px;
@@ -293,7 +294,7 @@
     <div class="ticket-container">
         <div class="ticket-header">
             <div class="badge">🏛️ 市民限定</div>
-            <h1>🚢 備前丸 内覧会</h1>
+            <h1>🚢 備前市 市民限定内覧会</h1>
             <p>エントリーチケット</p>
         </div>
 
@@ -335,7 +336,7 @@
                         <p style="margin-top: 12px;">エントリーフォームからお申し込みください。</p>
                     </div>
                     <div class="action-buttons">
-                        <a href="index-citizen.html" class="btn btn-primary">エントリーフォームへ</a>
+                        <a href="entry-form-citizen.html" class="btn btn-primary">エントリーフォームへ</a>
                     </div>
                 `;
                 return;
@@ -355,20 +356,23 @@
                         <p style="margin-top: 12px;">もう一度エントリーフォームからお申し込みください。</p>
                     </div>
                     <div class="action-buttons">
-                        <a href="index-citizen.html" class="btn btn-primary">エントリーフォームへ</a>
+                        <a href="entry-form-citizen.html" class="btn btn-primary">エントリーフォームへ</a>
                     </div>
                 `;
                 return;
             }
 
             // ステータス情報
-            const status = statusMap[ticket.status] || statusMap['reserved'];
+            const status = statusMap[ticket.status || 'reserved'] || statusMap['reserved'];
             
             // 日付情報
             const dateInfo = dateMap[ticket.date] || { display: ticket.date, day: '' };
 
-            // QRコード生成
-            const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(ticketId)}`;
+            // ⭐️ 重要: QRコードにチケットIDだけを含める（シンプルに）
+            const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(ticketId)}`;
+            
+            console.log('🔍 QRコード生成URL:', qrCodeUrl);
+            console.log('🔍 QRコード内容:', ticketId);
 
             container.innerHTML = `
                 <div class="status-badge ${status.class}">${status.text}</div>
@@ -380,7 +384,7 @@
 
                 <div class="qr-section">
                     <div class="qr-code">
-                        <img src="${qrCodeUrl}" alt="QRコード" id="qrCodeImage">
+                        <img src="${qrCodeUrl}" alt="QRコード" id="qrCodeImage" crossorigin="anonymous">
                     </div>
                     <div class="qr-text">当日このQRコードをご提示ください</div>
                 </div>
@@ -431,7 +435,7 @@
         function downloadQR() {
             const qrImage = document.getElementById('qrCodeImage');
             const link = document.createElement('a');
-            link.download = `備前丸チケット_${ticketId}.png`;
+            link.download = `備前市内覧会チケット_${ticketId}.png`;
             link.href = qrImage.src;
             link.click();
             console.log('📥 QRコードダウンロード');
