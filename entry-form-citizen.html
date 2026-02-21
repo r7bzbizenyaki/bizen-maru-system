@@ -697,10 +697,45 @@
         }
 
         // フォーム送信処理
-        undefined
+        async function handleSubmit(e) {
+            e.preventDefault();
+            
+            if (!selectedDate || !selectedTimeslot) {
+                alert('⚠️ 日付と時間帯を選択してください');
+                return;
+            }
+
+            console.log('📝 フォーム送信開始');
+            
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.classList.add('active');
+
+            try {
+                const ticketId = 'CM' + Date.now() + Math.random().toString(36).substring(2, 9).toUpperCase();
+                console.log('🎫 チケットID生成:', ticketId);
+
+                const formElement = e.target;
+                const formData = {
+                    id: ticketId,
+                    type: 'citizen',
+                    date: selectedDate,
+                    timeslot: selectedTimeslot,
+                    name: formElement.name.value.trim(),
+                    postal: formElement.postal.value.trim(),
+                    address: formElement.address.value.trim(),
+                    phone: formElement.phone.value.trim(),
+                    email: formElement.email.value.trim(),
+                    age: formElement.age.value,
+                    gender: formElement.gender.value,
+                    timestamp: new Date().toISOString(),
+                    status: 'reserved',
+                    boardedAt: null,
+                    disembarkedAt: null
+                };
 
                 console.log('📋 予約データ:', formData);
 
+                // ⭐️ 重要: localStorage保存を最優先
                 const entries = JSON.parse(localStorage.getItem('citizenEntries') || '[]');
                 entries.push(formData);
                 localStorage.setItem('citizenEntries', JSON.stringify(entries));
@@ -709,14 +744,18 @@
                 console.log('💾 localStorage保存完了:', entries.length, '件');
                 console.log('📦 保存されたデータ:', entries);
 
-                await fetch(GAS_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
-                });
-
-                console.log('✅ メール送信処理完了');
+                // メール送信（失敗しても続行）
+                try {
+                    await fetch(GAS_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+                    console.log('✅ メール送信処理完了');
+                } catch (emailError) {
+                    console.log('⚠️ メール送信エラー（続行）:', emailError);
+                }
 
                 loadingOverlay.classList.remove('active');
 
@@ -726,7 +765,7 @@
                     'お名前: ' + formData.name + '\n' +
                     '日時: ' + formData.date + ' ' + formData.timeslot + '\n' +
                     'チケットID: ' + formData.id + '\n\n' +
-                    'メールでQRコード付きチケットをお送りします。'
+                    '次の画面でQRコードをご確認ください。'
                 );
 
                 window.location.href = 'ticket-citizen.html?id=' + formData.id;
