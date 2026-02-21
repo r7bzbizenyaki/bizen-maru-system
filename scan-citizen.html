@@ -83,6 +83,30 @@
             margin-bottom: 15px;
         }
 
+        .mode-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            background: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
         #reader {
             width: 100%;
             border-radius: 10px;
@@ -242,7 +266,7 @@
     <div class="container">
         <div class="header">
             <h1>🚢 備前丸 市民スキャン</h1>
-            <p>QRコードをスキャンして乗船記録</p>
+            <p>QRコードをスキャンして乗船・下船記録</p>
         </div>
 
         <div class="stats-grid">
@@ -266,7 +290,13 @@
 
         <div class="scanner-section">
             <h2>📷 QRコードスキャン</h2>
-            <div class="scanner-status waiting" id="scannerStatus">✅ スキャン中...</div>
+            
+            <div class="mode-tabs">
+                <button class="tab-btn active" onclick="switchMode('board')">🚢 乗船記録</button>
+                <button class="tab-btn" onclick="switchMode('disembark')">🏠 下船記録</button>
+            </div>
+            
+            <div class="scanner-status waiting" id="scannerStatus">✅ 乗船スキャン中...</div>
             <div id="reader"></div>
 
             <div class="manual-input">
@@ -292,12 +322,34 @@
     <script>
         let html5QrCode;
         let isProcessing = false;
+        let currentMode = 'board'; // 'board' or 'disembark'
 
         function init() {
             console.log('🚀 初期化開始');
             updateStats();
             startScanner();
             showDebugInfo();
+        }
+
+        function switchMode(mode) {
+            currentMode = mode;
+            console.log('🔄 モード切り替え:', mode);
+            
+            // タブのアクティブ状態を更新
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // ステータスメッセージを更新
+            const statusElement = document.getElementById('scannerStatus');
+            if (mode === 'board') {
+                statusElement.textContent = '✅ 乗船スキャン中...';
+                statusElement.className = 'scanner-status waiting';
+            } else {
+                statusElement.textContent = '🚢 下船スキャン中...';
+                statusElement.className = 'scanner-status waiting';
+            }
         }
 
         function startScanner() {
@@ -317,7 +369,6 @@
                 onScanError
             ).then(() => {
                 console.log('✅ スキャナー起動成功');
-                document.getElementById('scannerStatus').textContent = '✅ スキャン中...';
             }).catch(err => {
                 console.error('❌ スキャナー起動失敗:', err);
                 document.getElementById('scannerStatus').textContent = '❌ カメラ起動に失敗しました';
@@ -330,17 +381,11 @@
             isProcessing = true;
 
             console.log('📷 QRコード検出:', decodedText);
-            console.log('📏 文字列長:', decodedText.length);
-            console.log('📏 文字列型:', typeof decodedText);
-
-            // トリミング（前後の空白除去）
             const trimmedText = decodedText.trim();
             console.log('✂️ トリミング後:', trimmedText);
 
-            // 処理
             processTicket(trimmedText);
 
-            // 3秒後に再度スキャン可能にする
             setTimeout(() => {
                 isProcessing = false;
             }, 3000);
@@ -352,37 +397,22 @@
 
         function processTicket(ticketId) {
             console.log('🎫 チケット処理開始:', ticketId);
+            console.log('📍 現在のモード:', currentMode);
 
-            // LocalStorageから予約データを取得
             const entries = JSON.parse(localStorage.getItem('citizenEntries') || '[]');
             console.log('💾 LocalStorageデータ件数:', entries.length);
-            console.log('💾 全データ:', entries);
 
-            // チケットIDで検索（完全一致）
             const entry = entries.find(e => e.id === ticketId);
             console.log('🔍 検索結果:', entry ? '✅ 見つかった' : '❌ 見つからない');
 
             if (!entry) {
                 console.error('❌ チケットが見つかりません');
                 console.log('📋 LocalStorageのID一覧:');
-                entries.forEach((e, i) => {
-                    console.log(`  ${i + 1}. ${e.id}`);
-                });
+                entries.forEach((e, i) => console.log(`  ${i + 1}. ${e.id}`));
                 showError('該当する予約が見つかりません', `チケットID: ${ticketId}`);
                 return;
             }
 
-            // 乗船記録
-            if (!entry.boardedAt) {
-                entry.status = 'boarded';
-                entry.boardedAt = new Date().toISOString();
-                localStorage.setItem('citizenEntries', JSON.stringify(entries));
-                console.log('✅ 乗船記録を保存しました');
-            } else {
-                console.log('⚠️ すでに乗船済みです');
-            }
-
-            // 成功表示
             const dateMap = {
                 '2026-02-27': '2月27日 (金)',
                 '2026-03-27': '3月27日 (金)',
@@ -390,7 +420,35 @@
             };
             const dateText = dateMap[entry.date] || entry.date;
 
-            showSuccess(entry.name, `${dateText} ${entry.timeslot}`);
+            if (currentMode === 'board') {
+                // 乗船処理
+                if (!entry.boardedAt) {
+                    entry.status = 'boarded';
+                    entry.boardedAt = new Date().toISOString();
+                    localStorage.setItem('citizenEntries', JSON.stringify(entries));
+                    console.log('✅ 乗船記録を保存しました');
+                    showSuccess(entry.name, `${dateText} ${entry.timeslot}`, '乗船');
+                } else {
+                    console.log('⚠️ すでに乗船済みです');
+                    showError('すでに乗船済みです', `乗船時刻: ${new Date(entry.boardedAt).toLocaleString('ja-JP')}`);
+                }
+            } else {
+                // 下船処理
+                if (entry.boardedAt && !entry.disembarkedAt) {
+                    entry.status = 'completed';
+                    entry.disembarkedAt = new Date().toISOString();
+                    localStorage.setItem('citizenEntries', JSON.stringify(entries));
+                    console.log('✅ 下船記録を保存しました');
+                    showSuccess(entry.name, `${dateText} ${entry.timeslot}`, '下船');
+                } else if (!entry.boardedAt) {
+                    console.log('⚠️ 乗船記録がありません');
+                    showError('乗船記録がありません', '先に乗船記録を行ってください');
+                } else {
+                    console.log('⚠️ すでに下船済みです');
+                    showError('すでに下船済みです', `下船時刻: ${new Date(entry.disembarkedAt).toLocaleString('ja-JP')}`);
+                }
+            }
+
             updateStats();
             showDebugInfo();
         }
@@ -405,10 +463,11 @@
             processTicket(ticketId);
         }
 
-        function showSuccess(name, datetime) {
+        function showSuccess(name, datetime, action) {
+            const actionText = action === '乗船' ? '乗船を記録しました' : '下船を記録しました';
             const content = `
                 <div class="result-icon">✅</div>
-                <h3>乗船を記録しました</h3>
+                <h3>${actionText}</h3>
                 <p><strong>${name} 様</strong></p>
                 <p>${datetime}</p>
                 <button onclick="closeResult()">閉じる</button>
@@ -448,6 +507,8 @@
             document.getElementById('boardedCount').textContent = boarded;
             document.getElementById('onboardCount').textContent = onboard;
             document.getElementById('completedCount').textContent = completed;
+
+            console.log('📊 統計更新:', { total: entries.length, boarded, onboard, completed });
         }
 
         function showDebugInfo() {
@@ -455,20 +516,19 @@
             const info = {
                 '予約件数': entries.length,
                 'チケットID一覧': entries.map(e => e.id),
-                'ユーザーエージェント': navigator.userAgent,
+                '現在のモード': currentMode === 'board' ? '乗船記録' : '下船記録',
+                'ユーザーエージェント': navigator.userAgent.substring(0, 50) + '...',
                 'HTTPS': location.protocol === 'https:'
             };
             document.getElementById('debugInfo').textContent = JSON.stringify(info, null, 2);
         }
 
-        // ページ離脱時にスキャナーを停止
         window.addEventListener('beforeunload', () => {
             if (html5QrCode) {
-                html5QrCode.stop();
+                html5QrCode.stop().catch(err => console.log('スキャナー停止エラー:', err));
             }
         });
 
-        // 初期化
         init();
     </script>
 </body>
