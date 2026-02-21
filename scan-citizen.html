@@ -13,7 +13,7 @@
         }
 
         body {
-            font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
@@ -26,166 +26,209 @@
 
         .header {
             background: white;
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 20px;
+            border-radius: 16px;
+            padding: 24px;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .header .badge {
+            display: inline-block;
+            background: #27ae60;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
         }
 
         .header h1 {
-            color: #667eea;
+            color: #c41e3a;
             font-size: 24px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
-        .badge {
-            display: inline-block;
-            background: #4CAF50;
-            color: white;
-            padding: 8px 20px;
-            border-radius: 20px;
+        .header p {
+            color: #666;
             font-size: 14px;
-            font-weight: bold;
         }
 
-        .scanner-section {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-
-        .scanner-section h2 {
-            color: #333;
-            font-size: 20px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        #reader {
-            width: 100%;
-            border-radius: 10px;
-            overflow: hidden;
-            background: #000;
-            min-height: 300px;
-        }
-
-        .scanner-status {
-            margin-top: 15px;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            font-weight: bold;
-        }
-
-        .scanner-status.waiting {
-            background: #E3F2FD;
-            color: #1976D2;
-        }
-
-        .scanner-status.error {
-            background: #FFEBEE;
-            color: #C62828;
-        }
-
-        .manual-section {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-
-        .manual-section h2 {
-            color: #333;
-            font-size: 20px;
-            margin-bottom: 20px;
-        }
-
-        .input-group input {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #E0E0E0;
-            border-radius: 10px;
-            font-size: 16px;
-            margin-bottom: 15px;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .success-message {
+            background: #27ae60;
             color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: none;
+            box-shadow: 0 4px 12px rgba(39,174,96,0.3);
+        }
+
+        .success-message.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .success-message h3 {
+            font-size: 20px;
+            margin-bottom: 12px;
         }
 
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
+            gap: 12px;
             margin-bottom: 20px;
         }
 
         .stat-card {
             background: white;
-            border-radius: 15px;
-            padding: 20px;
+            padding: 16px;
+            border-radius: 12px;
             text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
-        .stat-card h3 {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 10px;
-        }
-
-        .stat-card .number {
-            font-size: 36px;
-            font-weight: bold;
+        .stat-number {
+            font-size: 32px;
+            font-weight: 700;
             color: #667eea;
+            margin-bottom: 4px;
         }
 
-        .success-message {
-            background: #E8F5E9;
-            border: 2px solid #4CAF50;
-            border-radius: 15px;
-            padding: 20px;
+        .stat-label {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .scanner-section {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
             margin-bottom: 20px;
-            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
-        .success-message.show {
-            display: block;
+        .scanner-status {
+            text-align: center;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-weight: 600;
         }
 
-        .success-message h3 {
-            color: #2E7D32;
-            font-size: 20px;
-            margin-bottom: 10px;
+        .scanner-status.waiting {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .scanner-status.error {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        #reader {
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .manual-input {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px dashed #e0e0e0;
+        }
+
+        .manual-input h3 {
+            font-size: 16px;
+            margin-bottom: 12px;
+            color: #333;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .input-group button {
+            padding: 12px 24px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .input-group button:hover {
+            background: #229954;
         }
 
         .nav-buttons {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
+            gap: 12px;
         }
 
-        .nav-btn {
+        .btn {
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+        }
+
+        .btn-primary {
             background: white;
             color: #667eea;
-            padding: 15px;
-            border-radius: 10px;
-            text-decoration: none;
-            text-align: center;
-            font-weight: bold;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .debug-section {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .debug-section.show {
+            display: block;
+        }
+
+        .debug-section h3 {
+            color: #856404;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+
+        #debugInfo {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            word-break: break-all;
         }
     </style>
 </head>
@@ -204,67 +247,71 @@
 
         <div class="stats-grid">
             <div class="stat-card">
-                <h3>総予約数</h3>
-                <div class="number" id="totalCount">0</div>
+                <div class="stat-number" id="totalCount">0</div>
+                <div class="stat-label">総予約数</div>
             </div>
             <div class="stat-card">
-                <h3>乗船済み</h3>
-                <div class="number" id="boardedCount">0</div>
+                <div class="stat-number" id="boardedCount">0</div>
+                <div class="stat-label">乗船済み</div>
             </div>
             <div class="stat-card">
-                <h3>現在乗船中</h3>
-                <div class="number" id="onboardCount">0</div>
+                <div class="stat-number" id="onboardCount">0</div>
+                <div class="stat-label">現在乗船中</div>
             </div>
             <div class="stat-card">
-                <h3>下船完了</h3>
-                <div class="number" id="disembarkedCount">0</div>
+                <div class="stat-number" id="disembarkedCount">0</div>
+                <div class="stat-label">下船完了</div>
             </div>
         </div>
 
         <div class="scanner-section">
-            <h2>📷 QRコードをスキャン</h2>
+            <div class="scanner-status waiting" id="scannerStatus">カメラを起動しています...</div>
             <div id="reader"></div>
-            <div class="scanner-status waiting" id="scannerStatus">
-                カメラを起動しています...
+            
+            <div class="manual-input">
+                <h3>📝 手動入力</h3>
+                <div class="input-group">
+                    <input type="text" id="manualIdInput" placeholder="CM1771640052076R5Z889K">
+                    <button onclick="recordManualId()">記録する</button>
+                </div>
             </div>
-        </div>
-
-        <div class="manual-section">
-            <h2>✏️ チケットIDを手動入力</h2>
-            <div class="input-group">
-                <input 
-                    type="text" 
-                    id="manualIdInput" 
-                    placeholder="チケットID (例: CM1234567890)"
-                    autocomplete="off"
-                >
-            </div>
-            <button class="btn" onclick="recordManualId()">記録する</button>
         </div>
 
         <div class="nav-buttons">
-            <a href="dashboard-citizen.html" class="nav-btn">📊 ダッシュボード</a>
-            <a href="index.html" class="nav-btn">🏠 トップへ</a>
+            <a href="dashboard-citizen.html" class="btn btn-primary">📊 ダッシュボードへ</a>
+        </div>
+
+        <div class="debug-section" id="debugSection">
+            <h3>🔧 デバッグ情報</h3>
+            <pre id="debugInfo"></pre>
         </div>
     </div>
 
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-
     <script>
-        let html5Qrcode;
+        console.log('🚀 QRスキャンページ起動');
+        
+        let html5Qrcode = null;
         let isProcessing = false;
 
+        // 初期化
         function init() {
+            console.log('📱 初期化開始');
             updateStats();
             startScanner();
+            showDebugInfo();
+            console.log('✅ 初期化完了');
         }
 
+        // QRスキャナー起動
         function startScanner() {
-            html5Qrcode = new Html5Qrcode("reader");
+            const status = document.getElementById('scannerStatus');
             
+            html5Qrcode = new Html5Qrcode("reader");
             const config = {
                 fps: 10,
-                qrbox: { width: 250, height: 250 }
+                qrbox: { width: 250, height: 250 },
+                aspectRatio: 1.0
             };
 
             html5Qrcode.start(
@@ -273,121 +320,155 @@
                 onScanSuccess,
                 onScanError
             ).then(() => {
-                document.getElementById('scannerStatus').textContent = '✅ スキャン中... QRコードをお待ちしています';
+                status.textContent = '✅ スキャン中...';
+                status.className = 'scanner-status waiting';
+                console.log('📷 カメラ起動成功');
             }).catch(err => {
-                console.error('カメラ起動エラー:', err);
-                document.getElementById('scannerStatus').textContent = '❌ カメラが使用できません';
-                document.getElementById('scannerStatus').className = 'scanner-status error';
+                console.error('❌ カメラエラー:', err);
+                status.textContent = '❌ カメラが使用できません。手動入力をご利用ください。';
+                status.className = 'scanner-status error';
+                document.getElementById('debugSection').classList.add('show');
+                document.getElementById('debugInfo').textContent = 'カメラエラー:\n' + err;
             });
         }
 
+        // QRコード読み取り成功
         function onScanSuccess(decodedText) {
             if (isProcessing) return;
             isProcessing = true;
-
-            const statusEl = document.getElementById('scannerStatus');
-            statusEl.textContent = '🔍 処理中...';
-            statusEl.className = 'scanner-status waiting';
-
+            console.log('📷 QRコード検出:', decodedText);
             processTicket(decodedText);
-
             setTimeout(() => {
                 isProcessing = false;
-                statusEl.textContent = '✅ スキャン中... 次のQRコードをお待ちしています';
-                statusEl.className = 'scanner-status waiting';
             }, 3000);
         }
 
+        // QRコード読み取りエラー（無視）
         function onScanError(error) {
-            // 無視
+            // 通常のスキャンエラーは無視
         }
 
+        // チケット処理
         function processTicket(ticketId) {
-            console.log('チケット処理:', ticketId);
+            console.log('🎫 チケット処理開始:', ticketId);
             
             const entries = JSON.parse(localStorage.getItem('citizenEntries') || '[]');
-            console.log('全エントリー:', entries);
+            console.log('📦 localStorage データ件数:', entries.length);
+            console.log('📦 全データ:', entries);
             
             const entry = entries.find(e => e.id === ticketId);
-
+            
             if (!entry) {
-                console.error('予約が見つかりません:', ticketId);
+                console.error('❌ チケットが見つかりません:', ticketId);
                 showError('該当する予約が見つかりません');
+                showDebugInfo();
                 return;
             }
 
+            console.log('✅ チケット発見:', entry);
+
+            // 乗船記録
             if (!entry.boardedAt) {
                 entry.boardedAt = new Date().toISOString();
+                console.log('🚢 乗船時刻記録:', entry.boardedAt);
             }
 
+            // 保存
             localStorage.setItem('citizenEntries', JSON.stringify(entries));
             localStorage.setItem('lastUpdate', Date.now().toString());
+            console.log('💾 保存完了');
 
+            // 成功表示
             showSuccess(entry);
             updateStats();
         }
 
+        // 手動入力
         function recordManualId() {
             const input = document.getElementById('manualIdInput');
             const ticketId = input.value.trim();
-
+            
             if (!ticketId) {
                 alert('⚠️ チケットIDを入力してください');
                 return;
             }
 
+            console.log('✍️ 手動入力:', ticketId);
             processTicket(ticketId);
             input.value = '';
         }
 
+        // 成功メッセージ表示
         function showSuccess(entry) {
-            const messageEl = document.getElementById('successMessage');
-            const detailsEl = document.getElementById('successDetails');
-
-            const dateObj = new Date(entry.date + 'T00:00:00');
-            const dateStr = `${dateObj.getMonth() + 1}月${dateObj.getDate()}日`;
-            const dayOfWeek = ['日', '月', '火', '水', '木', '金', '土'][dateObj.getDay()];
-
-            detailsEl.innerHTML = `<strong>${entry.name}</strong> 様<br>${dateStr} (${dayOfWeek}) ${entry.timeslot}`;
-            messageEl.classList.add('show');
-
+            const msg = document.getElementById('successMessage');
+            const details = document.getElementById('successDetails');
+            
+            const date = new Date(entry.date + 'T00:00:00');
+            const dateStr = (date.getMonth() + 1) + '月' + date.getDate() + '日';
+            const dayNames = ['日','月','火','水','木','金','土'];
+            const dayStr = dayNames[date.getDay()];
+            
+            details.innerHTML = 
+                '<strong>' + entry.name + '</strong> 様<br>' +
+                dateStr + ' (' + dayStr + ') ' + entry.timeslot;
+            
+            msg.classList.add('show');
+            
             setTimeout(() => {
-                messageEl.classList.remove('show');
+                msg.classList.remove('show');
             }, 5000);
         }
 
+        // エラーメッセージ表示
         function showError(message) {
-            const statusEl = document.getElementById('scannerStatus');
-            statusEl.textContent = `❌ ${message}`;
-            statusEl.className = 'scanner-status error';
-
+            const status = document.getElementById('scannerStatus');
+            status.textContent = '❌ ' + message;
+            status.className = 'scanner-status error';
+            
             setTimeout(() => {
-                statusEl.textContent = '✅ スキャン中... 次のQRコードをお待ちしています';
-                statusEl.className = 'scanner-status waiting';
+                status.textContent = '✅ スキャン中...';
+                status.className = 'scanner-status waiting';
             }, 5000);
         }
 
+        // 統計更新
         function updateStats() {
             const entries = JSON.parse(localStorage.getItem('citizenEntries') || '[]');
-
-            const total = entries.length;
-            const boarded = entries.filter(e => e.boardedAt).length;
-            const disembarked = entries.filter(e => e.disembarkedAt).length;
-            const onboard = entries.filter(e => e.boardedAt && !e.disembarkedAt).length;
-
-            document.getElementById('totalCount').textContent = total;
-            document.getElementById('boardedCount').textContent = boarded;
-            document.getElementById('onboardCount').textContent = onboard;
-            document.getElementById('disembarkedCount').textContent = disembarked;
+            
+            document.getElementById('totalCount').textContent = entries.length;
+            document.getElementById('boardedCount').textContent = 
+                entries.filter(e => e.boardedAt).length;
+            document.getElementById('onboardCount').textContent = 
+                entries.filter(e => e.boardedAt && !e.disembarkedAt).length;
+            document.getElementById('disembarkedCount').textContent = 
+                entries.filter(e => e.disembarkedAt).length;
         }
 
+        // デバッグ情報表示
+        function showDebugInfo() {
+            const entries = JSON.parse(localStorage.getItem('citizenEntries') || '[]');
+            const info = 
+                'localStorage エントリー数: ' + entries.length + '\n\n' +
+                'チケットID一覧:\n' +
+                entries.map(e => '- ' + e.id + ' (' + e.name + ', ' + e.date + ' ' + e.timeslot + ')').join('\n') +
+                '\n\nブラウザ: ' + navigator.userAgent +
+                '\nHTTPS: ' + (location.protocol === 'https:' ? 'はい' : 'いいえ');
+            
+            document.getElementById('debugInfo').textContent = info || '(データなし)';
+            console.log('🔍 デバッグ情報:', info);
+        }
+
+        // ページ離脱時
         window.addEventListener('beforeunload', () => {
             if (html5Qrcode) {
-                html5Qrcode.stop();
+                html5Qrcode.stop().catch(() => {});
             }
         });
 
+        // 初期化実行
         init();
+
+        console.log('🚀 QRスキャンページ起動完了');
     </script>
 </body>
 </html>
