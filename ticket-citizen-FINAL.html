@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>予約完了 - 備前丸 市民限定内覧会</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', 'Yu Gothic', 'Meiryo', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+        }
+        .header h1 { font-size: 28px; margin-bottom: 10px; }
+        .header .subtitle { font-size: 16px; opacity: 0.9; }
+        .content { padding: 40px 30px; text-align: center; }
+        .message {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        /* ✅ スマホ対応QRコード */
+        .qr-container {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #qrcode {
+            display: inline-block;
+            max-width: 100%;
+            width: auto !important;
+            height: auto !important;
+        }
+        #qrcode canvas,
+        #qrcode img {
+            max-width: 90vw !important;
+            width: 280px !important;
+            height: 280px !important;
+            margin: 0 auto;
+            display: block;
+        }
+        @media (max-width: 480px) {
+            #qrcode canvas,
+            #qrcode img {
+                width: 250px !important;
+                height: 250px !important;
+            }
+        }
+        .ticket-id {
+            background: #e3f2fd;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .ticket-id-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        .ticket-id-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            font-family: 'Courier New', monospace;
+        }
+        .info-box {
+            background: #fff9e6;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: left;
+            margin: 20px 0;
+        }
+        .info-box p {
+            margin: 10px 0;
+            font-size: 14px;
+            color: #333;
+            line-height: 1.6;
+        }
+        .info-box .icon { margin-right: 8px; }
+        .btn {
+            display: inline-block;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+        @media (max-width: 768px) {
+            .container { border-radius: 0; }
+            .content { padding: 30px 20px; }
+            .header { padding: 30px 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="success-icon">✓</div>
+            <h1>予約が完了しました</h1>
+            <div class="subtitle">備前丸 市民限定内覧会 V2</div>
+        </div>
+        
+        <div class="content">
+            <div class="message">
+                ご予約ありがとうございます。<br>
+                当日は下記のQRコードをご提示ください。
+            </div>
+            
+            <div class="qr-container">
+                <div id="qrcode"></div>
+            </div>
+            
+            <div class="ticket-id">
+                <div class="ticket-id-label">チケットID</div>
+                <div class="ticket-id-value" id="ticketId">---</div>
+            </div>
+            
+            <div class="info-box">
+                <p><span class="icon">⚠️</span> このQRコードのスクリーンショットを保存するか、印刷してお持ちください。</p>
+                <p><span class="icon">📧</span> 予約確認メールも送信しています。</p>
+            </div>
+            
+            <a href="entry-citizen-FIXED.html" class="btn">トップページに戻る</a>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const ticketId = urlParams.get('id');
+        
+        if (ticketId) {
+            document.getElementById('ticketId').textContent = ticketId;
+            
+            // ✅ スマホ対応QRコード生成
+            const qrContainer = document.getElementById('qrcode');
+            new QRCode(qrContainer, {
+                text: ticketId,
+                width: 280,
+                height: 280,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        } else {
+            document.getElementById('ticketId').textContent = 'エラー';
+            alert('チケットIDが取得できませんでした。');
+        }
+    </script>
+</body>
+</html>
