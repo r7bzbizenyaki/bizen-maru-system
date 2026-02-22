@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>備前丸 市民限定内覧会 - スキャンシステム FINAL v4.1</title>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 24px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .status-bar {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-online {
+            color: #10b981;
+            font-weight: bold;
+        }
+
+        .status-offline {
+            color: #ef4444;
+            font-weight: bold;
+        }
+
+        .scanner-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        #reader {
+            width: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+            margin-top: 10px;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+            margin-top: 10px;
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+        }
+
+        .search-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .search-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .result-card {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .result-card h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: bold;
+            color: #666;
+        }
+
+        .result-value {
+            color: #333;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .success-message {
+            background: #d1fae5;
+            color: #059669;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .stats-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 600px) {
+            .status-bar {
+                flex-direction: column;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚢 備前丸 市民限定内覧会</h1>
+            <p>スキャンシステム FINAL VERSION v4.1</p>
+        </div>
+
+        <div class="status-bar">
+            <div class="status-item">
+                <span id="cloudStatus" class="status-offline">☁️ クラウド接続: オフライン</span>
+            </div>
+            <div class="status-item">
+                <span>📊 総予約数: <strong id="totalCount">-</strong>件</span>
+            </div>
+            <div class="status-item">
+                <span>🟢 乗船済: <strong id="boardedCount">-</strong>件</span>
+            </div>
+            <div class="status-item">
+                <span>🔴 下船済: <strong id="disembarkedCount">-</strong>件</span>
+            </div>
+        </div>
+
+        <div class="scanner-section">
+            <h3>📷 QRコードスキャン</h3>
+            <div id="reader"></div>
+            <button id="startBtn" class="btn btn-primary" onclick="startScanner()">📷 カメラを起動</button>
+            <button id="stopBtn" class="btn btn-danger" style="display:none;" onclick="stopScanner()">⏹️ カメラを停止</button>
+            <div id="scanResult"></div>
+        </div>
+
+        <div class="search-section">
+            <h3>🔍 チケットID検索</h3>
+            <input type="text" id="ticketIdInput" class="search-input" placeholder="チケットID（例：CM1771763679127）を入力">
+            <button class="btn btn-primary" onclick="searchTicket()">検索</button>
+            <div id="searchResult"></div>
+        </div>
+
+        <div class="stats-section">
+            <h3>📊 本日の統計</h3>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="todayTotal">-</div>
+                    <div class="stat-label">本日予約</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="todayBoarded">-</div>
+                    <div class="stat-label">本日乗船</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="todayDisembarked">-</div>
+                    <div class="stat-label">本日下船</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const GAS_BASE_URL = 'https://script.google.com/macros/s/AKfycbzGMnX44c_d12wV93FaY0xV5L9bBbX9NNo_VJGzzWTcWOzvdlxdK_GoPXqd_OrwWCQM/exec';
+
+        let html5QrCode;
+        let allReservations = [];
+
+        function buildGasUrl(action) {
+            return `${GAS_BASE_URL}?action=${action}&t=${Date.now()}`;
+        }
+
+        async function checkCloudConnection() {
+            try {
+                const response = await fetch(buildGasUrl('ping'));
+                const data = await response.json();
+                
+                console.log('📡 Ping Response:', data);
+                
+                if (data.success === true) {
+                    document.getElementById('cloudStatus').className = 'status-online';
+                    document.getElementById('cloudStatus').textContent = '☁️ クラウド接続: オンライン';
+                    return true;
+                }
+            } catch (error) {
+                console.error('❌ Cloud connection error:', error);
+            }
+            
+            document.getElementById('cloudStatus').className = 'status-offline';
+            document.getElementById('cloudStatus').textContent = '☁️ クラウド接続: オフライン';
+            return false;
+        }
+
+        async function loadAllReservations() {
+            const endpoints = ['getAllCitizenV2', 'getAllCitizen'];
+            
+            for (const endpoint of endpoints) {
+                try {
+                    console.log(`🔄 Trying endpoint: ${endpoint}`);
+                    const response = await fetch(buildGasUrl(endpoint));
+                    const data = await response.json();
+                    
+                    console.log(`📥 Response from ${endpoint}:`, data);
+                    
+                    if (data.success === true && Array.isArray(data.data)) {
+                        allReservations = data.data;
+                        console.log(`✅ ${allReservations.length}件のデータを読み込みました (${endpoint})`);
+                        updateStats();
+                        return true;
+                    }
+                } catch (error) {
+                    console.error(`❌ Error with ${endpoint}:`, error);
+                }
+            }
+            
+            console.error('❌ 全てのエンドポイントが失敗しました');
+            return false;
+        }
+
+        function updateStats() {
+            const total = allReservations.length;
+            
+            const boarded = allReservations.filter(r => {
+                const status = Array.isArray(r) ? r[10] : r.boardingStatus;
+                return status === 'boarded' || status === 'disembarked';
+            }).length;
+            
+            const disembarked = allReservations.filter(r => {
+                const status = Array.isArray(r) ? r[10] : r.boardingStatus;
+                return status === 'disembarked';
+            }).length;
+
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('boardedCount').textContent = boarded;
+            document.getElementById('disembarkedCount').textContent = disembarked;
+
+            const today = new Date().toISOString().split('T')[0];
+            const todayReservations = allReservations.filter(r => {
+                const date = Array.isArray(r) ? r[2] : r.date;
+                return date && date.startsWith(today);
+            });
+
+            document.getElementById('todayTotal').textContent = todayReservations.length;
+            document.getElementById('todayBoarded').textContent = todayReservations.filter(r => {
+                const status = Array.isArray(r) ? r[10] : r.boardingStatus;
+                return status === 'boarded' || status === 'disembarked';
+            }).length;
+            document.getElementById('todayDisembarked').textContent = todayReservations.filter(r => {
+                const status = Array.isArray(r) ? r[10] : r.boardingStatus;
+                return status === 'disembarked';
+            }).length;
+        }
+
+        function startScanner() {
+            html5QrCode = new Html5Qrcode("reader");
+            
+            html5QrCode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: 250 },
+                onScanSuccess,
+                onScanFailure
+            ).then(() => {
+                document.getElementById('startBtn').style.display = 'none';
+                document.getElementById('stopBtn').style.display = 'block';
+            }).catch(err => {
+                alert('カメラの起動に失敗しました: ' + err);
+            });
+        }
+
+        function stopScanner() {
+            if (html5QrCode) {
+                html5QrCode.stop().then(() => {
+                    document.getElementById('startBtn').style.display = 'block';
+                    document.getElementById('stopBtn').style.display = 'none';
+                });
+            }
+        }
+
+        function onScanSuccess(decodedText, decodedResult) {
+            console.log('📷 スキャン成功:', decodedText);
+            
+            const reservation = allReservations.find(r => {
+                const ticketId = Array.isArray(r) ? r[0] : r.id;
+                return ticketId === decodedText;
+            });
+
+            if (reservation) {
+                displayReservation(reservation, 'scanResult');
+                stopScanner();
+            } else {
+                document.getElementById('scanResult').innerHTML = `
+                    <div class="error-message">
+                        ❌ チケットID「${decodedText}」が見つかりません
+                    </div>
+                `;
+            }
+        }
+
+        function onScanFailure(error) {
+            // スキャン失敗は無視
+        }
+
+        function searchTicket() {
+            const ticketId = document.getElementById('ticketIdInput').value.trim();
+            
+            if (!ticketId) {
+                alert('チケットIDを入力してください');
+                return;
+            }
+
+            console.log('🔍 検索開始:', ticketId);
+
+            const reservation = allReservations.find(r => {
+                const id = Array.isArray(r) ? r[0] : r.id;
+                return id === ticketId;
+            });
+
+            if (reservation) {
+                console.log('✅ 見つかりました:', reservation);
+                displayReservation(reservation, 'searchResult');
+            } else {
+                console.log('❌ 見つかりませんでした');
+                document.getElementById('searchResult').innerHTML = `
+                    <div class="error-message">
+                        ❌ チケットID「${ticketId}」が見つかりません
+                    </div>
+                `;
+            }
+        }
+
+        // ✅ v4.1修正: ボタン表示ロジックを改善
+        function displayReservation(reservation, targetId) {
+            const isArray = Array.isArray(reservation);
+            
+            const ticketId = isArray ? reservation[0] : reservation.id;
+            const name = isArray ? reservation[4] : reservation.name;
+            const date = isArray ? reservation[2] : reservation.date;
+            const time = isArray ? reservation[3] : reservation.time;
+            const postal = isArray ? reservation[5] : reservation.postal;
+            const address = isArray ? reservation[6] : reservation.address;
+            const phone = isArray ? reservation[7] : reservation.phone;
+            const email = isArray ? reservation[8] : reservation.email;
+            const boardingStatus = isArray ? reservation[10] : reservation.boardingStatus;
+
+            // ✅ undefined, null, 空文字を pending として扱う
+            const normalizedStatus = boardingStatus || 'pending';
+            
+            console.log('🔍 デバッグ情報:', {
+                ticketId,
+                boardingStatus,
+                normalizedStatus,
+                isArray,
+                rawData: reservation
+            });
+
+            const statusText = normalizedStatus === 'disembarked' ? '✅ 下船済' :
+                             normalizedStatus === 'boarded' ? '🟢 乗船済' : '⚪ 未乗船';
+
+            document.getElementById(targetId).innerHTML = `
+                <div class="result-card">
+                    <h4>📋 予約情報</h4>
+                    <div class="result-item">
+                        <span class="result-label">チケットID:</span>
+                        <span class="result-value">${ticketId}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">氏名:</span>
+                        <span class="result-value">${name}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">日時:</span>
+                        <span class="result-value">${date} ${time || ''}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">連絡先:</span>
+                        <span class="result-value">${phone}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">メール:</span>
+                        <span class="result-value">${email}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">住所:</span>
+                        <span class="result-value">〒${postal} ${address}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">ステータス:</span>
+                        <span class="result-value"><strong>${statusText}</strong></span>
+                    </div>
+                    ${normalizedStatus === 'pending' ? `
+                        <button class="btn btn-success" onclick="recordBoarding('${ticketId}')">🟢 乗船を記録</button>
+                    ` : ''}
+                    ${normalizedStatus === 'boarded' ? `
+                        <button class="btn btn-warning" onclick="recordDisembark('${ticketId}')">🔴 下船を記録</button>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        async function recordBoarding(ticketId) {
+            if (!confirm('乗船を記録しますか？')) return;
+
+            try {
+                const response = await fetch(GAS_BASE_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `action=recordBoarding&ticketId=${ticketId}`
+                });
+
+                const result = await response.json();
+                
+                console.log('🟢 乗船記録レスポンス:', result);
+
+                if (result.success === true) {
+                    alert('✅ 乗船を記録しました！');
+                    await loadAllReservations();
+                    document.getElementById('ticketIdInput').value = ticketId;
+                    searchTicket();
+                } else {
+                    alert('❌ エラー: ' + (result.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('❌ 乗船記録エラー:', error);
+                alert('❌ 通信エラー: ' + error.message);
+            }
+        }
+
+        async function recordDisembark(ticketId) {
+            if (!confirm('下船を記録しますか？')) return;
+
+            try {
+                const response = await fetch(GAS_BASE_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `action=recordDisembark&ticketId=${ticketId}`
+                });
+
+                const result = await response.json();
+                
+                console.log('🔴 下船記録レスポンス:', result);
+
+                if (result.success === true) {
+                    alert('✅ 下船を記録しました！');
+                    await loadAllReservations();
+                    document.getElementById('ticketIdInput').value = ticketId;
+                    searchTicket();
+                } else {
+                    alert('❌ エラー: ' + (result.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('❌ 下船記録エラー:', error);
+                alert('❌ 通信エラー: ' + error.message);
+            }
+        }
+
+        window.onload = async function() {
+            const connected = await checkCloudConnection();
+            if (connected) {
+                await loadAllReservations();
+            }
+
+            setInterval(async () => {
+                await checkCloudConnection();
+                await loadAllReservations();
+            }, 5000);
+        };
+    </script>
+</body>
+</html>
