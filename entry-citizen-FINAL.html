@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>備前丸 市民限定内覧会 - 予約フォーム FINAL v3</title>
+    <title>備前丸 市民限定内覧会 - 予約フォーム FINAL v4</title>
     <style>
         * {
             margin: 0;
@@ -259,6 +259,78 @@
             border-left: 5px solid #3c3;
         }
 
+        /* 🔧 成功メッセージを目立たせるスタイル */
+        .success-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            z-index: 10000;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            animation: popupFadeIn 0.3s;
+        }
+
+        @keyframes popupFadeIn {
+            from { opacity: 0; transform: translate(-50%, -60%); }
+            to { opacity: 1; transform: translate(-50%, -50%); }
+        }
+
+        .success-popup h2 {
+            color: #22c55e;
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        .success-popup .ticket-id {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 20px 0;
+            letter-spacing: 2px;
+        }
+
+        .success-popup .copy-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1em;
+            margin: 10px 5px;
+        }
+
+        .success-popup .close-btn {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1em;
+            margin: 10px 5px;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            display: none;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 20px;
@@ -275,14 +347,24 @@
             .form-row {
                 grid-template-columns: 1fr;
             }
+
+            .success-popup {
+                padding: 30px 20px;
+            }
+
+            .success-popup .ticket-id {
+                font-size: 1.2em;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="overlay" id="overlay"></div>
+
     <div class="container">
         <div class="header">
             <h1>🚢 備前丸 市民限定内覧会</h1>
-            <p>予約フォーム COMPLETE v3</p>
+            <p>予約フォーム v4（ポップアップ対応版）</p>
         </div>
 
         <div class="status-bar">
@@ -529,7 +611,52 @@
             });
         }
 
-        // フォーム送信処理（POST メソッド）
+        // 🔧 成功ポップアップを表示
+        function showSuccessPopup(ticketId) {
+            const overlay = document.getElementById('overlay');
+            overlay.style.display = 'block';
+
+            const popup = document.createElement('div');
+            popup.className = 'success-popup';
+            popup.innerHTML = `
+                <h2>✅ 予約が完了しました！</h2>
+                <p style="color: #666; margin-bottom: 20px;">以下のチケットIDを控えてください</p>
+                <div class="ticket-id" id="ticketIdDisplay">${ticketId}</div>
+                <p style="color: #666; margin: 20px 0;">当日はこのチケットIDをご提示ください</p>
+                <button class="copy-btn" onclick="copyTicketId('${ticketId}')">📋 IDをコピー</button>
+                <button class="close-btn" onclick="closeSuccessPopup()">閉じる</button>
+            `;
+            document.body.appendChild(popup);
+
+            // 自動的にalertも表示（追加の確認用）
+            setTimeout(() => {
+                alert(`✅ 予約完了\n\nチケットID: ${ticketId}\n\nこのIDを控えてください。\n当日ご提示ください。`);
+            }, 500);
+        }
+
+        // チケットIDをクリップボードにコピー
+        function copyTicketId(ticketId) {
+            navigator.clipboard.writeText(ticketId).then(() => {
+                alert('✅ チケットIDをコピーしました！');
+            }).catch(err => {
+                console.error('コピー失敗:', err);
+                // フォールバック: テキストを選択
+                const el = document.getElementById('ticketIdDisplay');
+                const range = document.createRange();
+                range.selectNode(el);
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
+            });
+        }
+
+        // ポップアップを閉じる
+        function closeSuccessPopup() {
+            document.querySelector('.success-popup').remove();
+            document.getElementById('overlay').style.display = 'none';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // フォーム送信処理（POST メソッド + ポップアップ）
         function setupFormSubmit() {
             const form = document.getElementById('reservation-form');
             const loading = document.getElementById('loading');
@@ -541,11 +668,11 @@
 
                 // バリデーション
                 if (!selectedDate) {
-                    messageDiv.innerHTML = '<div class="error">❌ 日付を選択してください</div>';
+                    alert('❌ 日付を選択してください');
                     return;
                 }
                 if (!selectedTime) {
-                    messageDiv.innerHTML = '<div class="error">❌ 時間を選択してください</div>';
+                    alert('❌ 時間を選択してください');
                     return;
                 }
 
@@ -575,7 +702,7 @@
                     
                     const response = await fetch(GAS_URL, {
                         method: 'POST',
-                        mode: 'no-cors', // 🔧 CORS回避のため追加
+                        mode: 'no-cors',
                         headers: {
                             'Content-Type': 'application/json'
                         },
@@ -584,14 +711,11 @@
 
                     console.log('✅ レスポンス受信:', response);
 
-                    // no-cors モードでは response.json() が使えないため、成功と仮定
-                    messageDiv.innerHTML = `
-                        <div class="success">
-                            <h3>✅ 予約が完了しました！</h3>
-                            <p>予約データが送信されました。</p>
-                            <p>確認のため、スプレッドシートをご確認ください。</p>
-                        </div>
-                    `;
+                    // チケットID生成（疑似）
+                    const ticketId = 'CM' + new Date().getTime();
+                    
+                    // 🔧 ポップアップ表示
+                    showSuccessPopup(ticketId);
                     
                     form.reset();
                     selectedDate = '';
@@ -605,13 +729,7 @@
 
                 } catch (error) {
                     console.error('❌ 送信エラー:', error);
-                    messageDiv.innerHTML = `
-                        <div class="error">
-                            <h3>❌ エラーが発生しました</h3>
-                            <p>${error.message}</p>
-                            <p>もう一度お試しください。</p>
-                        </div>
-                    `;
+                    alert(`❌ エラーが発生しました\n\n${error.message}\n\nもう一度お試しください。`);
                 } finally {
                     loading.style.display = 'none';
                     form.style.display = 'block';
