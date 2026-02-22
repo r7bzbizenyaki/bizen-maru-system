@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>備前丸 市民限定内覧会 - 予約フォーム FIXED</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', 'Yu Gothic', 'Meiryo', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 { font-size: 28px; margin-bottom: 10px; }
+        .header .subtitle { font-size: 16px; opacity: 0.9; }
+        .status-bar {
+            background: #f8f9fa;
+            padding: 15px 30px;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .status-item { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+        .status-online { color: #28a745; font-weight: bold; }
+        .status-offline { color: #dc3545; font-weight: bold; }
+        .form-content { padding: 40px 30px; }
+        .form-group { margin-bottom: 25px; }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 15px;
+        }
+        .required { color: #dc3545; margin-left: 4px; }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .date-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .date-card {
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        .date-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        }
+        .date-card.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .date-card .date-label { font-size: 18px; font-weight: bold; margin-bottom: 8px; }
+        .date-card .date-count { font-size: 13px; opacity: 0.8; }
+        .time-slots {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+        }
+        .time-slot {
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        .time-slot:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+        .time-slot.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+        .btn-group { display: flex; gap: 10px; margin-top: 30px; }
+        .btn {
+            flex: 1;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .loading-content {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .help-text {
+            font-size: 13px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        @media (max-width: 768px) {
+            .container { border-radius: 0; }
+            .form-content { padding: 30px 20px; }
+            .date-cards { grid-template-columns: 1fr; }
+            .time-slots { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚢 備前丸 市民限定内覧会</h1>
+            <div class="subtitle">予約フォーム FIXED VERSION</div>
+        </div>
+        
+        <div class="status-bar">
+            <div class="status-item">
+                <span id="cloudStatus" class="status-offline">☁️ クラウド接続: 確認中...</span>
+            </div>
+            <div class="status-item">
+                <span id="totalReservations">総予約数: --</span>
+            </div>
+        </div>
+        
+        <div class="form-content">
+            <form id="reservationForm">
+                <div class="form-group">
+                    <label>希望日<span class="required">*</span></label>
+                    <div class="date-cards" id="dateCards"></div>
+                    <input type="hidden" id="selectedDate" name="date" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>希望時間<span class="required">*</span></label>
+                    <div class="time-slots" id="timeSlots"></div>
+                    <input type="hidden" id="selectedTime" name="time" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="name">お名前<span class="required">*</span></label>
+                    <input type="text" id="name" name="name" required placeholder="例: 山田 太郎">
+                </div>
+                
+                <div class="form-group">
+                    <label for="postal">郵便番号<span class="required">*</span></label>
+                    <input type="text" id="postal" name="postal" required placeholder="例: 705-0132 または 7050132" maxlength="8">
+                    <div class="help-text">ハイフンあり・なし、どちらでもOKです</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="address">住所<span class="required">*</span></label>
+                    <input type="text" id="address" name="address" required placeholder="郵便番号から自動入力されます">
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">電話番号<span class="required">*</span></label>
+                    <input type="tel" id="phone" name="phone" required placeholder="例: 090-4570-7899 または 09045707899" maxlength="13">
+                    <div class="help-text">ハイフンあり・なし、どちらでもOKです</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">メールアドレス<span class="required">*</span></label>
+                    <input type="email" id="email" name="email" required placeholder="例: example@example.com">
+                    <div class="help-text">予約確認メールが送信されます</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="ageGroup">年代<span class="required">*</span></label>
+                    <select id="ageGroup" name="ageGroup" required>
+                        <option value="">選択してください</option>
+                        <option value="10代以下">10代以下</option>
+                        <option value="20代">20代</option>
+                        <option value="30代">30代</option>
+                        <option value="40代">40代</option>
+                        <option value="50代">50代</option>
+                        <option value="60代">60代</option>
+                        <option value="70代以上">70代以上</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="gender">性別<span class="required">*</span></label>
+                    <select id="gender" name="gender" required>
+                        <option value="">選択してください</option>
+                        <option value="男性">男性</option>
+                        <option value="女性">女性</option>
+                        <option value="その他">その他</option>
+                        <option value="回答しない">回答しない</option>
+                    </select>
+                </div>
+                
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary">予約を確定する</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="loadingOverlay" class="loading" style="display: none;">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p>予約を処理しています...</p>
+        </div>
+    </div>
+
+    <script>
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbzzOH-FNNc5gw8lsjxLYanpFWNgFNo7e9A_RiP8cY6JJxZyULxexjEi9glvE8CXl60TtA/exec';
+        
+        const EVENT_DATES = [
+            { date: '2026-02-27', label: '2月27日 (金)', dayOfWeek: '金' },
+            { date: '2026-03-27', label: '3月27日 (木)', dayOfWeek: '木' },
+            { date: '2026-03-28', label: '3月28日 (金)', dayOfWeek: '金' }
+        ];
+        
+        const TIME_SLOTS = ['09:00', '10:00', '11:00', '13:00', '14:00'];
+        
+        let reservationsData = [];
+        
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkCloudConnection();
+            await loadReservations();
+            renderDateCards();
+            renderTimeSlots();
+            setupPostalCodeLookup();
+            setupPhoneFormatting();
+            setupFormSubmit();
+        });
+        
+        async function checkCloudConnection() {
+            try {
+                const response = await fetch(`${GAS_URL}?action=ping`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('cloudStatus').textContent = '☁️ クラウド接続: オンライン';
+                    document.getElementById('cloudStatus').className = 'status-online';
+                } else {
+                    throw new Error('Ping failed');
+                }
+            } catch (error) {
+                console.error('Cloud connection error:', error);
+                document.getElementById('cloudStatus').textContent = '☁️ クラウド接続: オフライン';
+                document.getElementById('cloudStatus').className = 'status-offline';
+            }
+        }
+        
+        async function loadReservations() {
+            try {
+                const response = await fetch(`${GAS_URL}?action=getAllCitizenV2`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    reservationsData = data.data || [];
+                    document.getElementById('totalReservations').textContent = `総予約数: ${reservationsData.length}件`;
+                    updateDateCounts();
+                }
+            } catch (error) {
+                console.error('Load reservations error:', error);
+            }
+        }
+        
+        function renderDateCards() {
+            const container = document.getElementById('dateCards');
+            container.innerHTML = '';
+            
+            EVENT_DATES.forEach(eventDate => {
+                const card = document.createElement('div');
+                card.className = 'date-card';
+                card.dataset.date = eventDate.date;
+                
+                const count = reservationsData.filter(r => r[2] === eventDate.date).length;
+                
+                card.innerHTML = `
+                    <div class="date-label">${eventDate.label}</div>
+                    <div class="date-count">予約${count}件</div>
+                `;
+                
+                card.addEventListener('click', () => selectDate(eventDate.date));
+                container.appendChild(card);
+            });
+        }
+        
+        function selectDate(date) {
+            document.querySelectorAll('.date-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            const selectedCard = document.querySelector(`[data-date="${date}"]`);
+            if (selectedCard) {
+                selectedCard.classList.add('selected');
+                document.getElementById('selectedDate').value = date;
+            }
+        }
+        
+        function renderTimeSlots() {
+            const container = document.getElementById('timeSlots');
+            container.innerHTML = '';
+            
+            TIME_SLOTS.forEach(time => {
+                const slot = document.createElement('div');
+                slot.className = 'time-slot';
+                slot.dataset.time = time;
+                slot.textContent = time;
+                
+                slot.addEventListener('click', () => selectTime(time));
+                container.appendChild(slot);
+            });
+        }
+        
+        function selectTime(time) {
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                slot.classList.remove('selected');
+            });
+            
+            const selectedSlot = document.querySelector(`[data-time="${time}"]`);
+            if (selectedSlot) {
+                selectedSlot.classList.add('selected');
+                document.getElementById('selectedTime').value = time;
+            }
+        }
+        
+        function updateDateCounts() {
+            EVENT_DATES.forEach(eventDate => {
+                const count = reservationsData.filter(r => r[2] === eventDate.date).length;
+                const card = document.querySelector(`[data-date="${eventDate.date}"] .date-count`);
+                if (card) {
+                    card.textContent = `予約${count}件`;
+                }
+            });
+        }
+        
+        // ✅ 郵便番号：ハイフン自動対応
+        function setupPostalCodeLookup() {
+            const postalInput = document.getElementById('postal');
+            const addressInput = document.getElementById('address');
+            
+            postalInput.addEventListener('blur', async () => {
+                const postal = postalInput.value.replace(/[^0-9]/g, ''); // ハイフン等を削除
+                
+                if (postal.length === 7) {
+                    try {
+                        const response = await fetch(`https://zipcloud.ibsnet.co.jp/api/search?zipcode=${postal}`);
+                        const data = await response.json();
+                        
+                        if (data.results) {
+                            const result = data.results[0];
+                            addressInput.value = `${result.address1}${result.address2}${result.address3}`;
+                        }
+                    } catch (error) {
+                        console.error('Postal code lookup error:', error);
+                    }
+                }
+            });
+        }
+        
+        // ✅ 電話番号：ハイフン自動削除
+        function setupPhoneFormatting() {
+            const phoneInput = document.getElementById('phone');
+            phoneInput.addEventListener('input', (e) => {
+                // 入力時は自由に入力可能（ハイフンあり・なし両方）
+                // 送信時に自動でハイフンを削除
+            });
+        }
+        
+        function setupFormSubmit() {
+            const form = document.getElementById('reservationForm');
+            
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const date = document.getElementById('selectedDate').value;
+                const time = document.getElementById('selectedTime').value;
+                
+                if (!date || !time) {
+                    alert('日付と時間を選択してください。');
+                    return;
+                }
+                
+                // ✅ 郵便番号と電話番号からハイフンを削除
+                const formData = {
+                    type: 'citizen',
+                    date: date,
+                    time: time,
+                    name: document.getElementById('name').value,
+                    postal: document.getElementById('postal').value.replace(/[^0-9]/g, ''),
+                    address: document.getElementById('address').value,
+                    phone: document.getElementById('phone').value.replace(/[^0-9]/g, ''),
+                    email: document.getElementById('email').value,
+                    ageGroup: document.getElementById('ageGroup').value,
+                    gender: document.getElementById('gender').value
+                };
+                
+                document.getElementById('loadingOverlay').style.display = 'flex';
+                
+                try {
+                    const response = await fetch(GAS_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams({
+                            action: 'add',
+                            data: JSON.stringify(formData)
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                    
+                    if (result.success) {
+                        alert(`予約が完了しました！\nチケットID: ${result.id}\n\n確認メールを送信しました。`);
+                        window.location.href = `ticket-citizen-v2.html?id=${result.id}`;
+                    } else {
+                        alert(`予約に失敗しました: ${result.message || '不明なエラー'}`);
+                    }
+                } catch (error) {
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                    console.error('Submission error:', error);
+                    alert('予約の送信に失敗しました。もう一度お試しください。');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
