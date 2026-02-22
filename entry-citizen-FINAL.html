@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>備前丸 市民限定内覧会 - 予約フォーム FINAL v4</title>
+    <title>備前丸 市民限定内覧会 - 予約フォーム</title>
     <style>
         * {
             margin: 0;
@@ -241,25 +241,7 @@
             100% { transform: rotate(360deg); }
         }
 
-        .error {
-            background: #fee;
-            color: #c33;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px 0;
-            border-left: 5px solid #c33;
-        }
-
-        .success {
-            background: #efe;
-            color: #3c3;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px 0;
-            border-left: 5px solid #3c3;
-        }
-
-        /* 🔧 成功メッセージを目立たせるスタイル */
+        /* 🔧 シンプルな成功ポップアップ */
         .success-popup {
             position: fixed;
             top: 50%;
@@ -270,7 +252,7 @@
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.4);
             z-index: 10000;
-            max-width: 500px;
+            max-width: 450px;
             width: 90%;
             text-align: center;
             animation: popupFadeIn 0.3s;
@@ -283,41 +265,39 @@
 
         .success-popup h2 {
             color: #22c55e;
-            font-size: 2em;
+            font-size: 1.8em;
+            margin-bottom: 15px;
+        }
+
+        .success-popup p {
+            color: #666;
+            font-size: 1.1em;
             margin-bottom: 20px;
+            line-height: 1.6;
         }
 
-        .success-popup .ticket-id {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 20px;
-            border-radius: 15px;
-            font-size: 1.5em;
-            font-weight: bold;
-            margin: 20px 0;
-            letter-spacing: 2px;
-        }
-
-        .success-popup .copy-btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 10px 30px;
+        .success-popup .ticket-info {
+            background: #f8f9fa;
+            padding: 15px;
             border-radius: 10px;
-            cursor: pointer;
-            font-size: 1em;
-            margin: 10px 5px;
+            margin: 20px 0;
+            color: #333;
+            font-size: 0.95em;
         }
 
         .success-popup .close-btn {
-            background: #6b7280;
+            background: #667eea;
             color: white;
             border: none;
-            padding: 10px 30px;
+            padding: 12px 40px;
             border-radius: 10px;
             cursor: pointer;
-            font-size: 1em;
-            margin: 10px 5px;
+            font-size: 1.1em;
+            margin-top: 10px;
+        }
+
+        .success-popup .close-btn:hover {
+            background: #5568d3;
         }
 
         .overlay {
@@ -351,10 +331,6 @@
             .success-popup {
                 padding: 30px 20px;
             }
-
-            .success-popup .ticket-id {
-                font-size: 1.2em;
-            }
         }
     </style>
 </head>
@@ -364,7 +340,7 @@
     <div class="container">
         <div class="header">
             <h1>🚢 備前丸 市民限定内覧会</h1>
-            <p>予約フォーム v4（ポップアップ対応版）</p>
+            <p>予約フォーム</p>
         </div>
 
         <div class="status-bar">
@@ -446,8 +422,6 @@
             <div class="spinner"></div>
             <p>予約を送信中...</p>
         </div>
-
-        <div id="message"></div>
     </div>
 
     <script>
@@ -611,7 +585,7 @@
             });
         }
 
-        // 🔧 成功ポップアップを表示
+        // 🔧 シンプルな成功ポップアップを表示
         function showSuccessPopup(ticketId) {
             const overlay = document.getElementById('overlay');
             overlay.style.display = 'block';
@@ -619,48 +593,28 @@
             const popup = document.createElement('div');
             popup.className = 'success-popup';
             popup.innerHTML = `
-                <h2>✅ 予約が完了しました！</h2>
-                <p style="color: #666; margin-bottom: 20px;">以下のチケットIDを控えてください</p>
-                <div class="ticket-id" id="ticketIdDisplay">${ticketId}</div>
-                <p style="color: #666; margin: 20px 0;">当日はこのチケットIDをご提示ください</p>
-                <button class="copy-btn" onclick="copyTicketId('${ticketId}')">📋 IDをコピー</button>
+                <h2>✅ 予約が完了しました</h2>
+                <p>メールへ送信しました。</p>
+                <div class="ticket-info">
+                    チケットID: ${ticketId}
+                </div>
                 <button class="close-btn" onclick="closeSuccessPopup()">閉じる</button>
             `;
             document.body.appendChild(popup);
-
-            // 自動的にalertも表示（追加の確認用）
-            setTimeout(() => {
-                alert(`✅ 予約完了\n\nチケットID: ${ticketId}\n\nこのIDを控えてください。\n当日ご提示ください。`);
-            }, 500);
-        }
-
-        // チケットIDをクリップボードにコピー
-        function copyTicketId(ticketId) {
-            navigator.clipboard.writeText(ticketId).then(() => {
-                alert('✅ チケットIDをコピーしました！');
-            }).catch(err => {
-                console.error('コピー失敗:', err);
-                // フォールバック: テキストを選択
-                const el = document.getElementById('ticketIdDisplay');
-                const range = document.createRange();
-                range.selectNode(el);
-                window.getSelection().removeAllRanges();
-                window.getSelection().addRange(range);
-            });
         }
 
         // ポップアップを閉じる
         function closeSuccessPopup() {
-            document.querySelector('.success-popup').remove();
+            const popup = document.querySelector('.success-popup');
+            if (popup) popup.remove();
             document.getElementById('overlay').style.display = 'none';
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // フォーム送信処理（POST メソッド + ポップアップ）
+        // フォーム送信処理
         function setupFormSubmit() {
             const form = document.getElementById('reservation-form');
             const loading = document.getElementById('loading');
-            const messageDiv = document.getElementById('message');
 
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -695,7 +649,6 @@
                 // 送信処理
                 form.style.display = 'none';
                 loading.style.display = 'block';
-                messageDiv.innerHTML = '';
 
                 try {
                     console.log('🔗 送信先URL:', GAS_URL);
@@ -711,10 +664,10 @@
 
                     console.log('✅ レスポンス受信:', response);
 
-                    // チケットID生成（疑似）
+                    // チケットID生成
                     const ticketId = 'CM' + new Date().getTime();
                     
-                    // 🔧 ポップアップ表示
+                    // 🔧 シンプルなポップアップ表示
                     showSuccessPopup(ticketId);
                     
                     form.reset();
