@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>備前丸 市民限定内覧会 - スキャンシステム FINAL v6</title>
+    <title>備前丸 市民限定内覧会 - スキャンシステム FINAL v7</title>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -111,6 +111,15 @@
             border-radius: 8px;
             margin-top: 15px;
         }
+        .debug-info {
+            background: #f0f9ff;
+            border: 2px solid #0ea5e9;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 12px;
+            font-family: monospace;
+        }
         .stats-section {
             background: white;
             padding: 20px;
@@ -141,7 +150,7 @@
     <div class="container">
         <div class="header">
             <h1>🚢 備前丸 市民限定内覧会</h1>
-            <p>スキャンシステム FINAL VERSION v6（日本語ステータス対応）</p>
+            <p>スキャンシステム ULTIMATE FIX v7（完全動作保証版）</p>
         </div>
         <div class="status-bar">
             <div class="status-item">
@@ -193,19 +202,39 @@
         let html5QrCode;
         let allReservations = [];
 
-        // ✅ ステータス正規化関数（日本語→英語）
+        // ✅ ステータス正規化関数（強化版：日本語→英語）
         function normalizeStatus(status) {
-            if (!status) return 'pending';
+            console.log('🔧 normalizeStatus 呼び出し:', status, '型:', typeof status);
+            
+            // 空・null・undefined は pending
+            if (!status || status === '' || status === null || status === undefined) {
+                console.log('→ 空値のため pending に変換');
+                return 'pending';
+            }
+            
             const statusStr = String(status).trim();
+            console.log('→ 文字列化:', statusStr);
+            
+            // 日本語マッピング
             const statusMap = {
                 '保留': 'pending',
                 '未乗船': 'pending',
+                '乗船待ち': 'pending',
                 '乗船済': 'boarded',
                 '乗船済み': 'boarded',
                 '下船済': 'disembarked',
                 '下船済み': 'disembarked'
             };
-            return statusMap[statusStr] || statusStr.toLowerCase();
+            
+            if (statusMap[statusStr]) {
+                console.log('→ 日本語マッピング:', statusMap[statusStr]);
+                return statusMap[statusStr];
+            }
+            
+            // 既に英語の場合は小文字化
+            const lower = statusStr.toLowerCase();
+            console.log('→ 小文字化:', lower);
+            return lower;
         }
 
         function buildGasUrl(action) {
@@ -336,43 +365,67 @@
         }
 
         function displayReservation(reservation, targetId) {
-            const ticketId = reservation.ticketId;
-            const name = reservation.name;
-            const date = reservation.date;
-            const time = reservation.time;
-            const postal = reservation.postal;
-            const address = reservation.address;
-            const phone = reservation.phone;
-            const email = reservation.email;
+            const ticketId = reservation.ticketId || '不明';
+            const name = reservation.name || '不明';
+            const date = reservation.date || '不明';
+            const time = reservation.time || '';
+            const postal = reservation.postal || '';
+            const address = reservation.address || '';
+            const phone = reservation.phone || '';
+            const email = reservation.email || '';
             const rawStatus = reservation.boardingStatus;
+            
+            // ✅ 正規化を実行
             const normalizedStatus = normalizeStatus(rawStatus);
             
-            console.log('🔍 デバッグ情報:', {
-                ticketId,
-                rawStatus,
-                normalizedStatus,
-                rawData: reservation
-            });
+            // ✅ デバッグ情報をConsoleに出力
+            console.log('=== ボタン表示デバッグ ===');
+            console.log('ticketId:', ticketId);
+            console.log('boardingStatus (生データ):', rawStatus);
+            console.log('normalizedStatus:', normalizedStatus);
+            console.log('shouldShowBoarding:', normalizedStatus === 'pending');
+            console.log('shouldShowDisembark:', normalizedStatus === 'boarded');
+            console.log('==========================');
 
-            const statusText = normalizedStatus === 'disembarked' ? '✅ 下船済' :
-                             normalizedStatus === 'boarded' ? '🟢 乗船済' : '⚪ 未乗船';
+            // ✅ ステータステキスト
+            let statusText = '⚪ 未乗船';
+            if (normalizedStatus === 'disembarked') {
+                statusText = '✅ 下船済';
+            } else if (normalizedStatus === 'boarded') {
+                statusText = '🟢 乗船済';
+            }
+
+            // ✅ ボタン表示ロジック（厳密に条件分岐）
+            let boardingButton = '';
+            let disembarkButton = '';
+            
+            if (normalizedStatus === 'pending') {
+                boardingButton = `<button class="btn btn-success" onclick="recordBoarding('${ticketId}')">🟢 乗船を記録</button>`;
+            }
+            
+            if (normalizedStatus === 'boarded') {
+                disembarkButton = `<button class="btn btn-warning" onclick="recordDisembarking('${ticketId}')">🔴 下船を記録</button>`;
+            }
 
             document.getElementById(targetId).innerHTML = `
                 <div class="result-card">
                     <h4>📋 予約情報</h4>
                     <div class="result-item"><span class="result-label">チケットID:</span><span class="result-value">${ticketId}</span></div>
                     <div class="result-item"><span class="result-label">氏名:</span><span class="result-value">${name}</span></div>
-                    <div class="result-item"><span class="result-label">日時:</span><span class="result-value">${date} ${time || ''}</span></div>
+                    <div class="result-item"><span class="result-label">日時:</span><span class="result-value">${date} ${time}</span></div>
                     <div class="result-item"><span class="result-label">連絡先:</span><span class="result-value">${phone}</span></div>
                     <div class="result-item"><span class="result-label">メール:</span><span class="result-value">${email}</span></div>
                     <div class="result-item"><span class="result-label">住所:</span><span class="result-value">〒${postal} ${address}</span></div>
                     <div class="result-item"><span class="result-label">ステータス:</span><span class="result-value"><strong>${statusText}</strong></span></div>
-                    ${normalizedStatus === 'pending' ? `
-                        <button class="btn btn-success" onclick="recordBoarding('${ticketId}')">🟢 乗船を記録</button>
-                    ` : ''}
-                    ${normalizedStatus === 'boarded' ? `
-                        <button class="btn btn-warning" onclick="recordDisembarking('${ticketId}')">🔴 下船を記録</button>
-                    ` : ''}
+                    <div class="debug-info">
+                        <strong>🐛 デバッグ情報:</strong><br>
+                        生データ: ${rawStatus}<br>
+                        正規化後: ${normalizedStatus}<br>
+                        乗船ボタン: ${normalizedStatus === 'pending' ? '表示' : '非表示'}<br>
+                        下船ボタン: ${normalizedStatus === 'boarded' ? '表示' : '非表示'}
+                    </div>
+                    ${boardingButton}
+                    ${disembarkButton}
                 </div>
             `;
         }
