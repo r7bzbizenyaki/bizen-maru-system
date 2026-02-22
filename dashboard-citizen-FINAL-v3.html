@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>備前丸 市民限定内覧会 - ダッシュボード FINAL v3</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .filters {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .filters h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .filter-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .filter-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-item label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #666;
+        }
+
+        .filter-item select {
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .table-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .status-pending {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .status-boarded {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .status-disembarked {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #dc2626;
+        }
+
+        @media (max-width: 768px) {
+            .table-container {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚢 備前丸 市民限定内覧会 - ダッシュボード</h1>
+            <p>リアルタイム予約管理システム FINAL VERSION v3</p>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="stat-number" id="totalReservations">-</div>
+                <div class="stat-label">📊 総予約数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="pendingCount">-</div>
+                <div class="stat-label">⚪ 未乗船</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="boardedCount">-</div>
+                <div class="stat-label">🟢 乗船済</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="disembarkedCount">-</div>
+                <div class="stat-label">🔴 下船済</div>
+            </div>
+        </div>
+
+        <div class="filters">
+            <h3>🔍 フィルター</h3>
+            <div class="filter-group">
+                <div class="filter-item">
+                    <label>日付</label>
+                    <select id="dateFilter" onchange="applyFilters()">
+                        <option value="">全て</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label>時間</label>
+                    <select id="timeFilter" onchange="applyFilters()">
+                        <option value="">全て</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label>ステータス</label>
+                    <select id="statusFilter" onchange="applyFilters()">
+                        <option value="">全て</option>
+                        <option value="pending">未乗船</option>
+                        <option value="boarded">乗船済</option>
+                        <option value="disembarked">下船済</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>チケットID</th>
+                        <th>日付</th>
+                        <th>時間</th>
+                        <th>氏名</th>
+                        <th>郵便番号</th>
+                        <th>住所</th>
+                        <th>電話番号</th>
+                        <th>メール</th>
+                        <th>年齢層</th>
+                        <th>性別</th>
+                        <th>ステータス</th>
+                    </tr>
+                </thead>
+                <tbody id="reservationsTable">
+                    <tr>
+                        <td colspan="11" class="loading">読み込み中...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const GAS_BASE_URL = 'https://script.google.com/macros/s/AKfycbzzOH-FNNc5gw8lsjxLYanpFWNgFNo7e9A_RiP8cY6JJxZyULxexjEi9glvE8CXl60TtA/exec';
+        let allReservations = [];
+        let filteredReservations = [];
+
+        // ✅ GAS URLを生成
+        function buildGasUrl(action) {
+            return `${GAS_BASE_URL}?action=${action}&t=${Date.now()}`;
+        }
+
+        // ✅ データ取得（複数エンドポイント試行）
+        async function loadReservations() {
+            const endpoints = ['getAllCitizenV2', 'getAllCitizen'];
+            
+            for (const endpoint of endpoints) {
+                try {
+                    console.log(`🔄 Trying endpoint: ${endpoint}`);
+                    const response = await fetch(buildGasUrl(endpoint));
+                    const data = await response.json();
+
+                    console.log(`📥 Response from ${endpoint}:`, data);
+
+                    if (data.status === 'success' && Array.isArray(data.data)) {
+                        allReservations = data.data;
+                        console.log(`✅ ${allReservations.length}件のデータを読み込みました (${endpoint})`);
+                        
+                        updateStats();
+                        populateFilters();
+                        applyFilters();
+                        return true;
+                    }
+                } catch (error) {
+                    console.error(`❌ Error with ${endpoint}:`, error);
+                }
+            }
+            
+            console.error('❌ 全てのエンドポイントが失敗しました');
+            document.getElementById('reservationsTable').innerHTML = `
+                <tr><td colspan="11" class="error">データの読み込みに失敗しました</td></tr>
+            `;
+            return false;
+        }
+
+        // ✅ 統計更新
+        function updateStats() {
+            const total = allReservations.length;
+            
+            const pending = allReservations.filter(r => {
+                const status = Array.isArray(r) ? r[10] : r.boardingStatus;
+                return status === 'pending' || !status;
+            }).length;
+
+            const boarded = allReservations.filter(r => {
+                const status = Array.isArray(r) ? r[10] : r.boardingStatus;
+                return status === 'boarded';
+            }).length;
+
+            const disembarked = allReservations.filter(r => {
+                const status = Array.isArray(r) ? r[10] : r.boardingStatus;
+                return status === 'disembarked';
+            }).length;
+
+            document.getElementById('totalReservations').textContent = total;
+            document.getElementById('pendingCount').textContent = pending;
+            document.getElementById('boardedCount').textContent = boarded;
+            document.getElementById('disembarkedCount').textContent = disembarked;
+        }
+
+        // ✅ フィルター選択肢を生成
+        function populateFilters() {
+            const dates = new Set();
+            const times = new Set();
+
+            allReservations.forEach(r => {
+                const date = Array.isArray(r) ? r[2] : r.date;
+                const time = Array.isArray(r) ? r[3] : r.time;
+                
+                if (date) dates.add(date.split('T')[0]);
+                if (time) times.add(time);
+            });
+
+            const dateFilter = document.getElementById('dateFilter');
+            dateFilter.innerHTML = '<option value="">全て</option>';
+            Array.from(dates).sort().forEach(date => {
+                dateFilter.innerHTML += `<option value="${date}">${date}</option>`;
+            });
+
+            const timeFilter = document.getElementById('timeFilter');
+            timeFilter.innerHTML = '<option value="">全て</option>';
+            Array.from(times).sort().forEach(time => {
+                timeFilter.innerHTML += `<option value="${time}">${time}</option>`;
+            });
+        }
+
+        // ✅ フィルター適用
+        function applyFilters() {
+            const dateFilter = document.getElementById('dateFilter').value;
+            const timeFilter = document.getElementById('timeFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            filteredReservations = allReservations.filter(r => {
+                const date = Array.isArray(r) ? r[2] : r.date;
+                const time = Array.isArray(r) ? r[3] : r.time;
+                const status = Array.isArray(r) ? r[10] : r.boardingStatus;
+
+                const dateMatch = !dateFilter || (date && date.startsWith(dateFilter));
+                const timeMatch = !timeFilter || time === timeFilter;
+                const statusMatch = !statusFilter || status === statusFilter;
+
+                return dateMatch && timeMatch && statusMatch;
+            });
+
+            renderTable();
+        }
+
+        // ✅ テーブル表示
+        function renderTable() {
+            const tbody = document.getElementById('reservationsTable');
+
+            if (filteredReservations.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:#666;">該当するデータがありません</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filteredReservations.map(r => {
+                const isArray = Array.isArray(r);
+
+                const ticketId = isArray ? r[0] : r.id;
+                const date = isArray ? r[2] : r.date;
+                const time = isArray ? r[3] : r.time;
+                const name = isArray ? r[4] : r.name;
+                const postal = isArray ? r[5] : r.postal;
+                const address = isArray ? r[6] : r.address;
+                const phone = isArray ? r[7] : r.phone;
+                const email = isArray ? r[8] : r.email;
+                const ageGroup = isArray ? r[9] : r.ageGroup;
+                const gender = isArray ? r[11] : r.gender;
+                const boardingStatus = isArray ? (r[10] || 'pending') : (r.boardingStatus || 'pending');
+
+                const statusClass = boardingStatus === 'disembarked' ? 'status-disembarked' :
+                                   boardingStatus === 'boarded' ? 'status-boarded' : 'status-pending';
+                
+                const statusText = boardingStatus === 'disembarked' ? '下船済' :
+                                 boardingStatus === 'boarded' ? '乗船済' : '未乗船';
+
+                const displayDate = date ? date.split('T')[0] : '-';
+
+                return `
+                    <tr>
+                        <td>${ticketId || '-'}</td>
+                        <td>${displayDate}</td>
+                        <td>${time || '-'}</td>
+                        <td>${name || '-'}</td>
+                        <td>${postal || '-'}</td>
+                        <td>${address || '-'}</td>
+                        <td>${phone || '-'}</td>
+                        <td>${email || '-'}</td>
+                        <td>${ageGroup || '-'}</td>
+                        <td>${gender || '-'}</td>
+                        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ✅ ページ読み込み時に実行
+        window.onload = async function() {
+            await loadReservations();
+
+            // 10秒ごとに自動更新
+            setInterval(loadReservations, 10000);
+        };
+    </script>
+</body>
+</html>
