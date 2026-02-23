@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>⚙️ イベント設定管理 - 備前丸システム</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙️</text></svg>">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      opacity: 0.9;
+    }
+
+    .card {
+      background: white;
+      border-radius: 15px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #333;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+    }
+
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .time-slots {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+
+    .btn {
+      padding: 14px 28px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: #667eea;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #5568d3;
+      transform: translateY(-2px);
+    }
+
+    .btn-success {
+      background: #48bb78;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #38a169;
+    }
+
+    .btn-secondary {
+      background: #cbd5e0;
+      color: #2d3748;
+    }
+
+    .btn-secondary:hover {
+      background: #a0aec0;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 15px;
+      margin-top: 30px;
+    }
+
+    .alert {
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .alert.success {
+      background: #c6f6d5;
+      color: #22543d;
+      border: 2px solid #48bb78;
+    }
+
+    .alert.error {
+      background: #fed7d7;
+      color: #742a2a;
+      border: 2px solid #f56565;
+    }
+
+    .alert.show {
+      display: block;
+    }
+
+    .preview-section {
+      background: #f7fafc;
+      padding: 20px;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+
+    .preview-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: #2d3748;
+    }
+
+    .preview-content {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      border: 2px solid #e2e8f0;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 1.8rem;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>⚙️ イベント設定管理</h1>
+      <div class="subtitle">予約フォームの内容をカスタマイズ</div>
+    </div>
+
+    <div id="alertBox" class="alert"></div>
+
+    <div class="card">
+      <h2 style="margin-bottom: 20px; color: #333;">📝 基本情報</h2>
+      
+      <div class="form-group">
+        <label for="eventTitle">イベントタイトル</label>
+        <input type="text" id="eventTitle" placeholder="例: 備前丸市民限定内覧会">
+      </div>
+
+      <div class="form-group">
+        <label for="eventDate">イベント日付</label>
+        <input type="text" id="eventDate" placeholder="例: 2026年3月15日">
+      </div>
+
+      <div class="form-group">
+        <label>乗船時間枠（最大10枠）</label>
+        <div class="time-slots" id="timeSlots">
+          <input type="text" class="time-slot" placeholder="09:00-09:30">
+          <input type="text" class="time-slot" placeholder="09:30-10:00">
+          <input type="text" class="time-slot" placeholder="10:00-10:30">
+          <input type="text" class="time-slot" placeholder="10:30-11:00">
+          <input type="text" class="time-slot" placeholder="11:00-11:30">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="notes">注意事項</label>
+        <textarea id="notes" placeholder="例: ※当日は受付で本人確認を行います。&#10;※荒天時は中止となる場合があります。"></textarea>
+      </div>
+
+      <div class="preview-section">
+        <div class="preview-title">📋 プレビュー</div>
+        <div class="preview-content" id="preview">
+          プレビューを読み込んでいます...
+        </div>
+      </div>
+
+      <div class="button-group">
+        <button class="btn btn-primary" onclick="loadSettings()">🔄 最新データを読込</button>
+        <button class="btn btn-success" onclick="saveSettings()">💾 設定を保存</button>
+        <button class="btn btn-secondary" onclick="window.open('https://r7bzbizenyaki.github.io/bizen-maru-system/entry-citizen.html', '_blank')">👁️ フォームを確認</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyLpyqMk8xbnNfDz5H2DHhH_ZLNBSEWDG2pI11zrnRkCFwf3uVvHgrYpr1Asi0ijA1n/exec';
+
+    function showAlert(message, type) {
+      const alertBox = document.getElementById('alertBox');
+      alertBox.textContent = message;
+      alertBox.className = `alert ${type} show`;
+      setTimeout(() => alertBox.classList.remove('show'), 5000);
+    }
+
+    async function loadSettings() {
+      try {
+        const response = await fetch(`${SCRIPT_URL}?action=getEventSettings&_=${Date.now()}`);
+        const data = await response.json();
+
+        if (data.success) {
+          const settings = data.settings;
+          document.getElementById('eventTitle').value = settings['イベントタイトル'] || '';
+          document.getElementById('eventDate').value = settings['イベント日付'] || '';
+          document.getElementById('notes').value = settings['注意事項'] || '';
+
+          const timeSlotInputs = document.querySelectorAll('.time-slot');
+          for (let i = 0; i < timeSlotInputs.length; i++) {
+            const key = `時間枠${i + 1}`;
+            timeSlotInputs[i].value = settings[key] || '';
+          }
+
+          updatePreview();
+          showAlert('✅ 設定を読み込みました', 'success');
+        } else {
+          showAlert('❌ エラー: ' + data.error, 'error');
+        }
+      } catch (error) {
+        showAlert('❌ 通信エラー: ' + error.message, 'error');
+      }
+    }
+
+    async function saveSettings() {
+      const password = prompt('管理パスワードを入力してください:');
+      if (!password) return;
+
+      const settings = {
+        'イベントタイトル': document.getElementById('eventTitle').value,
+        'イベント日付': document.getElementById('eventDate').value,
+        '注意事項': document.getElementById('notes').value
+      };
+
+      const timeSlotInputs = document.querySelectorAll('.time-slot');
+      for (let i = 0; i < timeSlotInputs.length; i++) {
+        settings[`時間枠${i + 1}`] = timeSlotInputs[i].value;
+      }
+
+      try {
+        const response = await fetch(
+          `${SCRIPT_URL}?action=saveEventSettings&settings=${encodeURIComponent(JSON.stringify(settings))}&password=${encodeURIComponent(password)}`
+        );
+        const result = await response.json();
+
+        if (result.success) {
+          showAlert('✅ ' + result.message, 'success');
+        } else {
+          showAlert('❌ エラー: ' + result.error, 'error');
+        }
+      } catch (error) {
+        showAlert('❌ 通信エラー: ' + error.message, 'error');
+      }
+    }
+
+    function updatePreview() {
+      const title = document.getElementById('eventTitle').value || 'イベント名';
+      const date = document.getElementById('eventDate').value || '日付未設定';
+      const notes = document.getElementById('notes').value || '注意事項なし';
+      
+      const timeSlots = Array.from(document.querySelectorAll('.time-slot'))
+        .map(input => input.value)
+        .filter(val => val)
+        .map(slot => `<li>${slot}</li>`)
+        .join('');
+
+      document.getElementById('preview').innerHTML = `
+        <h3>${title}</h3>
+        <p><strong>📅 日付:</strong> ${date}</p>
+        <p><strong>⏰ 時間枠:</strong></p>
+        <ul>${timeSlots || '<li>未設定</li>'}</ul>
+        <p><strong>ℹ️ 注意事項:</strong></p>
+        <p style="white-space: pre-wrap;">${notes}</p>
+      `;
+    }
+
+    // 入力時にプレビュー更新
+    document.querySelectorAll('input, textarea').forEach(el => {
+      el.addEventListener('input', updatePreview);
+    });
+
+    // 初回読込
+    loadSettings();
+  </script>
+</body>
+</html>
