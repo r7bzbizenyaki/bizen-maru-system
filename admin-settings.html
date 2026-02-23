@@ -523,15 +523,32 @@
       const grid = document.getElementById('eventsGrid');
       let html = '';
 
+      console.log('=== レンダリング開始 ===');
+      console.log('読み込まれたイベント数:', allEventsData.length);
+
       for (let i = 1; i <= 5; i++) {
-        const event = allEventsData.find(e => e.eventNumber === i);
-        if (event && event['イベントタイトル']) {
-          html += createEventCard(event);
+        // イベント番号で検索 (複数のフィールド名に対応)
+        const event = allEventsData.find(e => 
+          e.eventNumber === i || 
+          e['イベント番号'] === i ||
+          (e['A列 (項目)'] && e['A列 (項目)'].includes(`イベント${i}`))
+        );
+        
+        console.log(`イベント${i} 検索結果:`, event);
+        
+        // イベントが存在し、タイトルがある場合のみカード表示
+        const hasTitle = event && (event['イベントタイトル'] || event.eventTitle);
+        
+        if (hasTitle) {
+          console.log(`→ イベントカードを作成 (タイトル: ${event['イベントタイトル']})`);
+          html += createEventCard({...event, eventNumber: i});
         } else {
+          console.log(`→ 空カードを作成`);
           html += createEmptyCard(i);
         }
       }
 
+      console.log('=== レンダリング完了 ===');
       grid.innerHTML = html;
     }
 
@@ -605,8 +622,15 @@
     }
 
     function editEvent(eventNumber) {
-      const event = allEventsData.find(e => e.eventNumber === eventNumber);
-      if (!event) return;
+      const event = allEventsData.find(e => 
+        e.eventNumber === eventNumber || 
+        e['イベント番号'] === eventNumber
+      );
+      
+      if (!event) {
+        showAlert(`イベント${eventNumber}が見つかりません`, 'error');
+        return;
+      }
 
       document.getElementById('modalTitle').textContent = `イベント ${eventNumber} を編集`;
       document.getElementById('currentEventNumber').value = eventNumber;
@@ -713,7 +737,11 @@
     }
 
     function previewEvent(eventNumber) {
-      const event = allEventsData.find(e => e.eventNumber === eventNumber);
+      const event = allEventsData.find(e => 
+        e.eventNumber === eventNumber || 
+        e['イベント番号'] === eventNumber
+      );
+      
       if (!event) return;
 
       const previewWindow = window.open('', '_blank', 'width=800,height=600');
