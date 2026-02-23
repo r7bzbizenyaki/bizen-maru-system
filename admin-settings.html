@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>⚙️ マルチイベント管理 - 備前丸システム</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙️</text></svg>">
   <style>
     * {
       margin: 0;
@@ -20,7 +19,7 @@
     }
 
     .container {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
     }
 
@@ -33,169 +32,194 @@
     .header h1 {
       font-size: 2.5rem;
       margin-bottom: 10px;
-    }
-
-    .subtitle {
-      font-size: 1.1rem;
-      opacity: 0.9;
-    }
-
-    .top-buttons {
       display: flex;
-      gap: 15px;
+      align-items: center;
       justify-content: center;
-      margin-bottom: 30px;
-      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .header-actions {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .btn-header {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 2px solid white;
+      padding: 12px 24px;
+      border-radius: 25px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-header:hover {
+      background: white;
+      color: #667eea;
+      transform: translateY(-2px);
     }
 
     .events-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-      gap: 20px;
-      margin-bottom: 30px;
+      gap: 25px;
+      margin-top: 30px;
     }
 
     .event-card {
       background: white;
       border-radius: 15px;
       padding: 25px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-      transition: transform 0.3s ease;
-      position: relative;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s, box-shadow 0.3s;
     }
 
     .event-card:hover {
       transform: translateY(-5px);
-    }
-
-    .event-card.empty {
-      border: 2px dashed #cbd5e0;
-      background: #f7fafc;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 200px;
-      cursor: pointer;
-    }
-
-    .event-card.empty:hover {
-      background: #edf2f7;
-      border-color: #a0aec0;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
     }
 
     .event-header {
       display: flex;
       justify-content: space-between;
-      align-items: start;
+      align-items: center;
       margin-bottom: 15px;
     }
 
-    .event-number {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: #667eea;
-      background: #edf2f7;
-      padding: 4px 12px;
-      border-radius: 12px;
+    .event-header h3 {
+      font-size: 1rem;
+      color: #999;
+      font-weight: 500;
     }
 
-    .event-title {
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: #2d3748;
-      margin-bottom: 8px;
+    .status-badge {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .status-public {
+      background: #c6f6d5;
+      color: #22543d;
+    }
+
+    .status-private {
+      background: #fed7d7;
+      color: #742a2a;
+    }
+
+    .event-card h2 {
+      font-size: 1.5rem;
+      color: #333;
+      margin-bottom: 10px;
     }
 
     .event-date {
+      color: #666;
       font-size: 1rem;
-      color: #4a5568;
       margin-bottom: 15px;
+    }
+
+    .time-slots {
+      color: #667eea;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .time-slot-preview {
       display: flex;
-      align-items: center;
+      flex-wrap: wrap;
       gap: 8px;
+      margin-bottom: 20px;
     }
 
-    .time-slots-preview {
-      background: #f7fafc;
-      padding: 12px;
-      border-radius: 8px;
-      margin-bottom: 15px;
-    }
-
-    .time-slots-preview h4 {
-      font-size: 0.9rem;
-      color: #4a5568;
-      margin-bottom: 8px;
-    }
-
-    .time-slot-tag {
-      display: inline-block;
-      background: white;
-      padding: 4px 10px;
-      border-radius: 6px;
+    .slot-chip {
+      background: #f0f0f0;
+      padding: 5px 12px;
+      border-radius: 15px;
       font-size: 0.85rem;
-      margin: 3px;
-      border: 1px solid #e2e8f0;
+      color: #555;
     }
 
-    .btn {
-      padding: 10px 20px;
+    .event-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .btn-action {
+      flex: 1;
+      padding: 10px;
       border: none;
       border-radius: 8px;
-      font-size: 0.95rem;
-      font-weight: 600;
+      font-size: 0.9rem;
       cursor: pointer;
-      transition: all 0.3s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
+      transition: all 0.3s;
+      font-weight: 600;
     }
 
-    .btn-primary {
-      background: #667eea;
+    .btn-edit {
+      background: #4299e1;
       color: white;
     }
 
-    .btn-primary:hover {
-      background: #5568d3;
+    .btn-edit:hover {
+      background: #3182ce;
     }
 
-    .btn-success {
+    .btn-preview {
       background: #48bb78;
       color: white;
     }
 
-    .btn-success:hover {
+    .btn-preview:hover {
       background: #38a169;
     }
 
-    .btn-danger {
+    .btn-delete {
       background: #f56565;
       color: white;
     }
 
-    .btn-danger:hover {
+    .btn-delete:hover {
       background: #e53e3e;
     }
 
-    .btn-secondary {
-      background: #cbd5e0;
-      color: #2d3748;
-    }
-
-    .btn-secondary:hover {
-      background: #a0aec0;
-    }
-
-    .btn-small {
-      padding: 6px 12px;
-      font-size: 0.85rem;
-    }
-
-    .card-buttons {
+    .empty-card {
+      background: rgba(255, 255, 255, 0.1);
+      border: 3px dashed rgba(255, 255, 255, 0.5);
       display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 250px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .empty-card:hover {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: white;
+      transform: translateY(-5px);
+    }
+
+    .empty-card-icon {
+      font-size: 4rem;
+      margin-bottom: 15px;
+    }
+
+    .empty-card-text {
+      color: white;
+      font-size: 1.2rem;
+      font-weight: 600;
     }
 
     .modal {
@@ -205,133 +229,160 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(0, 0, 0, 0.7);
       z-index: 1000;
-      align-items: center;
-      justify-content: center;
+      overflow-y: auto;
       padding: 20px;
-    }
-
-    .modal.active {
-      display: flex;
     }
 
     .modal-content {
       background: white;
-      padding: 30px;
-      border-radius: 15px;
       max-width: 700px;
-      width: 100%;
-      max-height: 90vh;
-      overflow-y: auto;
+      margin: 50px auto;
+      border-radius: 15px;
+      padding: 30px;
+      position: relative;
     }
 
     .modal-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #e2e8f0;
     }
 
-    .modal-title {
-      font-size: 1.5rem;
-      color: #2d3748;
+    .modal-header h2 {
+      color: #333;
+      font-size: 1.8rem;
     }
 
     .close-btn {
-      font-size: 1.5rem;
-      cursor: pointer;
-      color: #a0aec0;
       background: none;
       border: none;
+      font-size: 2rem;
+      cursor: pointer;
+      color: #999;
+      line-height: 1;
     }
 
     .close-btn:hover {
-      color: #4a5568;
+      color: #333;
     }
 
     .form-group {
       margin-bottom: 20px;
     }
 
-    label {
+    .form-group label {
       display: block;
       font-weight: 600;
+      color: #333;
       margin-bottom: 8px;
-      color: #2d3748;
+      font-size: 0.95rem;
     }
 
-    input, textarea, select {
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       border: 2px solid #e2e8f0;
-      border-radius: 6px;
+      border-radius: 8px;
       font-size: 1rem;
       transition: border-color 0.3s;
     }
 
-    input:focus, textarea:focus, select:focus {
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
       outline: none;
       border-color: #667eea;
     }
 
-    textarea {
-      min-height: 80px;
+    .form-group textarea {
       resize: vertical;
+      min-height: 100px;
     }
 
-    small {
-      display: block;
-      margin-top: 4px;
-      color: #718096;
-      font-size: 0.85rem;
-    }
-
-    .time-slots-edit {
+    .time-slots-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      grid-template-columns: repeat(2, 1fr);
       gap: 10px;
     }
 
-    .alert {
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      display: none;
-      animation: slideDown 0.3s ease;
+    .modal-actions {
+      display: flex;
+      gap: 15px;
+      margin-top: 30px;
     }
 
-    .alert.success {
+    .btn-save {
+      flex: 1;
+      background: #48bb78;
+      color: white;
+      padding: 14px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-save:hover {
+      background: #38a169;
+    }
+
+    .btn-cancel {
+      flex: 1;
+      background: #cbd5e0;
+      color: #333;
+      padding: 14px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-cancel:hover {
+      background: #a0aec0;
+    }
+
+    .alert {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 25px;
+      border-radius: 8px;
+      font-weight: 600;
+      z-index: 2000;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    .alert-success {
       background: #c6f6d5;
       color: #22543d;
       border: 2px solid #48bb78;
     }
 
-    .alert.error {
+    .alert-error {
       background: #fed7d7;
       color: #742a2a;
       border: 2px solid #f56565;
     }
 
-    .alert.show {
-      display: block;
-    }
-
-    .loading {
-      text-align: center;
-      padding: 40px;
-      color: white;
-      font-size: 1.2rem;
-    }
-
-    @keyframes slideDown {
+    @keyframes slideIn {
       from {
+        transform: translateX(400px);
         opacity: 0;
-        transform: translateY(-10px);
       }
       to {
+        transform: translateX(0);
         opacity: 1;
-        transform: translateY(0);
       }
     }
 
@@ -344,13 +395,16 @@
         grid-template-columns: 1fr;
       }
 
-      .top-buttons {
+      .time-slots-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .header-actions {
         flex-direction: column;
       }
 
-      .btn {
+      .btn-header {
         width: 100%;
-        justify-content: center;
       }
     }
   </style>
@@ -359,287 +413,282 @@
   <div class="container">
     <div class="header">
       <h1>⚙️ マルチイベント管理</h1>
-      <div class="subtitle">最大5イベントを一括管理・受付期間設定</div>
-    </div>
-
-    <div id="alertBox" class="alert"></div>
-
-    <div class="top-buttons">
-      <button class="btn btn-primary" onclick="loadAllEvents()">🔄 全イベント再読込</button>
-      <button class="btn btn-secondary" onclick="window.open('https://r7bzbizenyaki.github.io/bizen-maru-system/dashboard-citizen.html', '_blank')">📊 ダッシュボード</button>
+      <p style="font-size: 1.1rem; opacity: 0.9;">備前丸予約システム - 最大5イベントまで管理可能</p>
+      <div class="header-actions">
+        <button class="btn-header" onclick="loadAllEvents()">🔄 全イベント再読込</button>
+        <a href="dashboard-citizen.html" class="btn-header" target="_blank">📊 ダッシュボードを開く</a>
+      </div>
     </div>
 
     <div class="events-grid" id="eventsGrid">
-      <div class="loading">イベントを読み込んでいます...</div>
+      <div style="text-align: center; color: white; padding: 40px; grid-column: 1 / -1;">
+        📡 イベントデータを読み込んでいます...
+      </div>
     </div>
   </div>
 
-  <!-- 編集モーダル -->
-  <div class="modal" id="editModal">
+  <!-- 編集/作成モーダル -->
+  <div id="editModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <div class="modal-title" id="modalTitle">イベント編集</div>
-        <button class="close-btn" onclick="closeModal()">×</button>
+        <h2 id="modalTitle">イベントを編集</h2>
+        <button class="close-btn" onclick="closeModal()">&times;</button>
       </div>
 
       <div class="form-group">
-        <label for="editTitle">イベントタイトル</label>
-        <input type="text" id="editTitle" placeholder="例: 備前丸市民限定内覧会">
+        <label>イベントタイトル</label>
+        <input type="text" id="eventTitle" placeholder="例: 備前丸市民限定内覧会">
       </div>
 
       <div class="form-group">
-        <label for="editDate">イベント日付</label>
-        <input type="text" id="editDate" placeholder="例: 2026-03-15">
+        <label>イベント日付</label>
+        <input type="text" id="eventDate" placeholder="例: 2026年3月15日">
       </div>
 
       <div class="form-group">
-        <label for="editStartDateTime">📅 受付開始日時</label>
-        <input type="text" id="editStartDateTime" placeholder="例: 2026-02-15 09:00">
-        <small>形式: YYYY-MM-DD HH:MM（この日時から予約受付開始）</small>
+        <label>受付開始日時 ⭐NEW</label>
+        <input type="datetime-local" id="acceptStart">
       </div>
 
       <div class="form-group">
-        <label for="editEndDateTime">📅 受付終了日時</label>
-        <input type="text" id="editEndDateTime" placeholder="例: 2026-03-14 23:59">
-        <small>形式: YYYY-MM-DD HH:MM（この日時で予約受付終了）</small>
+        <label>受付終了日時 ⭐NEW</label>
+        <input type="datetime-local" id="acceptEnd">
       </div>
 
       <div class="form-group">
-        <label for="editPublicStatus">🔄 公開ステータス</label>
-        <select id="editPublicStatus">
-          <option value="公開">🟢 公開（予約受付中）</option>
-          <option value="非公開">🔴 非公開（予約受付停止）</option>
+        <label>公開ステータス ⭐NEW</label>
+        <select id="publicStatus">
+          <option value="公開">公開</option>
+          <option value="非公開">非公開</option>
         </select>
-        <small>※ 非公開にすると、受付期間内でも即座に予約を停止できます</small>
       </div>
 
       <div class="form-group">
-        <label>⏰ 乗船時間枠（最大10枠）</label>
-        <div class="time-slots-edit" id="timeSlotsEdit"></div>
+        <label>時間枠 (最大10枠)</label>
+        <div class="time-slots-grid">
+          <input type="text" id="slot1" placeholder="例: 09:00-09:30">
+          <input type="text" id="slot2" placeholder="例: 09:30-10:00">
+          <input type="text" id="slot3" placeholder="例: 10:00-10:30">
+          <input type="text" id="slot4" placeholder="例: 10:30-11:00">
+          <input type="text" id="slot5" placeholder="例: 11:00-11:30">
+          <input type="text" id="slot6" placeholder="例: 11:30-12:00">
+          <input type="text" id="slot7" placeholder="例: 13:00-13:30">
+          <input type="text" id="slot8" placeholder="例: 13:30-14:00">
+          <input type="text" id="slot9" placeholder="例: 14:00-14:30">
+          <input type="text" id="slot10" placeholder="例: 14:30-15:00">
+        </div>
       </div>
 
       <div class="form-group">
-        <label for="editNotes">ℹ️ 注意事項</label>
-        <textarea id="editNotes" placeholder="例: ※当日は受付で本人確認を行います。"></textarea>
+        <label>注意事項</label>
+        <textarea id="eventNotes" placeholder="例: ※当日は受付で本人確認を行います。"></textarea>
       </div>
 
-      <div style="display: flex; gap: 10px; margin-top: 20px;">
-        <button class="btn btn-success" onclick="saveEvent()">💾 保存</button>
-        <button class="btn btn-secondary" onclick="closeModal()">キャンセル</button>
+      <div class="modal-actions">
+        <button class="btn-save" onclick="saveEvent()">💾 保存</button>
+        <button class="btn-cancel" onclick="closeModal()">❌ キャンセル</button>
       </div>
+
+      <input type="hidden" id="currentEventNumber">
     </div>
   </div>
 
   <script>
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyLpyqMk8xbnNfDz5H2DHhH_ZLNBSEWDG2pI11zrnRkCFwf3uVvHgrYpr1Asi0ijA1n/exec';
-    let currentEditingEvent = null;
-    let allEvents = [];
+    let allEventsData = [];
 
-    function showAlert(message, type) {
-      const alertBox = document.getElementById('alertBox');
-      alertBox.textContent = message;
-      alertBox.className = `alert ${type} show`;
-      setTimeout(() => alertBox.classList.remove('show'), 5000);
-    }
+    // ページ読み込み時にイベントをロード
+    window.addEventListener('DOMContentLoaded', loadAllEvents);
 
     async function loadAllEvents() {
       try {
-        const response = await fetch(`${SCRIPT_URL}?action=getEventSettings&_=${Date.now()}`);
+        const response = await fetch(`${SCRIPT_URL}?action=getEventSettings`);
         const data = await response.json();
-
+        
         console.log('API Response:', data);
-
+        
         if (data.success) {
-          allEvents = data.events || [];
+          allEventsData = data.events || [];
           renderEventsGrid();
-          showAlert('✅ イベントを読み込みました', 'success');
         } else {
-          showAlert('❌ エラー: ' + data.error, 'error');
-          renderEventsGrid();
+          showAlert('データの読み込みに失敗しました', 'error');
         }
       } catch (error) {
         console.error('通信エラー:', error);
-        showAlert('❌ 通信エラー: ' + error.message, 'error');
-        renderEventsGrid();
+        showAlert(`通信エラー: ${error.message}`, 'error');
       }
     }
 
     function renderEventsGrid() {
       const grid = document.getElementById('eventsGrid');
-      grid.innerHTML = '';
+      let html = '';
 
-      if (allEvents && allEvents.length > 0) {
-        allEvents.forEach(event => {
-          const card = createEventCard(event);
-          grid.appendChild(card);
-        });
+      for (let i = 1; i <= 5; i++) {
+        const event = allEventsData.find(e => e.eventNumber === i);
+        if (event && event['イベントタイトル']) {
+          html += createEventCard(event);
+        } else {
+          html += createEmptyCard(i);
+        }
       }
 
-      const currentEventCount = allEvents ? allEvents.length : 0;
-      for (let i = currentEventCount + 1; i <= 5; i++) {
-        const emptyCard = createEmptyCard(i);
-        grid.appendChild(emptyCard);
-      }
+      grid.innerHTML = html;
     }
 
     function createEventCard(event) {
-      const card = document.createElement('div');
-      card.className = 'event-card';
-
-      const eventNumber = event['イベント番号'] || 1;
-      const title = event['イベントタイトル'] || '(タイトル未設定)';
-      const date = event['イベント日付'] || '(日付未設定)';
-      const publicStatus = event['公開ステータス'] || '公開';
-      const startDateTime = event['受付開始日時'] || '';
-      const endDateTime = event['受付終了日時'] || '';
-
-      let statusBadge = '';
-      if (publicStatus === '非公開') {
-        statusBadge = '<span style="background:#fed7d7; color:#742a2a; padding:4px 10px; border-radius:8px; font-size:0.8rem; font-weight:600;">🔴 非公開</span>';
-      } else {
-        statusBadge = '<span style="background:#c6f6d5; color:#22543d; padding:4px 10px; border-radius:8px; font-size:0.8rem; font-weight:600;">🟢 公開中</span>';
-      }
+      // 公開ステータスを判定 (★NEW付きフィールドにも対応)
+      const status = event['公開ステータス'] || event['公開ステータス ★NEW'] || '公開';
+      const isPublic = (status === '公開');
+      
+      // バッジのスタイル
+      const badgeClass = isPublic ? 'status-public' : 'status-private';
+      const badgeText = isPublic ? '🟢 公開中' : '🔴 非公開';
+      
+      // デバッグ用ログ
+      console.log(`イベント${event.eventNumber}: 公開ステータス="${status}" → 表示="${badgeText}"`);
 
       const timeSlots = [];
       for (let i = 1; i <= 10; i++) {
-        const slot = event[`時間枠${i}`];
-        if (slot) timeSlots.push(slot);
+        const slotKey = `時間枠${i}`;
+        if (event[slotKey]) {
+          timeSlots.push(event[slotKey]);
+        }
       }
 
-      const timeSlotsHTML = timeSlots.map(slot => 
-        `<span class="time-slot-tag">${slot}</span>`
-      ).join('');
-
-      const periodInfo = startDateTime || endDateTime 
-        ? `<div style="font-size:0.85rem; color:#718096; margin-top:10px; line-height:1.5;">
-             ${startDateTime ? `📅 受付開始: ${startDateTime}<br>` : ''}
-             ${endDateTime ? `📅 受付終了: ${endDateTime}` : ''}
-           </div>`
-        : '';
-
-      card.innerHTML = `
-        <div class="event-header">
-          <div class="event-number">イベント ${eventNumber}</div>
-          ${statusBadge}
-        </div>
-        <div class="event-title">${title}</div>
-        <div class="event-date">📅 ${date}</div>
-        ${periodInfo}
-        <div class="time-slots-preview">
-          <h4>⏰ 時間枠 (${timeSlots.length}枠)</h4>
-          ${timeSlotsHTML || '<span style="color:#a0aec0;">未設定</span>'}
-        </div>
-        <div class="card-buttons">
-          <button class="btn btn-primary btn-small" onclick="editEvent(${eventNumber})">✏️ 編集</button>
-          <button class="btn btn-secondary btn-small" onclick="previewEvent(${eventNumber})">👁️ プレビュー</button>
-          <button class="btn btn-danger btn-small" onclick="confirmDeleteEvent(${eventNumber})">🗑️ 削除</button>
+      return `
+        <div class="event-card">
+          <div class="event-header">
+            <h3>イベント ${event.eventNumber}</h3>
+            <span class="status-badge ${badgeClass}">${badgeText}</span>
+          </div>
+          <h2>${event['イベントタイトル'] || '(タイトル未設定)'}</h2>
+          <p class="event-date">📅 ${event['イベント日付'] || '(日付未設定)'}</p>
+          <p class="time-slots">⏰ 時間枠 (${timeSlots.length}枠)</p>
+          <div class="time-slot-preview">
+            ${timeSlots.slice(0, 3).map(slot => `<span class="slot-chip">${slot}</span>`).join('')}
+            ${timeSlots.length > 3 ? `<span class="slot-chip">他${timeSlots.length - 3}枠</span>` : ''}
+          </div>
+          <div class="event-actions">
+            <button class="btn-action btn-edit" onclick="editEvent(${event.eventNumber})">✏️ 編集</button>
+            <button class="btn-action btn-preview" onclick="previewEvent(${event.eventNumber})">👁️ プレビュー</button>
+            <button class="btn-action btn-delete" onclick="confirmDeleteEvent(${event.eventNumber})">🗑️ 削除</button>
+          </div>
         </div>
       `;
-
-      return card;
     }
 
     function createEmptyCard(eventNumber) {
-      const card = document.createElement('div');
-      card.className = 'event-card empty';
-      card.onclick = () => createNewEvent(eventNumber);
-      card.innerHTML = `
-        <div style="text-align: center; color: #a0aec0;">
-          <div style="font-size: 3rem;">➕</div>
-          <div style="font-size: 1.1rem; font-weight: 600;">イベント ${eventNumber} を作成</div>
+      return `
+        <div class="empty-card" onclick="createNewEvent(${eventNumber})">
+          <div class="empty-card-icon">➕</div>
+          <div class="empty-card-text">イベント ${eventNumber} を作成</div>
         </div>
       `;
-      return card;
     }
 
     function createNewEvent(eventNumber) {
-      currentEditingEvent = eventNumber;
       document.getElementById('modalTitle').textContent = `イベント ${eventNumber} を作成`;
-      document.getElementById('editTitle').value = '';
-      document.getElementById('editDate').value = '';
-      document.getElementById('editStartDateTime').value = '';
-      document.getElementById('editEndDateTime').value = '';
-      document.getElementById('editPublicStatus').value = '公開';
-      document.getElementById('editNotes').value = '';
+      document.getElementById('currentEventNumber').value = eventNumber;
       
-      const timeSlotsContainer = document.getElementById('timeSlotsEdit');
-      timeSlotsContainer.innerHTML = '';
+      // フォームをクリア
+      document.getElementById('eventTitle').value = '';
+      document.getElementById('eventDate').value = '';
+      document.getElementById('acceptStart').value = '';
+      document.getElementById('acceptEnd').value = '';
+      document.getElementById('publicStatus').value = '公開';
       for (let i = 1; i <= 10; i++) {
-        timeSlotsContainer.innerHTML += `<input type="text" class="time-slot-input" data-slot="${i}" placeholder="枠${i}">`;
+        document.getElementById(`slot${i}`).value = '';
       }
-
-      document.getElementById('editModal').classList.add('active');
+      document.getElementById('eventNotes').value = '';
+      
+      document.getElementById('editModal').style.display = 'block';
     }
 
     function editEvent(eventNumber) {
-      const event = allEvents.find(e => e['イベント番号'] === eventNumber);
-      if (!event) {
-        showAlert('❌ イベントが見つかりません', 'error');
-        return;
-      }
+      const event = allEventsData.find(e => e.eventNumber === eventNumber);
+      if (!event) return;
 
-      currentEditingEvent = eventNumber;
       document.getElementById('modalTitle').textContent = `イベント ${eventNumber} を編集`;
-      document.getElementById('editTitle').value = event['イベントタイトル'] || '';
-      document.getElementById('editDate').value = event['イベント日付'] || '';
-      document.getElementById('editStartDateTime').value = event['受付開始日時'] || '';
-      document.getElementById('editEndDateTime').value = event['受付終了日時'] || '';
-      document.getElementById('editPublicStatus').value = event['公開ステータス'] || '公開';
-      document.getElementById('editNotes').value = event['注意事項'] || '';
-
-      const timeSlotsContainer = document.getElementById('timeSlotsEdit');
-      timeSlotsContainer.innerHTML = '';
+      document.getElementById('currentEventNumber').value = eventNumber;
+      
+      document.getElementById('eventTitle').value = event['イベントタイトル'] || '';
+      document.getElementById('eventDate').value = event['イベント日付'] || '';
+      
+      // 受付期間の読み込み (★NEW付きフィールドにも対応)
+      const startTime = event['受付開始日時'] || event['受付開始日時 ★NEW'] || '';
+      const endTime = event['受付終了日時'] || event['受付終了日時 ★NEW'] || '';
+      const status = event['公開ステータス'] || event['公開ステータス ★NEW'] || '公開';
+      
+      document.getElementById('acceptStart').value = convertToDatetimeLocal(startTime);
+      document.getElementById('acceptEnd').value = convertToDatetimeLocal(endTime);
+      document.getElementById('publicStatus').value = status;
+      
       for (let i = 1; i <= 10; i++) {
-        const value = event[`時間枠${i}`] || '';
-        timeSlotsContainer.innerHTML += `<input type="text" class="time-slot-input" data-slot="${i}" placeholder="枠${i}" value="${value}">`;
+        document.getElementById(`slot${i}`).value = event[`時間枠${i}`] || '';
       }
+      document.getElementById('eventNotes').value = event['注意事項'] || '';
+      
+      document.getElementById('editModal').style.display = 'block';
+    }
 
-      document.getElementById('editModal').classList.add('active');
+    function convertToDatetimeLocal(dateStr) {
+      if (!dateStr) return '';
+      try {
+        // "2026-02-15 9:00" → "2026-02-15T09:00"
+        return dateStr.replace(' ', 'T').padStart(16, '0');
+      } catch (e) {
+        return '';
+      }
     }
 
     async function saveEvent() {
-      if (!currentEditingEvent) {
-        showAlert('❌ イベント番号が不正です', 'error');
-        return;
-      }
-
+      const eventNumber = parseInt(document.getElementById('currentEventNumber').value);
       const password = prompt('管理パスワードを入力してください:');
+      
       if (!password) return;
 
       const settings = {
-        'イベントタイトル': document.getElementById('editTitle').value,
-        'イベント日付': document.getElementById('editDate').value,
-        '受付開始日時': document.getElementById('editStartDateTime').value,
-        '受付終了日時': document.getElementById('editEndDateTime').value,
-        '公開ステータス': document.getElementById('editPublicStatus').value,
-        '注意事項': document.getElementById('editNotes').value
+        'イベントタイトル': document.getElementById('eventTitle').value,
+        'イベント日付': document.getElementById('eventDate').value,
+        '受付開始日時': document.getElementById('acceptStart').value.replace('T', ' '),
+        '受付終了日時': document.getElementById('acceptEnd').value.replace('T', ' '),
+        '公開ステータス': document.getElementById('publicStatus').value,
+        '注意事項': document.getElementById('eventNotes').value
       };
 
-      document.querySelectorAll('.time-slot-input').forEach(input => {
-        const slotNum = input.dataset.slot;
-        settings[`時間枠${slotNum}`] = input.value;
-      });
+      for (let i = 1; i <= 10; i++) {
+        const slotValue = document.getElementById(`slot${i}`).value;
+        if (slotValue) {
+          settings[`時間枠${i}`] = slotValue;
+        }
+      }
 
       try {
-        const response = await fetch(
-          `${SCRIPT_URL}?action=saveEventSettings&eventNumber=${currentEditingEvent}&settings=${encodeURIComponent(JSON.stringify(settings))}&password=${encodeURIComponent(password)}`
-        );
-        const result = await response.json();
+        const response = await fetch(`${SCRIPT_URL}?action=saveEventSettings`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: `eventNumber=${eventNumber}&settings=${encodeURIComponent(JSON.stringify(settings))}&password=${encodeURIComponent(password)}`
+        });
 
+        const result = await response.json();
+        
         if (result.success) {
-          showAlert('✅ ' + result.message, 'success');
+          showAlert('保存しました!', 'success');
           closeModal();
           loadAllEvents();
         } else {
-          showAlert('❌ エラー: ' + result.error, 'error');
+          showAlert(result.error || '保存に失敗しました', 'error');
         }
       } catch (error) {
-        showAlert('❌ 通信エラー: ' + error.message, 'error');
+        console.error('保存エラー:', error);
+        showAlert(`保存エラー: ${error.message}`, 'error');
       }
     }
 
     function confirmDeleteEvent(eventNumber) {
-      if (!confirm(`イベント ${eventNumber} を削除しますか?\nこの操作は元に戻せません。`)) return;
+      if (!confirm(`イベント ${eventNumber} を削除しますか?\nこの操作は取り消せません。`)) {
+        return;
+      }
       deleteEvent(eventNumber);
     }
 
@@ -648,57 +697,81 @@
       if (!password) return;
 
       try {
-        const response = await fetch(
-          `${SCRIPT_URL}?action=deleteEvent&eventNumber=${eventNumber}&password=${encodeURIComponent(password)}`
-        );
+        const response = await fetch(`${SCRIPT_URL}?action=deleteEvent&eventNumber=${eventNumber}&password=${encodeURIComponent(password)}`);
         const result = await response.json();
-
+        
         if (result.success) {
-          showAlert('✅ ' + result.message, 'success');
+          showAlert('削除しました', 'success');
           loadAllEvents();
         } else {
-          showAlert('❌ エラー: ' + result.error, 'error');
+          showAlert(result.error || '削除に失敗しました', 'error');
         }
       } catch (error) {
-        showAlert('❌ 通信エラー: ' + error.message, 'error');
+        console.error('削除エラー:', error);
+        showAlert(`削除エラー: ${error.message}`, 'error');
       }
     }
 
     function previewEvent(eventNumber) {
-      const event = allEvents.find(e => e['イベント番号'] === eventNumber);
-      if (!event) {
-        showAlert('❌ イベントが見つかりません', 'error');
-        return;
-      }
+      const event = allEventsData.find(e => e.eventNumber === eventNumber);
+      if (!event) return;
 
-      const title = event['イベントタイトル'] || '(タイトル未設定)';
-      const date = event['イベント日付'] || '(日付未設定)';
-      const startDateTime = event['受付開始日時'] || '未設定';
-      const endDateTime = event['受付終了日時'] || '未設定';
-      const publicStatus = event['公開ステータス'] || '公開';
-      const notes = event['注意事項'] || '(注意事項なし)';
-
-      const timeSlots = [];
-      for (let i = 1; i <= 10; i++) {
-        const slot = event[`時間枠${i}`];
-        if (slot) timeSlots.push(slot);
-      }
-
-      alert(`【プレビュー】\n\n${title}\n📅 ${date}\n\n🔄 公開ステータス: ${publicStatus}\n📅 受付開始: ${startDateTime}\n📅 受付終了: ${endDateTime}\n\n⏰ 時間枠:\n${timeSlots.join('\n') || '未設定'}\n\nℹ️ 注意事項:\n${notes}`);
+      const previewWindow = window.open('', '_blank', 'width=800,height=600');
+      previewWindow.document.write(`
+        <!DOCTYPE html>
+        <html lang="ja">
+        <head>
+          <meta charset="UTF-8">
+          <title>プレビュー - ${event['イベントタイトル']}</title>
+          <style>
+            body { font-family: sans-serif; padding: 30px; max-width: 800px; margin: auto; }
+            h1 { color: #667eea; }
+            .info { background: #f7fafc; padding: 20px; border-radius: 10px; margin: 20px 0; }
+            .slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+            .slot { background: #e6f2ff; padding: 10px; border-radius: 5px; text-align: center; }
+          </style>
+        </head>
+        <body>
+          <h1>${event['イベントタイトル']}</h1>
+          <div class="info">
+            <p><strong>📅 日付:</strong> ${event['イベント日付']}</p>
+            <p><strong>⏰ 時間枠:</strong></p>
+            <div class="slots">
+              ${Array.from({length: 10}, (_, i) => {
+                const slot = event[`時間枠${i + 1}`];
+                return slot ? `<div class="slot">${slot}</div>` : '';
+              }).join('')}
+            </div>
+            <p style="margin-top: 20px;"><strong>📝 注意事項:</strong></p>
+            <p>${event['注意事項'] || 'なし'}</p>
+          </div>
+        </body>
+        </html>
+      `);
     }
 
     function closeModal() {
-      document.getElementById('editModal').classList.remove('active');
-      currentEditingEvent = null;
+      document.getElementById('editModal').style.display = 'none';
     }
 
-    document.getElementById('editModal').addEventListener('click', function(e) {
-      if (e.target === this) {
+    function showAlert(message, type) {
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type}`;
+      alert.textContent = message;
+      document.body.appendChild(alert);
+
+      setTimeout(() => {
+        alert.remove();
+      }, 3000);
+    }
+
+    // モーダル外クリックで閉じる
+    window.onclick = function(event) {
+      const modal = document.getElementById('editModal');
+      if (event.target === modal) {
         closeModal();
       }
-    });
-
-    loadAllEvents();
+    }
   </script>
 </body>
 </html>
