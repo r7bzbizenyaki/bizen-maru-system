@@ -78,9 +78,10 @@
       border-color: #667eea;
     }
 
-    .form-group textarea {
-      resize: vertical;
-      min-height: 100px;
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
     }
 
     .time-grid {
@@ -249,6 +250,10 @@
         font-size: 1.6rem;
       }
 
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
       .time-grid {
         grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
       }
@@ -290,6 +295,24 @@
         <div class="form-group">
           <label>お名前<span class="required">*</span></label>
           <input type="text" id="name" name="name" placeholder="例: 山田 太郎" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>性別<span class="required">*</span></label>
+            <select id="gender" name="gender" required>
+              <option value="">選択してください</option>
+              <option value="男性">男性</option>
+              <option value="女性">女性</option>
+              <option value="その他">その他</option>
+              <option value="回答しない">回答しない</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>年齢<span class="required">*</span></label>
+            <input type="number" id="age" name="age" placeholder="例: 30" min="0" max="120" required>
+          </div>
         </div>
 
         <div class="form-group">
@@ -454,6 +477,8 @@
         date: document.getElementById('date').value,
         time: selectedTime.value,
         name: document.getElementById('name').value,
+        gender: document.getElementById('gender').value,
+        age: document.getElementById('age').value,
         postal: document.getElementById('postal').value,
         address: document.getElementById('address').value,
         phone: document.getElementById('phone').value,
@@ -461,7 +486,7 @@
       };
       
       // 送信前の確認
-      if (!confirm(`以下の内容で予約を確定しますか?\n\n日付: ${formData.date}\n時間: ${formData.time}\n氏名: ${formData.name}`)) {
+      if (!confirm(`以下の内容で予約を確定しますか?\n\n日付: ${formData.date}\n時間: ${formData.time}\n氏名: ${formData.name}\n性別: ${formData.gender}\n年齢: ${formData.age}`)) {
         return;
       }
       
