@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎫 備前丸市民限定内覧会 予約フォーム</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      color: #667eea;
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      color: #666;
+      font-size: 1.1rem;
+    }
+
+    .form-group {
+      margin-bottom: 25px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+      font-size: 1rem;
+    }
+
+    .form-group label .required {
+      color: #f56565;
+      margin-left: 4px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .time-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .time-option {
+      position: relative;
+    }
+
+    .time-option input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+    }
+
+    .time-option label {
+      display: block;
+      padding: 12px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: 500;
+    }
+
+    .time-option input[type="radio"]:checked + label {
+      background: #667eea;
+      color: white;
+      border-color: #667eea;
+    }
+
+    .time-option label:hover {
+      border-color: #667eea;
+      background: #f0f4ff;
+    }
+
+    .time-option input[type="radio"]:checked + label:hover {
+      background: #5568d3;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.2rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.3s, box-shadow 0.3s;
+      margin-top: 20px;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+    }
+
+    .submit-btn:disabled {
+      background: #cbd5e0;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 40px;
+      color: #667eea;
+      font-size: 1.2rem;
+    }
+
+    .loading.active {
+      display: block;
+    }
+
+    .alert {
+      padding: 15px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-weight: 500;
+    }
+
+    .alert-info {
+      background: #bee3f8;
+      color: #2c5282;
+      border: 2px solid #4299e1;
+    }
+
+    .alert-error {
+      background: #fed7d7;
+      color: #742a2a;
+      border: 2px solid #f56565;
+    }
+
+    .alert-success {
+      background: #c6f6d5;
+      color: #22543d;
+      border: 2px solid #48bb78;
+    }
+
+    .notice {
+      background: #f7fafc;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 25px;
+      border-left: 4px solid #667eea;
+    }
+
+    .notice h3 {
+      color: #667eea;
+      margin-bottom: 10px;
+      font-size: 1.1rem;
+    }
+
+    .notice p {
+      color: #666;
+      line-height: 1.6;
+    }
+
+    .unavailable-container {
+      max-width: 600px;
+      margin: 100px auto;
+      padding: 40px;
+      background: white;
+      border-radius: 15px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .unavailable-container h1 {
+      color: #f56565;
+      font-size: 2rem;
+      margin-bottom: 20px;
+    }
+
+    .unavailable-container h2 {
+      color: #333;
+      margin-bottom: 15px;
+    }
+
+    .unavailable-container p {
+      font-size: 1.1rem;
+      color: #666;
+      line-height: 1.8;
+      margin-bottom: 10px;
+    }
+
+    .unavailable-container .contact {
+      margin-top: 30px;
+      color: #999;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 25px;
+        margin: 20px auto;
+      }
+
+      .header h1 {
+        font-size: 1.6rem;
+      }
+
+      .time-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="loadingScreen" class="loading">
+    <p>🔄 受付状況を確認しています...</p>
+  </div>
+
+  <div id="mainContent" style="display: none;">
+    <div class="container">
+      <div class="header">
+        <h1>🎫 備前丸市民限定内覧会</h1>
+        <p>予約フォーム</p>
+      </div>
+
+      <div id="alertContainer"></div>
+
+      <div class="notice">
+        <h3>📝 ご予約にあたって</h3>
+        <p id="noticeText">※当日は受付で本人確認を行います。</p>
+      </div>
+
+      <form id="reservationForm">
+        <div class="form-group">
+          <label>予約日<span class="required">*</span></label>
+          <input type="text" id="date" name="date" readonly>
+        </div>
+
+        <div class="form-group">
+          <label>希望時間枠<span class="required">*</span></label>
+          <div class="time-grid" id="timeSlots">
+            <!-- 動的に生成 -->
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>お名前<span class="required">*</span></label>
+          <input type="text" id="name" name="name" placeholder="例: 山田 太郎" required>
+        </div>
+
+        <div class="form-group">
+          <label>郵便番号<span class="required">*</span></label>
+          <input type="text" id="postal" name="postal" placeholder="例: 123-4567" pattern="\d{3}-?\d{4}" required>
+        </div>
+
+        <div class="form-group">
+          <label>住所<span class="required">*</span></label>
+          <input type="text" id="address" name="address" placeholder="例: 岡山県備前市..." required>
+        </div>
+
+        <div class="form-group">
+          <label>電話番号<span class="required">*</span></label>
+          <input type="tel" id="phone" name="phone" placeholder="例: 090-1234-5678" required>
+        </div>
+
+        <div class="form-group">
+          <label>メールアドレス<span class="required">*</span></label>
+          <input type="email" id="email" name="email" placeholder="例: example@mail.com" required>
+        </div>
+
+        <button type="submit" class="submit-btn" id="submitBtn">
+          🎫 予約を確定する
+        </button>
+      </form>
+
+      <div id="loadingSubmit" class="loading">
+        <p>📤 予約を送信しています...</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyLpyqMk8xbnNfDz5H2DHhH_ZLNBSEWDG2pI11zrnRkCFwf3uVvHgrYpr1Asi0ijA1n/exec';
+    
+    let eventSettings = null;
+
+    // ページ読み込み時の初期化
+    window.addEventListener('DOMContentLoaded', async () => {
+      document.getElementById('loadingScreen').classList.add('active');
+      
+      // 受付可否チェック
+      const isAvailable = await checkAvailability();
+      
+      if (!isAvailable) {
+        document.getElementById('loadingScreen').classList.remove('active');
+        return; // フォームを表示しない
+      }
+      
+      // フォームの初期化
+      await initializeForm();
+      
+      document.getElementById('loadingScreen').classList.remove('active');
+      document.getElementById('mainContent').style.display = 'block';
+    });
+
+    /**
+     * 受付期間チェック
+     */
+    async function checkAvailability() {
+      try {
+        const response = await fetch(`${SCRIPT_URL}?action=checkAvailability`);
+        const data = await response.json();
+        
+        console.log('受付チェック結果:', data);
+        
+        if (!data.available) {
+          // 受付不可の場合
+          document.body.innerHTML = `
+            <div class="unavailable-container">
+              <h1>⚠️ 予約受付停止中</h1>
+              ${data.title ? `<h2>${data.title}</h2>` : ''}
+              ${data.date ? `<p style="font-size: 1.2rem; margin-bottom: 20px;">📅 ${data.date}</p>` : ''}
+              <p style="font-size: 1.3rem; font-weight: 600; color: #f56565; margin: 30px 0;">${data.reason}</p>
+              <p class="contact">お問い合わせは運営事務局までご連絡ください。</p>
+            </div>
+          `;
+          return false;
+        }
+        
+        // 受付可能な場合、イベント情報を保存
+        eventSettings = data;
+        return true;
+        
+      } catch (error) {
+        console.error('受付チェックエラー:', error);
+        showAlert('受付状況の確認に失敗しました。しばらくしてから再度お試しください。', 'error');
+        return true; // エラー時は一応表示を許可
+      }
+    }
+
+    /**
+     * フォームの初期化
+     */
+    async function initializeForm() {
+      try {
+        // イベント設定から情報を読み込む
+        const response = await fetch(`${SCRIPT_URL}?action=getEventSettings`);
+        const data = await response.json();
+        
+        if (data.success && data.events && data.events.length > 0) {
+          const event = data.events[0]; // イベント1のデータを使用
+          
+          // 日付をセット
+          const dateInput = document.getElementById('date');
+          dateInput.value = event['イベント日付'] || '';
+          
+          // 注意事項をセット
+          const noticeText = document.getElementById('noticeText');
+          if (event['注意事項']) {
+            noticeText.textContent = event['注意事項'];
+          }
+          
+          // 時間枠を生成
+          const timeSlotsContainer = document.getElementById('timeSlots');
+          timeSlotsContainer.innerHTML = '';
+          
+          for (let i = 1; i <= 10; i++) {
+            const slot = event[`時間枠${i}`];
+            if (slot) {
+              const div = document.createElement('div');
+              div.className = 'time-option';
+              div.innerHTML = `
+                <input type="radio" id="time${i}" name="time" value="${slot}" required>
+                <label for="time${i}">${slot}</label>
+              `;
+              timeSlotsContainer.appendChild(div);
+            }
+          }
+          
+        } else {
+          showAlert('イベント情報の読み込みに失敗しました。', 'error');
+        }
+        
+      } catch (error) {
+        console.error('初期化エラー:', error);
+        showAlert('初期化に失敗しました。ページを再読み込みしてください。', 'error');
+      }
+    }
+
+    /**
+     * フォーム送信処理
+     */
+    document.getElementById('reservationForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const submitBtn = document.getElementById('submitBtn');
+      const form = document.getElementById('reservationForm');
+      const loadingSubmit = document.getElementById('loadingSubmit');
+      
+      // 選択された時間枠を取得
+      const selectedTime = document.querySelector('input[name="time"]:checked');
+      if (!selectedTime) {
+        showAlert('時間枠を選択してください。', 'error');
+        return;
+      }
+      
+      // フォームデータを収集
+      const formData = {
+        category: '市民',
+        date: document.getElementById('date').value,
+        time: selectedTime.value,
+        name: document.getElementById('name').value,
+        postal: document.getElementById('postal').value,
+        address: document.getElementById('address').value,
+        phone: document.getElementById('phone').value,
+        email: document.getElementById('email').value
+      };
+      
+      // 送信前の確認
+      if (!confirm(`以下の内容で予約を確定しますか?\n\n日付: ${formData.date}\n時間: ${formData.time}\n氏名: ${formData.name}`)) {
+        return;
+      }
+      
+      // UI変更
+      submitBtn.disabled = true;
+      form.style.display = 'none';
+      loadingSubmit.classList.add('active');
+      
+      try {
+        // POSTリクエスト送信
+        const response = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: new URLSearchParams(formData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          // 成功時
+          document.getElementById('mainContent').innerHTML = `
+            <div class="container">
+              <div class="alert alert-success">
+                <h2 style="margin-bottom: 15px;">✅ 予約が完了しました!</h2>
+                <p style="margin-bottom: 10px;">チケットID: <strong>${result.ticketId}</strong></p>
+                <p style="margin-bottom: 20px;">確認メールを送信しました。</p>
+                <p>当日はメールに記載されたQRコードをご提示ください。</p>
+              </div>
+            </div>
+          `;
+        } else {
+          throw new Error(result.error || '予約に失敗しました');
+        }
+        
+      } catch (error) {
+        console.error('送信エラー:', error);
+        loadingSubmit.classList.remove('active');
+        form.style.display = 'block';
+        submitBtn.disabled = false;
+        showAlert(`エラー: ${error.message}`, 'error');
+      }
+    });
+
+    /**
+     * アラート表示
+     */
+    function showAlert(message, type) {
+      const alertContainer = document.getElementById('alertContainer');
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type}`;
+      alert.textContent = message;
+      alertContainer.appendChild(alert);
+      
+      setTimeout(() => {
+        alert.remove();
+      }, 5000);
+    }
+  </script>
+</body>
+</html>
