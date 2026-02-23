@@ -261,7 +261,7 @@
       color: #2d3748;
     }
 
-    input, textarea {
+    input, textarea, select {
       width: 100%;
       padding: 10px;
       border: 2px solid #e2e8f0;
@@ -270,7 +270,7 @@
       transition: border-color 0.3s;
     }
 
-    input:focus, textarea:focus {
+    input:focus, textarea:focus, select:focus {
       outline: none;
       border-color: #667eea;
     }
@@ -278,6 +278,13 @@
     textarea {
       min-height: 80px;
       resize: vertical;
+    }
+
+    small {
+      display: block;
+      margin-top: 4px;
+      color: #718096;
+      font-size: 0.85rem;
     }
 
     .time-slots-edit {
@@ -352,7 +359,7 @@
   <div class="container">
     <div class="header">
       <h1>⚙️ マルチイベント管理</h1>
-      <div class="subtitle">最大5イベントを一括管理</div>
+      <div class="subtitle">最大5イベントを一括管理・受付期間設定</div>
     </div>
 
     <div id="alertBox" class="alert"></div>
@@ -382,16 +389,37 @@
 
       <div class="form-group">
         <label for="editDate">イベント日付</label>
-        <input type="text" id="editDate" placeholder="例: 2026年3月15日">
+        <input type="text" id="editDate" placeholder="例: 2026-03-15">
       </div>
 
       <div class="form-group">
-        <label>乗船時間枠（最大10枠）</label>
+        <label for="editStartDateTime">📅 受付開始日時</label>
+        <input type="text" id="editStartDateTime" placeholder="例: 2026-02-15 09:00">
+        <small>形式: YYYY-MM-DD HH:MM（この日時から予約受付開始）</small>
+      </div>
+
+      <div class="form-group">
+        <label for="editEndDateTime">📅 受付終了日時</label>
+        <input type="text" id="editEndDateTime" placeholder="例: 2026-03-14 23:59">
+        <small>形式: YYYY-MM-DD HH:MM（この日時で予約受付終了）</small>
+      </div>
+
+      <div class="form-group">
+        <label for="editPublicStatus">🔄 公開ステータス</label>
+        <select id="editPublicStatus">
+          <option value="公開">🟢 公開（予約受付中）</option>
+          <option value="非公開">🔴 非公開（予約受付停止）</option>
+        </select>
+        <small>※ 非公開にすると、受付期間内でも即座に予約を停止できます</small>
+      </div>
+
+      <div class="form-group">
+        <label>⏰ 乗船時間枠（最大10枠）</label>
         <div class="time-slots-edit" id="timeSlotsEdit"></div>
       </div>
 
       <div class="form-group">
-        <label for="editNotes">注意事項</label>
+        <label for="editNotes">ℹ️ 注意事項</label>
         <textarea id="editNotes" placeholder="例: ※当日は受付で本人確認を行います。"></textarea>
       </div>
 
@@ -419,7 +447,7 @@
         const response = await fetch(`${SCRIPT_URL}?action=getEventSettings&_=${Date.now()}`);
         const data = await response.json();
 
-        console.log('API Response:', data); // デバッグ用
+        console.log('API Response:', data);
 
         if (data.success) {
           allEvents = data.events || [];
@@ -427,12 +455,12 @@
           showAlert('✅ イベントを読み込みました', 'success');
         } else {
           showAlert('❌ エラー: ' + data.error, 'error');
-          renderEventsGrid(); // 空でも表示
+          renderEventsGrid();
         }
       } catch (error) {
         console.error('通信エラー:', error);
         showAlert('❌ 通信エラー: ' + error.message, 'error');
-        renderEventsGrid(); // 空でも表示
+        renderEventsGrid();
       }
     }
 
@@ -440,7 +468,6 @@
       const grid = document.getElementById('eventsGrid');
       grid.innerHTML = '';
 
-      // 既存イベント表示
       if (allEvents && allEvents.length > 0) {
         allEvents.forEach(event => {
           const card = createEventCard(event);
@@ -448,7 +475,6 @@
         });
       }
 
-      // 空きスロット表示（最大5イベント）
       const currentEventCount = allEvents ? allEvents.length : 0;
       for (let i = currentEventCount + 1; i <= 5; i++) {
         const emptyCard = createEmptyCard(i);
@@ -463,6 +489,16 @@
       const eventNumber = event['イベント番号'] || 1;
       const title = event['イベントタイトル'] || '(タイトル未設定)';
       const date = event['イベント日付'] || '(日付未設定)';
+      const publicStatus = event['公開ステータス'] || '公開';
+      const startDateTime = event['受付開始日時'] || '';
+      const endDateTime = event['受付終了日時'] || '';
+
+      let statusBadge = '';
+      if (publicStatus === '非公開') {
+        statusBadge = '<span style="background:#fed7d7; color:#742a2a; padding:4px 10px; border-radius:8px; font-size:0.8rem; font-weight:600;">🔴 非公開</span>';
+      } else {
+        statusBadge = '<span style="background:#c6f6d5; color:#22543d; padding:4px 10px; border-radius:8px; font-size:0.8rem; font-weight:600;">🟢 公開中</span>';
+      }
 
       const timeSlots = [];
       for (let i = 1; i <= 10; i++) {
@@ -474,12 +510,21 @@
         `<span class="time-slot-tag">${slot}</span>`
       ).join('');
 
+      const periodInfo = startDateTime || endDateTime 
+        ? `<div style="font-size:0.85rem; color:#718096; margin-top:10px; line-height:1.5;">
+             ${startDateTime ? `📅 受付開始: ${startDateTime}<br>` : ''}
+             ${endDateTime ? `📅 受付終了: ${endDateTime}` : ''}
+           </div>`
+        : '';
+
       card.innerHTML = `
         <div class="event-header">
           <div class="event-number">イベント ${eventNumber}</div>
+          ${statusBadge}
         </div>
         <div class="event-title">${title}</div>
         <div class="event-date">📅 ${date}</div>
+        ${periodInfo}
         <div class="time-slots-preview">
           <h4>⏰ 時間枠 (${timeSlots.length}枠)</h4>
           ${timeSlotsHTML || '<span style="color:#a0aec0;">未設定</span>'}
@@ -512,6 +557,9 @@
       document.getElementById('modalTitle').textContent = `イベント ${eventNumber} を作成`;
       document.getElementById('editTitle').value = '';
       document.getElementById('editDate').value = '';
+      document.getElementById('editStartDateTime').value = '';
+      document.getElementById('editEndDateTime').value = '';
+      document.getElementById('editPublicStatus').value = '公開';
       document.getElementById('editNotes').value = '';
       
       const timeSlotsContainer = document.getElementById('timeSlotsEdit');
@@ -534,6 +582,9 @@
       document.getElementById('modalTitle').textContent = `イベント ${eventNumber} を編集`;
       document.getElementById('editTitle').value = event['イベントタイトル'] || '';
       document.getElementById('editDate').value = event['イベント日付'] || '';
+      document.getElementById('editStartDateTime').value = event['受付開始日時'] || '';
+      document.getElementById('editEndDateTime').value = event['受付終了日時'] || '';
+      document.getElementById('editPublicStatus').value = event['公開ステータス'] || '公開';
       document.getElementById('editNotes').value = event['注意事項'] || '';
 
       const timeSlotsContainer = document.getElementById('timeSlotsEdit');
@@ -558,6 +609,9 @@
       const settings = {
         'イベントタイトル': document.getElementById('editTitle').value,
         'イベント日付': document.getElementById('editDate').value,
+        '受付開始日時': document.getElementById('editStartDateTime').value,
+        '受付終了日時': document.getElementById('editEndDateTime').value,
+        '公開ステータス': document.getElementById('editPublicStatus').value,
         '注意事項': document.getElementById('editNotes').value
       };
 
@@ -619,6 +673,9 @@
 
       const title = event['イベントタイトル'] || '(タイトル未設定)';
       const date = event['イベント日付'] || '(日付未設定)';
+      const startDateTime = event['受付開始日時'] || '未設定';
+      const endDateTime = event['受付終了日時'] || '未設定';
+      const publicStatus = event['公開ステータス'] || '公開';
       const notes = event['注意事項'] || '(注意事項なし)';
 
       const timeSlots = [];
@@ -627,7 +684,7 @@
         if (slot) timeSlots.push(slot);
       }
 
-      alert(`【プレビュー】\n\n${title}\n📅 ${date}\n\n⏰ 時間枠:\n${timeSlots.join('\n') || '未設定'}\n\nℹ️ 注意事項:\n${notes}`);
+      alert(`【プレビュー】\n\n${title}\n📅 ${date}\n\n🔄 公開ステータス: ${publicStatus}\n📅 受付開始: ${startDateTime}\n📅 受付終了: ${endDateTime}\n\n⏰ 時間枠:\n${timeSlots.join('\n') || '未設定'}\n\nℹ️ 注意事項:\n${notes}`);
     }
 
     function closeModal() {
@@ -635,14 +692,12 @@
       currentEditingEvent = null;
     }
 
-    // モーダル外クリックで閉じる
     document.getElementById('editModal').addEventListener('click', function(e) {
       if (e.target === this) {
         closeModal();
       }
     });
 
-    // 初回読込
     loadAllEvents();
   </script>
 </body>
