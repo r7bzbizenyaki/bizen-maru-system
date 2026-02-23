@@ -1,356 +1,306 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ダッシュボード - 備前丸市民限定内覧会</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 15px;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 25px;
-            border-radius: 15px;
-            text-align: center;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-        
-        .header h1 {
-            font-size: 26px;
-            margin-bottom: 8px;
-        }
-        
-        .header p {
-            font-size: 14px;
-            opacity: 0.95;
-        }
-        
-        .last-update {
-            background: rgba(255,255,255,0.2);
-            padding: 8px 15px;
-            border-radius: 20px;
-            display: inline-block;
-            margin-top: 10px;
-            font-size: 13px;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 25px;
-        }
-        
-        .stat-card {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            transition: transform 0.3s;
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-        }
-        
-        .stat-icon {
-            font-size: 36px;
-            margin-bottom: 10px;
-        }
-        
-        .stat-label {
-            font-size: 13px;
-            color: #666;
-            margin-bottom: 8px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .stat-value {
-            font-size: 42px;
-            font-weight: bold;
-            color: #667eea;
-            line-height: 1;
-        }
-        
-        .stat-value.onboard {
-            color: #4CAF50;
-        }
-        
-        .records-section {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        
-        .records-section h2 {
-            font-size: 20px;
-            color: #333;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .records-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        .records-table th {
-            background: #f8f9fa;
-            padding: 12px;
-            text-align: left;
-            font-size: 13px;
-            color: #666;
-            font-weight: 600;
-            border-bottom: 2px solid #e9ecef;
-        }
-        
-        .records-table td {
-            padding: 12px;
-            border-bottom: 1px solid #e9ecef;
-            font-size: 14px;
-        }
-        
-        .records-table tr:hover {
-            background: #f8f9fa;
-        }
-        
-        .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        
-        .badge.boarding {
-            background: #d4edda;
-            color: #155724;
-        }
-        
-        .badge.alighting {
-            background: #fff3cd;
-            color: #856404;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-        }
-        
-        .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .no-data {
-            text-align: center;
-            padding: 40px;
-            color: #999;
-        }
-        
-        @media (max-width: 768px) {
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .records-table {
-                font-size: 12px;
-            }
-            
-            .records-table th,
-            .records-table td {
-                padding: 8px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📊 リアルタイムダッシュボード</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    .subtitle {
+      font-size: 1.2rem;
+      opacity: 0.9;
+    }
+
+    .update-time {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 8px 16px;
+      border-radius: 20px;
+      margin-top: 10px;
+      font-size: 0.9rem;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 15px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      transition: transform 0.3s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .stat-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+    }
+
+    .stat-label {
+      font-size: 1rem;
+      color: #666;
+      margin-bottom: 10px;
+    }
+
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: #667eea;
+    }
+
+    .stat-value.green {
+      color: #48bb78;
+    }
+
+    .recent-section {
+      background: white;
+      border-radius: 15px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      font-size: 1.5rem;
+      color: #333;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: #f7fafc;
+    }
+
+    th {
+      padding: 15px;
+      text-align: left;
+      font-weight: 600;
+      color: #4a5568;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    td {
+      padding: 15px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    tbody tr:hover {
+      background: #f7fafc;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 5px 12px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .status-boarded {
+      background: #c6f6d5;
+      color: #22543d;
+    }
+
+    .status-disembarked {
+      background: #fed7d7;
+      color: #742a2a;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 1.8rem;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      table {
+        font-size: 0.9rem;
+      }
+
+      th, td {
+        padding: 10px;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>📊 リアルタイムダッシュボード</h1>
-            <p>備前丸市民限定内覧会</p>
-            <div class="last-update" id="lastUpdate">
-                更新中...
-            </div>
-        </div>
-        
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon">🚢</div>
-                <div class="stat-label">総乗船数</div>
-                <div class="stat-value" id="totalBoarding">-</div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon">⚓</div>
-                <div class="stat-label">総下船数</div>
-                <div class="stat-value" id="totalAlighting">-</div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon">👥</div>
-                <div class="stat-label">現在船内</div>
-                <div class="stat-value onboard" id="currentOnboard">-</div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon">⏱️</div>
-                <div class="stat-label">平均滞在時間</div>
-                <div class="stat-value" id="avgStay">-</div>
-            </div>
-        </div>
-        
-        <div class="records-section">
-            <h2>📋 最近の記録</h2>
-            
-            <div id="loadingArea" class="loading">
-                <div class="spinner"></div>
-                <p>データを読み込んでいます...</p>
-            </div>
-            
-            <div id="tableArea" style="display: none;">
-                <table class="records-table">
-                    <thead>
-                        <tr>
-                            <th>時刻</th>
-                            <th>種別</th>
-                            <th>チケットID</th>
-                            <th>予約者名</th>
-                        </tr>
-                    </thead>
-                    <tbody id="recordsBody">
-                    </tbody>
-                </table>
-            </div>
-            
-            <div id="noDataArea" class="no-data" style="display: none;">
-                <p>まだ記録がありません</p>
-            </div>
-        </div>
+  <div class="container">
+    <div class="header">
+      <h1>📊 リアルタイムダッシュボード</h1>
+      <div class="subtitle">備前丸市民限定内覧会</div>
+      <div class="update-time" id="updateTime">最終更新: 18:00:47</div>
     </div>
-    
-    <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyLpyqMk8xbnNfDz5H2DHhH_ZLNBSEWDG2pI11zrnRkCFwf3uVvHgrYpr1Asi0ijA1n/exec';
-        
-        // 統計データ取得
-        async function fetchStats() {
-            try {
-                const response = await fetch(`${SCRIPT_URL}?action=getDashboardData`);
-                const data = await response.json();
-                
-                if (data.success) {
-                    updateStats(data);
-                    updateRecords(data.recentRecords || []);
-                    updateLastUpdate();
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">🚢</div>
+        <div class="stat-label">総乗船数</div>
+        <div class="stat-value" id="totalBoarding">0</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">⚓</div>
+        <div class="stat-label">総下船数</div>
+        <div class="stat-value" id="totalDisembarking">0</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-label">現在船内</div>
+        <div class="stat-value green" id="currentOnboard">0</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">⏱️</div>
+        <div class="stat-label">平均滞在時間</div>
+        <div class="stat-value" id="averageStay">-</div>
+      </div>
+    </div>
+
+    <div class="recent-section">
+      <div class="section-header">
+        📋 最近の記録
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>時刻</th>
+            <th>種別</th>
+            <th>予約時間</th>
+            <th>予約者名</th>
+          </tr>
+        </thead>
+        <tbody id="recentTableBody">
+          <tr>
+            <td colspan="4" class="loading">データを読み込んでいます...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyLpyqMk8xbnNfDz5H2DHhH_ZLNBSEWDG2pI11zrnRkCFwf3uVvHgrYpr1Asi0ijA1n/exec';
+
+    async function fetchStats() {
+      try {
+        const response = await fetch(`${SCRIPT_URL}?action=getDashboardData`);
+        const data = await response.json();
+
+        if (data.success) {
+          document.getElementById('totalBoarding').textContent = data.totalBoarding;
+          document.getElementById('totalDisembarking').textContent = data.totalDisembarking;
+          document.getElementById('currentOnboard').textContent = data.currentOnboard;
+          
+          const avgStay = data.averageStayMinutes > 0 
+            ? `${data.averageStayMinutes}分` 
+            : '-';
+          document.getElementById('averageStay').textContent = avgStay;
+
+          const recentTableBody = document.getElementById('recentTableBody');
+          if (data.recentRecords && data.recentRecords.length > 0) {
+            recentTableBody.innerHTML = data.recentRecords.map(record => {
+              let displayTime = '-';
+              if (record.boardingTime) {
+                try {
+                  const date = new Date(record.boardingTime);
+                  if (!isNaN(date.getTime())) {
+                    displayTime = date.toLocaleString('ja-JP', {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    });
+                  } else {
+                    displayTime = record.boardingTime;
+                  }
+                } catch (e) {
+                  displayTime = record.boardingTime || '-';
                 }
-            } catch (error) {
-                console.error('データ取得エラー:', error);
-            }
+              }
+
+              return `
+                <tr>
+                  <td>${displayTime}</td>
+                  <td><span class="status-badge ${record.status === '乗船済' ? 'status-boarded' : 'status-disembarked'}">${record.status || '-'}</span></td>
+                  <td>${record.time || '-'}</td>
+                  <td>${record.name || '-'}</td>
+                </tr>
+              `;
+            }).join('');
+          } else {
+            recentTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#999;">記録がありません</td></tr>';
+          }
+
+          const now = new Date();
+          document.getElementById('updateTime').textContent = 
+            `最終更新: ${now.toLocaleTimeString('ja-JP')}`;
         }
-        
-        // 統計表示更新
-        function updateStats(data) {
-            document.getElementById('totalBoarding').textContent = data.boarding || 0;
-            document.getElementById('totalAlighting').textContent = data.alighting || 0;
-            document.getElementById('currentOnboard').textContent = 
-                (data.boarding || 0) - (data.alighting || 0);
-            
-            if (data.avgStay) {
-                document.getElementById('avgStay').textContent = data.avgStay;
-            } else {
-                document.getElementById('avgStay').textContent = '-';
-            }
-        }
-        
-        // 記録一覧更新
-        function updateRecords(records) {
-            const tbody = document.getElementById('recordsBody');
-            const loadingArea = document.getElementById('loadingArea');
-            const tableArea = document.getElementById('tableArea');
-            const noDataArea = document.getElementById('noDataArea');
-            
-            loadingArea.style.display = 'none';
-            
-            if (!records || records.length === 0) {
-                tableArea.style.display = 'none';
-                noDataArea.style.display = 'block';
-                return;
-            }
-            
-            noDataArea.style.display = 'none';
-            tableArea.style.display = 'block';
-            
-            tbody.innerHTML = '';
-            
-            records.forEach(record => {
-                const row = document.createElement('tr');
-                
-                const time = new Date(record.timestamp);
-                const timeStr = time.toLocaleTimeString('ja-JP', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit'
-                });
-                
-                row.innerHTML = `
-                    <td>${timeStr}</td>
-                    <td><span class="badge ${record.type === '乗船' ? 'boarding' : 'alighting'}">${record.type}</span></td>
-                    <td>${record.ticketId}</td>
-                    <td>${record.name || '-'}</td>
-                `;
-                
-                tbody.appendChild(row);
-            });
-        }
-        
-        // 最終更新時刻表示
-        function updateLastUpdate() {
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString('ja-JP');
-            document.getElementById('lastUpdate').textContent = `最終更新: ${timeStr}`;
-        }
-        
-        // 初回読み込み
-        fetchStats();
-        
-        // 5秒ごとに自動更新
-        setInterval(fetchStats, 5000);
-    </script>
+      } catch (error) {
+        console.error('データ取得エラー:', error);
+        document.getElementById('recentTableBody').innerHTML = 
+          '<tr><td colspan="4" style="text-align:center; color:red;">データの読み込みに失敗しました</td></tr>';
+      }
+    }
+
+    fetchStats();
+    setInterval(fetchStats, 5000);
+  </script>
 </body>
 </html>
