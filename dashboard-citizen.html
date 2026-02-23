@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>📊 リアルタイムダッシュボード</title>
+  <title>📊 リアルタイムダッシュボード - 市民限定内覧会</title>
   <style>
     * {
       margin: 0;
@@ -93,6 +93,56 @@
       color: #48bb78;
     }
 
+    .action-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: white;
+      color: #667eea;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-success {
+      background: #48bb78;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #38a169;
+    }
+
+    .btn-danger {
+      background: #f56565;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #e53e3e;
+    }
+
     .recent-section {
       background: white;
       border-radius: 15px;
@@ -103,8 +153,14 @@
     .section-header {
       display: flex;
       align-items: center;
-      gap: 10px;
+      justify-content: space-between;
       margin-bottom: 20px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
       font-size: 1.5rem;
       color: #333;
     }
@@ -159,6 +215,49 @@
       color: #666;
     }
 
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+    }
+
+    .modal-title {
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+      color: #333;
+    }
+
+    .modal-text {
+      color: #666;
+      margin-bottom: 25px;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+    }
+
     @media (max-width: 768px) {
       .header h1 {
         font-size: 1.8rem;
@@ -175,6 +274,15 @@
       th, td {
         padding: 10px;
       }
+
+      .action-buttons {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
     }
   </style>
 </head>
@@ -183,7 +291,7 @@
     <div class="header">
       <h1>📊 リアルタイムダッシュボード</h1>
       <div class="subtitle">備前丸市民限定内覧会</div>
-      <div class="update-time" id="updateTime">最終更新: 18:00:47</div>
+      <div class="update-time" id="updateTime">最終更新: --:--:--</div>
     </div>
 
     <div class="stats-grid">
@@ -212,9 +320,23 @@
       </div>
     </div>
 
+    <div class="action-buttons">
+      <button class="btn btn-primary" onclick="fetchStats()">
+        🔄 データを更新
+      </button>
+      <button class="btn btn-success" onclick="exportCSV()">
+        📥 CSVエクスポート
+      </button>
+      <button class="btn btn-danger" onclick="showClearModal()">
+        🗑️ 全データクリア
+      </button>
+    </div>
+
     <div class="recent-section">
       <div class="section-header">
-        📋 最近の記録
+        <div class="section-title">
+          📋 最近の記録
+        </div>
       </div>
       <table>
         <thead>
@@ -234,63 +356,36 @@
     </div>
   </div>
 
+  <!-- クリア確認モーダル -->
+  <div class="modal" id="clearModal">
+    <div class="modal-content">
+      <div class="modal-title">⚠️ 確認</div>
+      <div class="modal-text">
+        すべての乗船・下船記録をクリアします。<br>
+        この操作は元に戻せません。<br>
+        本当に実行しますか?
+      </div>
+      <div class="modal-buttons">
+        <button class="btn btn-primary" onclick="hideClearModal()">キャンセル</button>
+        <button class="btn btn-danger" onclick="clearAllData()">クリア実行</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyLpyqMk8xbnNfDz5H2DHhH_ZLNBSEWDG2pI11zrnRkCFwf3uVvHgrYpr1Asi0ijA1n/exec';
+    let cachedData = null;
 
     async function fetchStats() {
       try {
-        const response = await fetch(`${SCRIPT_URL}?action=getDashboardData`);
+        const response = await fetch(`${SCRIPT_URL}?action=getDashboardData&_=${Date.now()}`);
         const data = await response.json();
 
         if (data.success) {
-          document.getElementById('totalBoarding').textContent = data.totalBoarding;
-          document.getElementById('totalDisembarking').textContent = data.totalDisembarking;
-          document.getElementById('currentOnboard').textContent = data.currentOnboard;
-          
-          const avgStay = data.averageStayMinutes > 0 
-            ? `${data.averageStayMinutes}分` 
-            : '-';
-          document.getElementById('averageStay').textContent = avgStay;
-
-          const recentTableBody = document.getElementById('recentTableBody');
-          if (data.recentRecords && data.recentRecords.length > 0) {
-            recentTableBody.innerHTML = data.recentRecords.map(record => {
-              let displayTime = '-';
-              if (record.boardingTime) {
-                try {
-                  const date = new Date(record.boardingTime);
-                  if (!isNaN(date.getTime())) {
-                    displayTime = date.toLocaleString('ja-JP', {
-                      year: 'numeric',
-                      month: '2-digit',
-                      day: '2-digit',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    });
-                  } else {
-                    displayTime = record.boardingTime;
-                  }
-                } catch (e) {
-                  displayTime = record.boardingTime || '-';
-                }
-              }
-
-              return `
-                <tr>
-                  <td>${displayTime}</td>
-                  <td><span class="status-badge ${record.status === '乗船済' ? 'status-boarded' : 'status-disembarked'}">${record.status || '-'}</span></td>
-                  <td>${record.time || '-'}</td>
-                  <td>${record.name || '-'}</td>
-                </tr>
-              `;
-            }).join('');
-          } else {
-            recentTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#999;">記録がありません</td></tr>';
-          }
-
-          const now = new Date();
-          document.getElementById('updateTime').textContent = 
-            `最終更新: ${now.toLocaleTimeString('ja-JP')}`;
+          cachedData = data;
+          updateUI(data);
+        } else {
+          throw new Error(data.error || 'データ取得失敗');
         }
       } catch (error) {
         console.error('データ取得エラー:', error);
@@ -299,6 +394,127 @@
       }
     }
 
+    function updateUI(data) {
+      document.getElementById('totalBoarding').textContent = data.totalBoarding;
+      document.getElementById('totalDisembarking').textContent = data.totalDisembarking;
+      document.getElementById('currentOnboard').textContent = data.currentOnboard;
+      
+      const avgStay = data.averageStayMinutes > 0 
+        ? `${data.averageStayMinutes}分` 
+        : '-';
+      document.getElementById('averageStay').textContent = avgStay;
+
+      const recentTableBody = document.getElementById('recentTableBody');
+      if (data.recentRecords && data.recentRecords.length > 0) {
+        recentTableBody.innerHTML = data.recentRecords.map(record => {
+          let displayTime = '-';
+          if (record.boardingTime) {
+            try {
+              const date = new Date(record.boardingTime);
+              if (!isNaN(date.getTime())) {
+                displayTime = date.toLocaleString('ja-JP', {
+                  month: '2-digit',
+                  day: '2-digit',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                });
+              } else {
+                displayTime = record.boardingTime;
+              }
+            } catch (e) {
+              displayTime = record.boardingTime || '-';
+            }
+          }
+
+          return `
+            <tr>
+              <td>${displayTime}</td>
+              <td><span class="status-badge ${record.status === '乗船済' ? 'status-boarded' : 'status-disembarked'}">${record.status || '-'}</span></td>
+              <td>${record.time || '-'}</td>
+              <td>${record.name || '-'}</td>
+            </tr>
+          `;
+        }).join('');
+      } else {
+        recentTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#999;">記録がありません</td></tr>';
+      }
+
+      const now = new Date();
+      document.getElementById('updateTime').textContent = 
+        `最終更新: ${now.toLocaleTimeString('ja-JP')}`;
+    }
+
+    function exportCSV() {
+      if (!cachedData || !cachedData.recentRecords || cachedData.recentRecords.length === 0) {
+        alert('エクスポートするデータがありません');
+        return;
+      }
+
+      const headers = ['時刻', '種別', '予約時間', '予約者名'];
+      const rows = cachedData.recentRecords.map(record => {
+        let displayTime = record.boardingTime || '-';
+        try {
+          const date = new Date(record.boardingTime);
+          if (!isNaN(date.getTime())) {
+            displayTime = date.toLocaleString('ja-JP');
+          }
+        } catch (e) {}
+
+        return [
+          displayTime,
+          record.status || '-',
+          record.time || '-',
+          record.name || '-'
+        ];
+      });
+
+      const csvContent = [
+        headers.join(','),
+        ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+      ].join('\n');
+
+      const BOM = '\uFEFF';
+      const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      
+      const now = new Date();
+      const filename = `備前丸_市民内覧会_${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}_${now.getHours().toString().padStart(2,'0')}${now.getMinutes().toString().padStart(2,'0')}.csv`;
+      
+      link.setAttribute('href', url);
+      link.setAttribute('download', filename);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function showClearModal() {
+      document.getElementById('clearModal').classList.add('active');
+    }
+
+    function hideClearModal() {
+      document.getElementById('clearModal').classList.remove('active');
+    }
+
+    async function clearAllData() {
+      try {
+        const response = await fetch(`${SCRIPT_URL}?action=clearAllData`);
+        const result = await response.json();
+        
+        if (result.success) {
+          alert('✅ すべてのデータをクリアしました');
+          hideClearModal();
+          fetchStats();
+        } else {
+          alert('❌ エラー: ' + (result.error || '不明なエラー'));
+        }
+      } catch (error) {
+        alert('❌ 通信エラー: ' + error.message);
+      }
+    }
+
+    // 初回実行と自動更新
     fetchStats();
     setInterval(fetchStats, 5000);
   </script>
