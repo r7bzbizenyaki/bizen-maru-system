@@ -52,6 +52,7 @@
             font-weight: 600;
             color: #333;
             margin-bottom: 8px;
+            font-size: 1.1rem;
         }
         
         .required {
@@ -62,7 +63,6 @@
         input[type="text"],
         input[type="email"],
         input[type="tel"],
-        input[type="date"],
         input[type="number"],
         select {
             width: 100%;
@@ -79,6 +79,54 @@
             border-color: #667eea;
         }
         
+        /* 日付ボタン */
+        .date-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .date-button {
+            padding: 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+        
+        .date-button:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+        
+        .date-button.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .date-button .date-weekday {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .date-button .date-info {
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+        
+        .date-button.selected .date-info {
+            opacity: 1;
+        }
+        
+        /* 時間枠ボタン */
         .time-slots {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -87,12 +135,13 @@
         }
         
         .time-slot {
-            padding: 12px;
+            padding: 15px;
             border: 2px solid #e5e7eb;
             border-radius: 8px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s;
+            font-weight: 600;
         }
         
         .time-slot:hover {
@@ -108,19 +157,21 @@
         
         .btn-submit {
             width: 100%;
-            padding: 15px;
+            padding: 18px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            border-radius: 10px;
-            font-size: 1.1rem;
+            border-radius: 12px;
+            font-size: 1.2rem;
             font-weight: 600;
             cursor: pointer;
             transition: transform 0.2s;
+            margin-top: 30px;
         }
         
         .btn-submit:hover {
             transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
         }
         
         .btn-submit:disabled {
@@ -194,6 +245,20 @@
             font-size: 0.9rem;
             line-height: 1.6;
         }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .date-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .time-slots {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
     </style>
 </head>
 <body>
@@ -210,12 +275,15 @@
         
         <form id="reservationForm">
             <div class="form-group">
-                <label>📅 ご希望の日付 <span class="required">※</span></label>
-                <input type="date" id="date" name="date" required>
+                <label>📅 ご希望の日付を選択してください <span class="required">※</span></label>
+                <div class="date-buttons" id="dateButtons">
+                    <!-- JavaScriptで動的に生成 -->
+                </div>
+                <input type="hidden" id="date" name="date" required>
             </div>
             
             <div class="form-group">
-                <label>⏰ ご希望の時間枠 <span class="required">※</span></label>
+                <label>⏰ ご希望の時間枠を選択してください <span class="required">※</span></label>
                 <div class="time-slots" id="timeSlots">
                     <div class="time-slot" data-time="09:00-09:30">09:00-09:30</div>
                     <div class="time-slot" data-time="09:30-10:00">09:30-10:00</div>
@@ -288,6 +356,43 @@
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyLpyqMk8xbnNfDz5H2DHhH_ZLNBSEWDG2pI11zrnRkCFwf3uVvHgrYpr1Asi0ijA1n/exec';
         
+        // 日付ボタンを生成（今日から30日分）
+        function generateDateButtons() {
+            const dateButtonsContainer = document.getElementById('dateButtons');
+            const today = new Date();
+            
+            for (let i = 0; i < 30; i++) {
+                const date = new Date(today);
+                date.setDate(today.getDate() + i);
+                
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const dateString = `${year}-${month}-${day}`;
+                
+                const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+                const weekday = weekdays[date.getDay()];
+                
+                const button = document.createElement('div');
+                button.className = 'date-button';
+                button.dataset.date = dateString;
+                button.innerHTML = `
+                    <div class="date-weekday">${month}月${day}日（${weekday}）</div>
+                    <div class="date-info">0件予約</div>
+                `;
+                
+                button.addEventListener('click', () => {
+                    document.querySelectorAll('.date-button').forEach(btn => {
+                        btn.classList.remove('selected');
+                    });
+                    button.classList.add('selected');
+                    document.getElementById('date').value = dateString;
+                });
+                
+                dateButtonsContainer.appendChild(button);
+            }
+        }
+        
         // 時間枠選択
         const timeSlots = document.querySelectorAll('.time-slot');
         const timeSlotInput = document.getElementById('timeSlot');
@@ -305,6 +410,12 @@
             e.preventDefault();
             
             // バリデーション
+            const dateInput = document.getElementById('date');
+            if (!dateInput.value) {
+                alert('日付を選択してください');
+                return;
+            }
+            
             if (!timeSlotInput.value) {
                 alert('時間枠を選択してください');
                 return;
@@ -313,7 +424,7 @@
             // フォームデータを取得
             const formData = {
                 category: '市民',
-                date: document.getElementById('date').value,
+                date: dateInput.value,
                 timeSlot: timeSlotInput.value,
                 name: document.getElementById('name').value,
                 age: document.getElementById('age').value,
@@ -341,7 +452,6 @@
             showLoading('予約を処理中...', 'スプレッドシートに保存しています');
             
             try {
-                // URLSearchParams を使用してフォームデータを送信
                 const params = new URLSearchParams(formData);
                 
                 const response = await fetch(SCRIPT_URL, {
@@ -355,13 +465,10 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    // 成功: メール送信を待つ
                     updateLoading('メール送信中...', '確認メールを送信しています');
                     
-                    // さらに2秒待機（メール送信完了を確実にする）
                     await new Promise(resolve => setTimeout(resolve, 2000));
                     
-                    // チケットページへリダイレクト
                     updateLoading('完了！', 'チケット画面を表示します');
                     
                     setTimeout(() => {
@@ -395,14 +502,10 @@
             document.getElementById('loadingOverlay').classList.remove('show');
         }
         
-        // 日付の初期値を明日に設定
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        document.getElementById('date').valueAsDate = tomorrow;
-        
-        // 日付の最小値を今日に設定
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('date').setAttribute('min', today);
+        // 初期化
+        window.addEventListener('DOMContentLoaded', () => {
+            generateDateButtons();
+        });
     </script>
 </body>
 </html>
