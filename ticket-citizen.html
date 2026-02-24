@@ -3,372 +3,362 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>備前市 市民限定内覧会チケット</title>
+    <title>予約チケット - 備前丸市民限定内覧会</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
             font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
-
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
+        
+        .ticket-container {
             background: white;
             border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 100%;
             overflow: hidden;
         }
-
-        .header {
+        
+        .ticket-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 30px;
+            padding: 30px 20px;
             text-align: center;
         }
-
-        .header h1 {
-            font-size: 22px;
-            margin-bottom: 8px;
+        
+        .ticket-header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
             font-weight: 600;
         }
-
-        .header p {
-            font-size: 14px;
-            opacity: 0.9;
+        
+        .ticket-header p {
+            font-size: 0.9rem;
+            opacity: 0.95;
         }
-
+        
+        .ticket-body {
+            padding: 30px 20px;
+        }
+        
+        .qr-section {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+        
+        .qr-code {
+            max-width: 300px;
+            width: 100%;
+            height: auto;
+            margin: 0 auto 15px;
+            display: block;
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            padding: 10px;
+            background: white;
+        }
+        
+        .ticket-id {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 10px;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        
+        .ticket-id strong {
+            color: #333;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .info-section {
+            margin-top: 25px;
+        }
+        
+        .info-item {
+            display: flex;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            align-items: flex-start;
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #667eea;
+            min-width: 100px;
+            flex-shrink: 0;
+            font-size: 0.95rem;
+        }
+        
+        .info-value {
+            color: #333;
+            flex: 1;
+            font-size: 0.95rem;
+            word-break: break-word;
+        }
+        
         .status-badge {
             display: inline-block;
-            padding: 8px 20px;
+            padding: 8px 16px;
             border-radius: 20px;
-            font-size: 14px;
+            font-size: 0.85rem;
             font-weight: 600;
-            margin-top: 15px;
+            text-align: center;
+            margin-top: 20px;
+            width: 100%;
         }
-
-        .status-reserved {
+        
+        .status-pending {
             background: #fef3c7;
             color: #92400e;
         }
-
+        
         .status-boarded {
             background: #d1fae5;
             color: #065f46;
         }
-
+        
         .status-completed {
             background: #e0e7ff;
             color: #3730a3;
         }
-
-        .qr-section {
-            padding: 40px;
+        
+        .error-container {
             text-align: center;
-            background: #f8fafc;
+            padding: 40px 20px;
         }
-
-        .qr-code {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            display: inline-block;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .qr-code img {
-            width: 250px;
-            height: 250px;
-            display: block;
-        }
-
-        .ticket-id {
-            margin-top: 20px;
-            font-size: 14px;
-            color: #64748b;
-            font-family: 'Monaco', 'Courier New', monospace;
-        }
-
-        .ticket-id strong {
-            display: block;
-            font-size: 16px;
-            color: #334155;
-            margin-top: 5px;
-            word-break: break-all;
-        }
-
-        .info-section {
-            padding: 30px;
-        }
-
-        .info-row {
-            display: flex;
-            padding: 15px 0;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .info-row:last-child {
-            border-bottom: none;
-        }
-
-        .info-label {
-            width: 100px;
-            font-size: 14px;
-            color: #64748b;
-            font-weight: 600;
-        }
-
-        .info-value {
-            flex: 1;
-            font-size: 16px;
-            color: #1e293b;
-        }
-
-        .notice-section {
-            background: #fef3c7;
-            padding: 20px 30px;
-            border-top: 2px solid #fbbf24;
-        }
-
-        .notice-section h3 {
-            font-size: 14px;
-            color: #92400e;
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-
-        .notice-section ul {
-            list-style: none;
-            font-size: 13px;
-            color: #78350f;
-            line-height: 1.8;
-        }
-
-        .notice-section li:before {
-            content: "• ";
-            color: #f59e0b;
-            font-weight: bold;
-            margin-right: 5px;
-        }
-
-        .action-buttons {
-            padding: 30px;
-            display: flex;
-            gap: 15px;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 15px;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-secondary {
-            background: white;
-            color: #667eea;
-            border: 2px solid #667eea;
-        }
-
-        .btn-secondary:hover {
-            background: #f8fafc;
-        }
-
-        .error-message {
-            text-align: center;
-            padding: 60px 30px;
-            color: #dc2626;
-        }
-
-        .error-message h2 {
-            font-size: 20px;
-            margin-bottom: 10px;
-        }
-
-        .error-message p {
-            font-size: 14px;
-            color: #64748b;
+        
+        .error-icon {
+            font-size: 4rem;
             margin-bottom: 20px;
         }
+        
+        .error-message {
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .error-detail {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .notes {
+            margin-top: 25px;
+            padding: 15px;
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            border-radius: 5px;
+        }
+        
+        .notes h3 {
+            font-size: 0.95rem;
+            color: #856404;
+            margin-bottom: 8px;
+        }
+        
+        .notes p {
+            font-size: 0.85rem;
+            color: #856404;
+            line-height: 1.6;
+        }
 
-        .error-message .btn {
-            max-width: 200px;
-            margin: 0 auto;
+        @media (max-width: 600px) {
+            .ticket-header h1 {
+                font-size: 1.2rem;
+            }
+            
+            .qr-code {
+                max-width: 250px;
+            }
+            
+            .info-item {
+                flex-direction: column;
+            }
+            
+            .info-label {
+                margin-bottom: 5px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container" id="ticketContainer"></div>
+    <div class="ticket-container" id="ticketContainer">
+        <div class="loading">
+            <div class="spinner"></div>
+            <p>チケット情報を読み込んでいます...</p>
+        </div>
+    </div>
 
     <script>
-        // URLパラメータからチケットIDを取得
-        const urlParams = new URLSearchParams(window.location.search);
-        const ticketId = urlParams.get('id');
-
-        console.log('🎫 URLパラメータから取得したチケットID:', ticketId);
-
-        if (!ticketId) {
-            showError('チケットIDが指定されていません', 'URLが正しくありません。予約画面からやり直してください。');
-        } else {
-            loadTicket(ticketId);
-        }
-
-        function loadTicket(id) {
-            // LocalStorageから予約データを取得
-            const entries = JSON.parse(localStorage.getItem('citizenEntries') || '[]');
-            console.log('💾 LocalStorageから取得した予約データ:', entries);
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyLpyqMk8xbnNfDz5H2DHhH_ZLNBSEWDG2pI11zrnRkCFwf3uVvHgrYpr1Asi0ijA1n/exec';
+        
+        async function loadTicket() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const ticketId = urlParams.get('id');
             
-            // チケットIDで検索（完全一致）
-            const ticket = entries.find(entry => entry.id === id);
-            console.log('🔍 検索結果:', ticket ? '✅ 見つかった' : '❌ 見つからない');
-            
-            if (!ticket) {
-                console.error('❌ チケットが見つかりません。LocalStorageのID一覧:');
-                entries.forEach((e, i) => console.log(`  ${i + 1}. ${e.id}`));
-                showError(
-                    '予約情報が見つかりません',
-                    `チケットID: ${id}\n\n予約した端末とブラウザでアクセスしてください。`
-                );
+            if (!ticketId) {
+                showError('チケットIDが指定されていません', 'URLが正しくありません。予約画面からやり直してください。');
                 return;
             }
-
-            displayTicket(ticket);
+            
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=getTicketInfo&ticketId=${ticketId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayTicket(data.ticket);
+                } else {
+                    showError('チケットが見つかりません', data.message || 'このチケットIDは存在しません。');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('読み込みエラー', 'チケット情報の取得に失敗しました。しばらくしてから再度お試しください。');
+            }
         }
-
+        
         function displayTicket(ticket) {
-            const statusMap = {
-                'reserved': { text: '予約済み', class: 'status-reserved' },
-                'boarded': { text: '乗船済み', class: 'status-boarded' },
-                'completed': { text: '下船完了', class: 'status-completed' }
-            };
-
-            const dateMap = {
-                '2026-02-27': '2月27日 (金)',
-                '2026-03-27': '3月27日 (金)',
-                '2026-03-28': '3月28日 (土)'
-            };
-
-            const status = statusMap[ticket.status] || statusMap['reserved'];
-            const dateText = dateMap[ticket.date] || ticket.date;
-
-            // QRコードURLを生成（チケットIDをそのまま使用）
-            const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(ticket.id)}`;
-
-            console.log('🎨 表示するチケット情報:');
-            console.log('  ID:', ticket.id);
-            console.log('  QR URL:', qrCodeUrl);
-            console.log('  ステータス:', status.text);
-
+            const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${ticket.ticketId}`;
+            
+            let statusClass = 'status-pending';
+            let statusText = '🕒 未乗船';
+            
+            if (ticket.boardingStatus === '下船済み') {
+                statusClass = 'status-completed';
+                statusText = '✅ 下船完了';
+            } else if (ticket.boardingStatus === '乗船済み') {
+                statusClass = 'status-boarded';
+                statusText = '🚢 乗船中';
+            }
+            
             const html = `
-                <div class="header">
-                    <h1>🚢 備前市 市民限定内覧会</h1>
-                    <p>電子チケット</p>
-                    <div class="status-badge ${status.class}">${status.text}</div>
+                <div class="ticket-header">
+                    <h1>備前市 市民限定内覧会チケット</h1>
+                    <p>備前丸 特別予約券</p>
                 </div>
-
-                <div class="qr-section">
-                    <div class="qr-code">
-                        <img src="${qrCodeUrl}" alt="QRコード">
+                <div class="ticket-body">
+                    <div class="qr-section">
+                        <img src="${qrCodeUrl}" alt="QR Code" class="qr-code">
+                        <div class="ticket-id">
+                            <strong>チケットID</strong>
+                            ${ticket.ticketId}
+                        </div>
                     </div>
-                    <div class="ticket-id">
-                        チケットID<br>
-                        <strong>${ticket.id}</strong>
+                    
+                    <div class="info-section">
+                        <div class="info-item">
+                            <span class="info-label">お名前</span>
+                            <span class="info-value">${ticket.name} 様</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">予約日</span>
+                            <span class="info-value">${ticket.date}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">希望時間枠</span>
+                            <span class="info-value">${ticket.timeSlot}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">電話番号</span>
+                            <span class="info-value">${ticket.phone}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">メール</span>
+                            <span class="info-value">${ticket.email}</span>
+                        </div>
                     </div>
-                </div>
-
-                <div class="info-section">
-                    <div class="info-row">
-                        <div class="info-label">お名前</div>
-                        <div class="info-value">${ticket.name} 様</div>
+                    
+                    <div class="status-badge ${statusClass}">
+                        ${statusText}
                     </div>
-                    <div class="info-row">
-                        <div class="info-label">日時</div>
-                        <div class="info-value">${dateText}<br>${ticket.timeslot}</div>
+                    
+                    <div class="notes">
+                        <h3>📌 ご注意</h3>
+                        <p>• 当日はこのQRコードを受付でご提示ください<br>
+                        • スクリーンショットでも構いません<br>
+                        • 指定時間枠の10分前までにお越しください</p>
                     </div>
-                    <div class="info-row">
-                        <div class="info-label">電話番号</div>
-                        <div class="info-value">${ticket.phone}</div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">メール</div>
-                        <div class="info-value">${ticket.email}</div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">住所</div>
-                        <div class="info-value">${ticket.address}</div>
-                    </div>
-                </div>
-
-                <div class="notice-section">
-                    <h3>⚠️ ご来場時の注意事項</h3>
-                    <ul>
-                        <li>当日はこのQRコードをご提示ください</li>
-                        <li>予約時間の10分前までにお越しください</li>
-                        <li>本人確認のため身分証明書をご持参ください</li>
-                        <li>天候により中止の場合があります</li>
-                    </ul>
-                </div>
-
-                <div class="action-buttons">
-                    <button class="btn btn-secondary" onclick="downloadQR()">QRコード保存</button>
-                    <button class="btn btn-primary" onclick="window.print()">印刷する</button>
                 </div>
             `;
-
+            
             document.getElementById('ticketContainer').innerHTML = html;
         }
-
+        
         function showError(title, message) {
             const html = `
-                <div class="error-message">
-                    <h2>❌ ${title}</h2>
-                    <p>${message}</p>
-                    <button class="btn btn-primary" onclick="location.href='entry-form-citizen.html'">
-                        予約画面に戻る
-                    </button>
+                <div class="error-container">
+                    <div class="error-icon">❌</div>
+                    <div class="error-message">${title}</div>
+                    <div class="error-detail">${message}</div>
+                    <a href="https://r7bzbizenyaki.github.io/bizen-maru-system/entry-form-citizen.html" class="btn">予約画面に戻る</a>
                 </div>
             `;
+            
             document.getElementById('ticketContainer').innerHTML = html;
         }
-
-        function downloadQR() {
-            const qrImg = document.querySelector('.qr-code img');
-            if (!qrImg) return;
-
-            const link = document.createElement('a');
-            link.href = qrImg.src;
-            link.download = `bizen-maru-ticket-${ticketId}.png`;
-            link.click();
-        }
-
-        // LocalStorageの変更を監視
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'citizenEntries') {
-                console.log('📡 LocalStorageが更新されました。リロード中...');
-                location.reload();
-            }
-        });
+        
+        // ページ読み込み時にチケット情報を取得
+        window.addEventListener('DOMContentLoaded', loadTicket);
     </script>
 </body>
 </html>
