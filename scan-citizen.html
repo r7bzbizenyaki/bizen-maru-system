@@ -4,447 +4,479 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QRコードスキャン - 備前丸市民限定内覧会</title>
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         
         body {
-            font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+            font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 15px;
+            padding: 20px;
         }
         
-        .container { max-width: 600px; margin: 0 auto; }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
         
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 15px 15px 0 0;
             text-align: center;
-        }
-        
-        .header h1 { font-size: 22px; margin-bottom: 5px; }
-        .header p { font-size: 13px; opacity: 0.9; }
-        
-        .debug-panel {
-            background: #fff3cd;
-            border: 2px solid #ffc107;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 8px;
-            font-size: 12px;
-            max-height: 150px;
-            overflow-y: auto;
-        }
-        
-        .debug-panel h4 { margin-bottom: 5px; color: #856404; }
-        .debug-log { color: #856404; font-family: monospace; line-height: 1.4; }
-        
-        .mode-selector {
-            background: white;
-            padding: 20px;
-            display: flex;
-            gap: 10px;
-        }
-        
-        .mode-btn {
-            flex: 1;
-            padding: 15px;
-            border: 2px solid #ddd;
-            background: white;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .mode-btn.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            border-color: #667eea;
+            margin-bottom: 30px;
         }
         
-        .scanner-section { background: white; padding: 20px; }
-        
-        .camera-btn {
-            width: 100%;
-            padding: 20px;
-            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-bottom: 20px;
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
         }
         
-        .camera-btn:active { transform: scale(0.98); }
-        .camera-btn.stop { background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%); }
-        
-        #reader {
-            width: 100%;
-            border-radius: 10px;
-            overflow: hidden;
-            display: none;
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
         }
         
-        #reader video {
-            width: 100% !important;
-            height: auto !important;
-            border-radius: 10px;
-        }
-        
-        .manual-input { background: white; padding: 20px; border-radius: 0 0 15px 15px; }
-        .manual-input h3 { font-size: 16px; color: #667eea; margin-bottom: 15px; }
-        
-        .input-group { display: flex; gap: 10px; }
-        
-        .input-group input {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-        
-        .input-group button {
-            padding: 12px 24px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        
-        .status-message {
-            margin-top: 15px;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            font-weight: bold;
-            display: none;
-        }
-        
-        .status-message.success {
-            background: #d4edda;
-            color: #155724;
-            border: 2px solid #c3e6cb;
-        }
-        
-        .status-message.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 2px solid #f5c6cb;
-        }
-        
+        /* 統計情報セクション */
         .stats-section {
             background: white;
-            padding: 20px;
-            margin-top: 20px;
             border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
         
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 15px;
         }
         
         .stat-card {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            padding: 15px;
-            border-radius: 10px;
             text-align: center;
+            padding: 15px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 10px;
         }
         
-        .stat-label { font-size: 12px; color: #666; margin-bottom: 5px; }
-        .stat-value { font-size: 24px; font-weight: bold; color: #667eea; }
-
-        .permission-help {
-            background: #e3f2fd;
-            border: 2px solid #2196f3;
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 8px;
-            font-size: 13px;
-            line-height: 1.6;
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .scanner-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        
+        #reader {
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            background: #f5f5f5;
+        }
+        
+        .result-container {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 15px;
             display: none;
         }
-
-        .permission-help h4 { color: #1565c0; margin-bottom: 10px; }
+        
+        .result-container.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .success {
+            background: #d1fae5;
+            border-left: 5px solid #10b981;
+        }
+        
+        .error {
+            background: #fee2e2;
+            border-left: 5px solid #ef4444;
+        }
+        
+        .info {
+            background: #dbeafe;
+            border-left: 5px solid #3b82f6;
+        }
+        
+        .result-icon {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .result-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .ticket-info {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+        }
+        
+        .info-row {
+            display: flex;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #667eea;
+            min-width: 120px;
+        }
+        
+        .info-value {
+            color: #333;
+            flex: 1;
+        }
+        
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin-top: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 30px;
+            opacity: 0.9;
+        }
+        
+        .footer a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            display: inline-block;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+        
+        .footer a:hover {
+            background: rgba(255,255,255,0.3);
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>📱 QRコードスキャン</h1>
+            <h1>🚢 QRコードスキャン</h1>
             <p>備前丸市民限定内覧会</p>
         </div>
         
-        <div class="debug-panel">
-            <h4>🔍 スキャンログ</h4>
-            <div class="debug-log" id="debugLog">システム初期化中...</div>
-        </div>
-
-        <div id="permissionHelp" class="permission-help">
-            <h4>📱 カメラ権限の設定方法</h4>
-            <strong>iPhone Safari:</strong><br>
-            1. URLバー左の「ぁあ」→「Webサイトの設定」→「カメラ」→「許可」<br>
-            2. または 設定→Safari→カメラ→「許可」<br><br>
-            <strong>Android Chrome:</strong><br>
-            1. URLバー左の鍵マーク→「権限」→「カメラ」→「許可」<br>
-            2. または 設定→サイトの設定→カメラ→「許可」
-        </div>
-        
-        <div class="mode-selector">
-            <button class="mode-btn active" data-mode="boarding" onclick="setMode('boarding')">
-                🚢 乗船
-            </button>
-            <button class="mode-btn" data-mode="alighting" onclick="setMode('alighting')">
-                ⚓ 下船
-            </button>
-        </div>
-        
-        <div class="scanner-section">
-            <button id="startBtn" class="camera-btn" onclick="toggleCamera()">
-                📷 QRコードスキャンを開始
-            </button>
-            
-            <div id="reader"></div>
-            
-            <div id="statusMessage" class="status-message"></div>
-        </div>
-        
-        <div class="manual-input">
-            <h3>🔢 手動入力</h3>
-            <div class="input-group">
-                <input type="text" id="manualInput" placeholder="チケットID (例: CM1234567890)">
-                <button onclick="recordManual()">記録</button>
-            </div>
-        </div>
-        
+        <!-- 統計情報セクション -->
         <div class="stats-section">
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-label">総乗船数</div>
-                    <div class="stat-value" id="totalBoarding">0</div>
+                    <div class="stat-number" id="totalReservations">-</div>
+                    <div class="stat-label">📋 総予約数</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">総下船数</div>
-                    <div class="stat-value" id="totalAlighting">0</div>
+                    <div class="stat-number" id="totalBoarded">-</div>
+                    <div class="stat-label">✅ 乗船済み</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">現在船内</div>
-                    <div class="stat-value" id="currentOnboard">0</div>
+                    <div class="stat-number" id="totalDisembarked">-</div>
+                    <div class="stat-label">🏁 下船済み</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">平均滞在</div>
-                    <div class="stat-value" id="avgStay">-</div>
+                    <div class="stat-number" id="currentOnboard">-</div>
+                    <div class="stat-label">🚢 現在船内</div>
                 </div>
             </div>
         </div>
+        
+        <div class="scanner-card">
+            <div id="reader"></div>
+            
+            <div id="resultContainer" class="result-container">
+                <div id="resultContent"></div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>スタッフ専用画面</p>
+            <a href="https://r7bzbizenyaki.github.io/bizen-maru-system/dashboard-citizen.html">📊 ダッシュボードへ</a>
+        </div>
     </div>
-    
+
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyLpyqMk8xbnNfDz5H2DHhH_ZLNBSEWDG2pI11zrnRkCFwf3uVvHgrYpr1Asi0ijA1n/exec';
+        let html5QrcodeScanner;
+        let isProcessing = false;
         
-        let currentMode = 'boarding';
-        let html5QrCode = null;
-        let isScanning = false;
-        let lastScannedCode = null;
-        let lastScanTime = 0;
-        
-        const debugLog = (message) => {
-            const time = new Date().toLocaleTimeString('ja-JP');
-            const log = document.getElementById('debugLog');
-            log.innerHTML = `[${time}] ${message}<br>` + log.innerHTML;
-            console.log(`[${time}] ${message}`);
-        };
-        
-        debugLog('システム初期化完了');
-        
-        function setMode(mode) {
-            currentMode = mode;
-            document.querySelectorAll('.mode-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.querySelector(`[data-mode="${mode}"]`).classList.add('active');
-            debugLog(`モード切替: ${mode === 'boarding' ? '乗船' : '下船'}`);
-        }
-        
-        async function toggleCamera() {
-            if (isScanning) {
-                await stopCamera();
-            } else {
-                await startCamera();
-            }
-        }
-        
-        async function startCamera() {
-            debugLog('カメラ起動開始...');
-            document.getElementById('permissionHelp').style.display = 'none';
-            
+        // 統計情報を取得
+        async function loadStats() {
             try {
-                if (!html5QrCode) {
-                    html5QrCode = new Html5Qrcode("reader");
-                    debugLog('Html5Qrcodeインスタンス作成');
+                const response = await fetch(`${SCRIPT_URL}?action=getDashboardData`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('totalReservations').textContent = data.stats.totalReservations || 0;
+                    document.getElementById('totalBoarded').textContent = data.stats.totalBoarded || 0;
+                    document.getElementById('totalDisembarked').textContent = data.stats.totalDisembarked || 0;
+                    document.getElementById('currentOnboard').textContent = data.stats.currentOnboard || 0;
                 }
-                
-                const config = {
-                    fps: 10,
-                    qrbox: { width: 250, height: 250 },
-                    aspectRatio: 1.0
-                };
-                
-                await html5QrCode.start(
-                    { facingMode: "environment" },
-                    config,
-                    onScanSuccess,
-                    onScanFailure
-                );
-                
-                isScanning = true;
-                document.getElementById('reader').style.display = 'block';
-                document.getElementById('startBtn').textContent = '⏹️ スキャンを停止';
-                document.getElementById('startBtn').classList.add('stop');
-                
-                debugLog('カメラ起動成功 - スキャン待機中');
-                
-            } catch (err) {
-                debugLog(`カメラ起動エラー: ${err.name || 'Unknown'} - ${err.message || err}`);
-                
-                if (err.name === 'NotAllowedError' || err.message?.includes('Permission denied')) {
-                    document.getElementById('permissionHelp').style.display = 'block';
-                    showMessage('カメラ権限が拒否されています。上記の手順で許可してください。', 'error');
-                } else {
-                    showMessage(`カメラエラー: ${err.message || err}`, 'error');
-                }
-            }
-        }
-        
-        async function stopCamera() {
-            debugLog('カメラ停止処理開始...');
-            
-            try {
-                if (html5QrCode && isScanning) {
-                    await html5QrCode.stop();
-                    debugLog('カメラ停止成功');
-                }
-            } catch (err) {
-                debugLog(`停止エラー: ${err.message || err}`);
-            } finally {
-                isScanning = false;
-                document.getElementById('reader').style.display = 'none';
-                document.getElementById('startBtn').textContent = '📷 QRコードスキャンを開始';
-                document.getElementById('startBtn').classList.remove('stop');
+            } catch (error) {
+                console.error('統計情報の取得エラー:', error);
             }
         }
         
         function onScanSuccess(decodedText, decodedResult) {
-            const now = Date.now();
-            if (decodedText === lastScannedCode && (now - lastScanTime) < 2000) {
-                return;
-            }
+            if (isProcessing) return;
             
-            lastScannedCode = decodedText;
-            lastScanTime = now;
+            isProcessing = true;
+            html5QrcodeScanner.pause();
             
-            debugLog(`QR検出: ${decodedText}`);
             processTicket(decodedText);
         }
         
-        function onScanFailure(error) {
-            // スキャン失敗は正常
-        }
-        
         async function processTicket(ticketId) {
-            debugLog(`チケット処理開始: ${ticketId}`);
+            const resultContainer = document.getElementById('resultContainer');
+            const resultContent = document.getElementById('resultContent');
+            
+            resultContainer.className = 'result-container show';
+            resultContent.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>チケット情報を確認中...</p>
+                </div>
+            `;
             
             try {
-                const action = currentMode === 'boarding' ? 'recordBoarding' : 'recordDisembarking';
-                const url = `${SCRIPT_URL}?action=${action}&ticketId=${encodeURIComponent(ticketId)}`;
+                // チケット情報を取得
+                const ticketResponse = await fetch(`${SCRIPT_URL}?action=getTicketInfo&ticketId=${ticketId}`);
+                const ticketData = await ticketResponse.json();
                 
-                const response = await fetch(url);
-                const result = await response.json();
+                if (!ticketData.success) {
+                    showError('チケットが見つかりません', ticketData.message);
+                    return;
+                }
                 
-                if (result.success) {
-                    const modeName = currentMode === 'boarding' ? '乗船' : '下船';
-                    debugLog(`✅ ${modeName}記録成功: ${ticketId}`);
-                    showMessage(`✅ ${modeName}を記録しました`, 'success');
-                    
-                    playBeep();
-                    if (navigator.vibrate) navigator.vibrate(200);
-                    
-                    updateStats();
+                const ticket = ticketData.ticket;
+                
+                // ステータスに応じて処理
+                if (ticket.boardingStatus === '未乗船') {
+                    await recordBoarding(ticketId, ticket);
+                } else if (ticket.boardingStatus === '乗船済み') {
+                    await recordDisembarking(ticketId, ticket);
+                } else if (ticket.boardingStatus === '下船済み') {
+                    showInfo('既に下船済みです', ticket);
+                }
+                
+                // 統計情報を更新
+                await loadStats();
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showError('通信エラー', 'サーバーとの通信に失敗しました。');
+            }
+        }
+        
+        async function recordBoarding(ticketId, ticket) {
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=recordBoarding&ticketId=${ticketId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSuccess('乗船完了', ticket, '乗船');
                 } else {
-                    debugLog(`❌ 記録エラー: ${result.error || 'Unknown'}`);
-                    showMessage(`❌ ${result.error || 'エラーが発生しました'}`, 'error');
+                    showError('エラー', data.message);
                 }
-            } catch (err) {
-                debugLog(`❌ 通信エラー: ${err.message || err}`);
-                showMessage('❌ 通信エラーが発生しました', 'error');
+            } catch (error) {
+                showError('記録エラー', '乗船記録に失敗しました。');
             }
         }
         
-        function recordManual() {
-            const input = document.getElementById('manualInput');
-            const ticketId = input.value.trim();
-            
-            if (!ticketId) {
-                showMessage('チケットIDを入力してください', 'error');
-                return;
-            }
-            
-            debugLog(`手動入力: ${ticketId}`);
-            processTicket(ticketId);
-            input.value = '';
-        }
-        
-        function showMessage(message, type) {
-            const msgEl = document.getElementById('statusMessage');
-            msgEl.textContent = message;
-            msgEl.className = `status-message ${type}`;
-            msgEl.style.display = 'block';
-            
-            setTimeout(() => {
-                msgEl.style.display = 'none';
-            }, 3000);
-        }
-        
-        function playBeep() {
+        async function recordDisembarking(ticketId, ticket) {
             try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.frequency.value = 800;
-                gain.gain.value = 0.3;
-                osc.start();
-                osc.stop(ctx.currentTime + 0.2);
-            } catch (e) {}
-        }
-        
-        async function updateStats() {
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=getStats`);
-                const stats = await res.json();
+                const response = await fetch(`${SCRIPT_URL}?action=recordDisembarking&ticketId=${ticketId}`);
+                const data = await response.json();
                 
-                if (stats.success) {
-                    document.getElementById('totalBoarding').textContent = stats.boarding || 0;
-                    document.getElementById('totalAlighting').textContent = stats.alighting || 0;
-                    document.getElementById('currentOnboard').textContent = (stats.boarding || 0) - (stats.alighting || 0);
+                if (data.success) {
+                    showSuccess('下船完了', ticket, '下船');
+                } else {
+                    showError('エラー', data.message);
                 }
-            } catch (e) {}
+            } catch (error) {
+                showError('記録エラー', '下船記録に失敗しました。');
+            }
         }
         
-        updateStats();
-        setInterval(updateStats, 10000);
+        function showSuccess(title, ticket, action) {
+            const resultContent = document.getElementById('resultContent');
+            resultContent.innerHTML = `
+                <div class="result-icon">✅</div>
+                <div class="result-title">${title}</div>
+                <div class="ticket-info">
+                    <div class="info-row">
+                        <span class="info-label">お名前</span>
+                        <span class="info-value">${ticket.name} 様</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">予約日</span>
+                        <span class="info-value">${ticket.date}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">時間枠</span>
+                        <span class="info-value">${ticket.timeSlot}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">処理</span>
+                        <span class="info-value">${action}記録完了</span>
+                    </div>
+                </div>
+                <button class="btn" onclick="resetScanner()">次のスキャンへ</button>
+            `;
+        }
+        
+        function showError(title, message) {
+            const resultContainer = document.getElementById('resultContainer');
+            const resultContent = document.getElementById('resultContent');
+            
+            resultContainer.className = 'result-container show error';
+            resultContent.innerHTML = `
+                <div class="result-icon">❌</div>
+                <div class="result-title">${title}</div>
+                <p style="text-align:center; margin-top:10px; color:#666;">${message}</p>
+                <button class="btn" onclick="resetScanner()">もう一度スキャン</button>
+            `;
+        }
+        
+        function showInfo(title, ticket) {
+            const resultContainer = document.getElementById('resultContainer');
+            const resultContent = document.getElementById('resultContent');
+            
+            resultContainer.className = 'result-container show info';
+            resultContent.innerHTML = `
+                <div class="result-icon">ℹ️</div>
+                <div class="result-title">${title}</div>
+                <div class="ticket-info">
+                    <div class="info-row">
+                        <span class="info-label">お名前</span>
+                        <span class="info-value">${ticket.name} 様</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">予約日</span>
+                        <span class="info-value">${ticket.date}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">ステータス</span>
+                        <span class="info-value">${ticket.boardingStatus}</span>
+                    </div>
+                </div>
+                <button class="btn" onclick="resetScanner()">次のスキャンへ</button>
+            `;
+        }
+        
+        function resetScanner() {
+            document.getElementById('resultContainer').className = 'result-container';
+            isProcessing = false;
+            html5QrcodeScanner.resume();
+        }
+        
+        function startScanner() {
+            html5QrcodeScanner = new Html5QrcodeScanner(
+                "reader",
+                { 
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 },
+                    aspectRatio: 1.0
+                },
+                false
+            );
+            
+            html5QrcodeScanner.render(onScanSuccess);
+        }
+        
+        // ページ読み込み時に初期化
+        window.addEventListener('DOMContentLoaded', () => {
+            startScanner();
+            loadStats();
+            
+            // 30秒ごとに統計を更新
+            setInterval(loadStats, 30000);
+        });
     </script>
 </body>
 </html>
