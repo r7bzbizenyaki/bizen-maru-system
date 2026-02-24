@@ -3,419 +3,406 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>備前丸 市民限定内覧会 エントリーフォーム</title>
+    <title>備前丸市民限定内覧会 予約フォーム</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
-        .container { max-width: 700px; margin: 0 auto; background: white; border-radius: 16px; padding: 32px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); }
-        .header { text-align: center; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 3px solid #c41e3a; }
-        .header h1 { color: #c41e3a; font-size: 26px; margin-bottom: 8px; }
-        .header .badge { display: inline-block; background: #27ae60; color: white; padding: 6px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; margin-bottom: 12px; }
-        .header p { color: #666; font-size: 14px; }
-        .cloud-status { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-top: 12px; }
-        .cloud-status.online { background: #d4edda; color: #155724; }
-        .cloud-status.offline { background: #f8d7da; color: #721c24; }
-        .form-section { margin-bottom: 32px; }
-        .section-title { font-size: 18px; font-weight: 700; color: #333; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid #f0f0f0; }
-        .date-selection { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
-        .date-card { border: 3px solid #e0e0e0; border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.3s; position: relative; }
-        .date-card:hover { border-color: #667eea; background: #f5f8ff; }
-        .date-card.selected { border-color: #667eea; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
-        .date-card input[type="radio"] { position: absolute; opacity: 0; }
-        .date-info { display: flex; justify-content: space-between; align-items: center; }
-        .date-text { font-size: 18px; font-weight: 700; }
-        .date-badge { background: rgba(255, 255, 255, 0.2); padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: 600; }
-        .date-card.selected .date-badge { background: rgba(255, 255, 255, 0.3); }
-        .timeslot-section { display: none; margin-top: 20px; }
-        .timeslot-section.active { display: block; }
-        .timeslot-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
-        .timeslot-card { border: 2px solid #e0e0e0; border-radius: 10px; padding: 14px; text-align: center; cursor: pointer; transition: all 0.3s; }
-        .timeslot-card:hover { border-color: #27ae60; background: #e8f5e9; }
-        .timeslot-card.selected { border-color: #27ae60; background: #27ae60; color: white; }
-        .timeslot-card input[type="radio"] { display: none; }
-        .timeslot-time { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
-        .timeslot-count { font-size: 12px; opacity: 0.8; }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; color: #333; font-weight: 600; font-size: 14px; }
-        .required { color: #c41e3a; margin-left: 4px; }
-        .form-group input[type="text"], .form-group input[type="email"], .form-group input[type="tel"], .form-group select { width: 100%; padding: 12px 16px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; transition: all 0.3s; }
-        .form-group input:focus, .form-group select:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
-        .postal-group { display: flex; gap: 8px; align-items: flex-end; }
-        .postal-input { flex: 1; }
-        .search-btn { padding: 12px 20px; background: #27ae60; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.3s; }
-        .search-btn:hover { background: #229954; }
-        .submit-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #c41e3a 0%, #a3162e 100%); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: 700; cursor: pointer; transition: all 0.3s; margin-top: 24px; }
-        .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(196, 30, 58, 0.3); }
-        .submit-btn:disabled { background: #ccc; cursor: not-allowed; transform: none; }
-        .loading-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8); z-index: 9999; justify-content: center; align-items: center; }
-        .loading-overlay.active { display: flex; }
-        .loading-content { text-align: center; color: white; }
-        .spinner { width: 60px; height: 60px; border: 5px solid rgba(255, 255, 255, 0.3); border-top-color: white; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .loading-text { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
-        .loading-subtext { font-size: 14px; opacity: 0.8; }
-        @media (max-width: 600px) { .container { padding: 24px 16px; } .header h1 { font-size: 22px; } .timeslot-grid { grid-template-columns: 1fr; } }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            color: #667eea;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .required {
+            color: #ef4444;
+            margin-left: 5px;
+        }
+        
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="date"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .time-slots {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .time-slot {
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .time-slot:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+        
+        .time-slot.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .btn-submit {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .btn-submit:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-submit:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* ローディング画面 */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .loading-overlay.show {
+            display: flex;
+        }
+        
+        .loading-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            font-size: 1.2rem;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .loading-subtext {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .note {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .note p {
+            color: #856404;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="badge">🏛️ 市民限定</div>
-            <h1>🚢 備前丸 内覧会エントリー</h1>
-            <p>以下のフォームに必要事項を入力してください</p>
-            <div class="cloud-status" id="cloudStatus">
-                <span id="cloudIcon">☁️</span>
-                <span id="cloudText">クラウド接続: 確認中...</span>
-            </div>
+            <h1>🚢 備前丸市民限定内覧会</h1>
+            <p>予約フォーム</p>
         </div>
-        <form id="entryForm">
-            <div class="form-section">
-                <div class="section-title">📅 ご希望の日付を選択してください</div>
-                <div class="date-selection">
-                    <label class="date-card"><input type="radio" name="date" value="2026-02-27" required><div class="date-info"><span class="date-text">2月27日（金）</span><span class="date-badge" id="badge-2026-02-27">0件予約</span></div><div style="font-size: 13px; color: #666; margin-top: 8px;">09:00〜15:00</div></label>
-                    <label class="date-card"><input type="radio" name="date" value="2026-03-27" required><div class="date-info"><span class="date-text">3月27日（金）</span><span class="date-badge" id="badge-2026-03-27">0件予約</span></div><div style="font-size: 13px; color: #666; margin-top: 8px;">09:00〜15:00</div></label>
-                    <label class="date-card"><input type="radio" name="date" value="2026-03-28" required><div class="date-info"><span class="date-text">3月28日（土）</span><span class="date-badge" id="badge-2026-03-28">0件予約</span></div><div style="font-size: 13px; color: #666; margin-top: 8px;">09:00〜15:00</div></label>
-                </div>
-                <div class="timeslot-section" id="timeslotSection">
-                    <div class="section-title">⏰ ご希望の時間帯を選択してください</div>
-                    <div class="timeslot-grid" id="timeslotGrid"></div>
-                </div>
+        
+        <div class="note">
+            <p>📌 予約完了後、確認メールが送信されます。<br>
+            当日はメールに記載されたQRコードをご提示ください。</p>
+        </div>
+        
+        <form id="reservationForm">
+            <div class="form-group">
+                <label>📅 ご希望の日付 <span class="required">※</span></label>
+                <input type="date" id="date" name="date" required>
             </div>
-            <div class="form-section">
-                <div class="section-title">📝 お客様情報</div>
-                <div class="form-group"><label>氏名 <span class="required">※</span></label><input type="text" name="name" required placeholder="山田 太郎"></div>
-                <div class="form-group"><label>郵便番号 <span class="required">※</span></label><div class="postal-group"><input type="text" name="postal" id="postal" class="postal-input" required placeholder="701-3204（ハイフンなし、全角可）" maxlength="8"><button type="button" class="search-btn" id="searchPostalBtn">🔍 検索</button></div><div style="font-size: 12px; color: #999; margin-top: 4px;">※ 全角数字でも自動で半角に変換されます</div></div>
-                <div class="form-group"><label>住所 <span class="required">※</span></label><input type="text" name="address" id="address" required placeholder="岡山県備前市日生町日生"></div>
-                <div class="form-group"><label>電話番号 <span class="required">※</span></label><input type="tel" name="phone" required placeholder="090-1234-5678"></div>
-                <div class="form-group"><label>メールアドレス <span class="required">※</span></label><input type="email" name="email" id="email" required placeholder="example@example.com"><div style="font-size: 12px; color: #999; margin-top: 4px;">※ 予約確認メールが送信されます</div></div>
-                <div class="form-group"><label>年齢 <span class="required">※</span></label><select name="age" required><option value="">選択してください</option><option value="10代以下">10代以下</option><option value="20代">20代</option><option value="30代">30代</option><option value="40代">40代</option><option value="50代">50代</option><option value="60代">60代</option><option value="70代以上">70代以上</option></select></div>
-                <div class="form-group"><label>性別 <span class="required">※</span></label><select name="gender" required><option value="">選択してください</option><option value="男性">男性</option><option value="女性">女性</option><option value="その他">その他</option></select></div>
+            
+            <div class="form-group">
+                <label>⏰ ご希望の時間枠 <span class="required">※</span></label>
+                <div class="time-slots" id="timeSlots">
+                    <div class="time-slot" data-time="09:00-09:30">09:00-09:30</div>
+                    <div class="time-slot" data-time="09:30-10:00">09:30-10:00</div>
+                    <div class="time-slot" data-time="10:00-10:30">10:00-10:30</div>
+                    <div class="time-slot" data-time="10:30-11:00">10:30-11:00</div>
+                    <div class="time-slot" data-time="11:00-11:30">11:00-11:30</div>
+                    <div class="time-slot" data-time="11:30-12:00">11:30-12:00</div>
+                    <div class="time-slot" data-time="13:00-13:30">13:00-13:30</div>
+                    <div class="time-slot" data-time="13:30-14:00">13:30-14:00</div>
+                    <div class="time-slot" data-time="14:00-14:30">14:00-14:30</div>
+                    <div class="time-slot" data-time="14:30-15:00">14:30-15:00</div>
+                </div>
+                <input type="hidden" id="timeSlot" name="timeSlot" required>
             </div>
-            <button type="submit" class="submit-btn">予約を確定する</button>
+            
+            <div class="form-group">
+                <label>👤 お名前 <span class="required">※</span></label>
+                <input type="text" id="name" name="name" placeholder="山田 太郎" required>
+            </div>
+            
+            <div class="form-group">
+                <label>🎂 年齢 <span class="required">※</span></label>
+                <input type="number" id="age" name="age" min="0" max="120" placeholder="30" required>
+            </div>
+            
+            <div class="form-group">
+                <label>👥 性別 <span class="required">※</span></label>
+                <select id="gender" name="gender" required>
+                    <option value="">選択してください</option>
+                    <option value="男性">男性</option>
+                    <option value="女性">女性</option>
+                    <option value="その他">その他</option>
+                    <option value="回答しない">回答しない</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>📮 郵便番号 <span class="required">※</span></label>
+                <input type="text" id="postalCode" name="postalCode" placeholder="700-0000" required>
+            </div>
+            
+            <div class="form-group">
+                <label>🏠 住所 <span class="required">※</span></label>
+                <input type="text" id="address" name="address" placeholder="岡山県備前市..." required>
+            </div>
+            
+            <div class="form-group">
+                <label>📞 電話番号 <span class="required">※</span></label>
+                <input type="tel" id="phone" name="phone" placeholder="090-1234-5678" required>
+            </div>
+            
+            <div class="form-group">
+                <label>📧 メールアドレス <span class="required">※</span></label>
+                <input type="email" id="email" name="email" placeholder="example@example.com" required>
+            </div>
+            
+            <button type="submit" class="btn-submit">予約を確定する</button>
         </form>
     </div>
-    <div class="loading-overlay" id="loadingOverlay"><div class="loading-content"><div class="spinner"></div><div class="loading-text">予約処理中...</div><div class="loading-subtext" id="loadingSubtext">しばらくお待ちください</div></div></div>
+    
+    <!-- ローディング画面 -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <div class="loading-text" id="loadingText">予約を処理中...</div>
+            <div class="loading-subtext" id="loadingSubtext">しばらくお待ちください</div>
+        </div>
+    </div>
+
     <script>
-        const GAS_URL = 'https://script.google.com/macros/s/AKfycbyLpyqMk8xbnNfDz5H2DHhH_ZLNBSEWDG2pI11zrnRkCFwf3uVvHgrYpr1Asi0ijA1n/exec';
-        const TIMESLOTS = [{start:'09:00',end:'10:00'},{start:'10:00',end:'11:00'},{start:'11:00',end:'12:00'},{start:'13:00',end:'14:00'},{start:'14:00',end:'15:00'}];
-        let selectedDate=null,selectedTimeslot=null, isCloudOnline = false;
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyLpyqMk8xbnNfDz5H2DHhH_ZLNBSEWDG2pI11zrnRkCFwf3uVvHgrYpr1Asi0ijA1n/exec';
         
-        async function checkCloudConnection() {
-            console.log('☁️ クラウド接続チェック開始...');
-            const statusEl = document.getElementById('cloudStatus');
-            const textEl = document.getElementById('cloudText');
-            const iconEl = document.getElementById('cloudIcon');
+        // 時間枠選択
+        const timeSlots = document.querySelectorAll('.time-slot');
+        const timeSlotInput = document.getElementById('timeSlot');
+        
+        timeSlots.forEach(slot => {
+            slot.addEventListener('click', () => {
+                timeSlots.forEach(s => s.classList.remove('selected'));
+                slot.classList.add('selected');
+                timeSlotInput.value = slot.dataset.time;
+            });
+        });
+        
+        // フォーム送信
+        document.getElementById('reservationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // バリデーション
+            if (!timeSlotInput.value) {
+                alert('時間枠を選択してください');
+                return;
+            }
+            
+            // フォームデータを取得
+            const formData = {
+                category: '市民',
+                date: document.getElementById('date').value,
+                timeSlot: timeSlotInput.value,
+                name: document.getElementById('name').value,
+                age: document.getElementById('age').value,
+                gender: document.getElementById('gender').value,
+                postalCode: document.getElementById('postalCode').value,
+                address: document.getElementById('address').value,
+                phone: document.getElementById('phone').value,
+                email: document.getElementById('email').value
+            };
+            
+            // 確認ダイアログ
+            const confirmed = confirm(`以下の内容で予約します。よろしいですか？\n\n` +
+                `お名前: ${formData.name}\n` +
+                `日付: ${formData.date}\n` +
+                `時間枠: ${formData.timeSlot}\n` +
+                `性別: ${formData.gender}\n` +
+                `年齢: ${formData.age}\n` +
+                `電話番号: ${formData.phone}\n` +
+                `メールアドレス: ${formData.email}`
+            );
+            
+            if (!confirmed) return;
+            
+            // ローディング表示
+            showLoading('予約を処理中...', 'スプレッドシートに保存しています');
             
             try {
-                const response = await fetch(GAS_URL + '?action=ping', {
-                    method: 'GET',
-                    mode: 'no-cors'
-                });
-                isCloudOnline = true;
-                statusEl.className = 'cloud-status online';
-                textEl.textContent = 'クラウド接続: オンライン';
-                iconEl.textContent = '✅';
-                console.log('✅ クラウド接続成功');
+                // URLSearchParams を使用してフォームデータを送信
+                const params = new URLSearchParams(formData);
                 
-                // クラウドからデータを取得して予約件数を更新
-                await loadCloudData();
-            } catch (error) {
-                isCloudOnline = false;
-                statusEl.className = 'cloud-status offline';
-                textEl.textContent = 'クラウド接続: オフライン';
-                iconEl.textContent = '⚠️';
-                console.log('⚠️ クラウド接続失敗:', error);
-            }
-        }
-        
-        async function loadCloudData() {
-            try {
-                console.log('📥 クラウドデータ取得開始...');
-                const response = await fetch(GAS_URL + '?action=getAllCitizen');
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: params,
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                });
+                
                 const data = await response.json();
                 
-                if (data.success && data.data) {
-                    console.log('✅ クラウドデータ取得成功:', data.data.length, '件');
-                    // LocalStorageに保存（ローカルとクラウドを統合）
-                    const localEntries = JSON.parse(localStorage.getItem('citizenEntries') || '[]');
-                    const cloudIds = data.data.map(e => e.id);
-                    const localOnly = localEntries.filter(e => !cloudIds.includes(e.id));
-                    const mergedEntries = [...data.data, ...localOnly];
+                if (data.success) {
+                    // 成功: メール送信を待つ
+                    updateLoading('メール送信中...', '確認メールを送信しています');
                     
-                    localStorage.setItem('citizenEntries', JSON.stringify(mergedEntries));
-                    console.log('✅ データ統合完了:', mergedEntries.length, '件');
-                    updateReservationCounts();
-                }
-            } catch (error) {
-                console.log('⚠️ クラウドデータ取得失敗:', error);
-                // LocalStorageのデータのみ使用
-                updateReservationCounts();
-            }
-        }
-        
-        function init(){
-            console.log('🚀 初期化開始');
-            checkCloudConnection();
-            setupEventListeners();
-            updateReservationCounts();
-            console.log('✅ 初期化完了');
-        }
-        
-        function setupEventListeners(){
-            console.log('📡 イベントリスナー設定開始');
-            document.querySelectorAll('input[name="date"]').forEach(r=>r.addEventListener('change',handleDateChange));
-            const postalInput=document.getElementById('postal');
-            if(postalInput){
-                let isFormatting=false,lastSearchedValue='';
-                postalInput.addEventListener('input',function(e){
-                    if(e.isComposing||isFormatting)return;
-                    isFormatting=true;
-                    let value=e.target.value.replace(/[０-９]/g,s=>String.fromCharCode(s.charCodeAt(0)-0xFEE0));
-                    const cleanValue=value.replace(/[^0-9]/g,'');
-                    const truncated=cleanValue.slice(0,7);
-                    const formatted=truncated.length>3?truncated.slice(0,3)+'-'+truncated.slice(3):truncated;
-                    e.target.value=formatted;
-                    if(truncated.length===7&&truncated!==lastSearchedValue){
-                        lastSearchedValue=truncated;
-                        console.log('✅ 7桁入力完了 → 自動検索開始');
-                        setTimeout(searchPostal,300);
-                    }
-                    isFormatting=false;
-                });
-                postalInput.addEventListener('keypress',function(e){
-                    if(e.key==='Enter'){
-                        e.preventDefault();
-                        searchPostal();
-                    }
-                });
-            }
-            const searchBtn=document.getElementById('searchPostalBtn');
-            if(searchBtn)searchBtn.addEventListener('click',searchPostal);
-            const emailInput=document.getElementById('email');
-            if(emailInput)emailInput.addEventListener('blur',checkEmailDomain);
-            const form=document.getElementById('entryForm');
-            if(form)form.addEventListener('submit',handleSubmit);
-            console.log('✅ イベントリスナー設定完了');
-        }
-        
-        function handleDateChange(e){
-            console.log('📅 日付選択:',e.target.value);
-            selectedDate=e.target.value;
-            console.log('✅ selectedDate更新:',selectedDate);
-            document.querySelectorAll('.date-card').forEach(card=>card.classList.remove('selected'));
-            e.target.closest('.date-card').classList.add('selected');
-            const timeslotSection=document.getElementById('timeslotSection');
-            if(timeslotSection){
-                timeslotSection.classList.add('active');
-                console.log('✅ timeslotSection に active クラス追加');
-            }else{
-                console.error('❌ timeslotSection が見つかりません');
-            }
-            generateTimeslots();
-        }
-        
-        function generateTimeslots(){
-            console.log('⏰ 時間帯生成開始, selectedDate:',selectedDate);
-            const grid=document.getElementById('timeslotGrid');
-            if(!grid){
-                console.error('❌ timeslotGrid が見つかりません');
-                return;
-            }
-            grid.innerHTML='';
-            console.log('✅ timeslotGrid をクリア');
-            const entries=JSON.parse(localStorage.getItem('citizenEntries')||'[]');
-            const dateEntries=entries.filter(e=>e.date===selectedDate);
-            console.log('📊 この日の予約数:',dateEntries.length);
-            TIMESLOTS.forEach(slot=>{
-                const count=dateEntries.filter(e=>e.timeslot===slot.start).length;
-                const card=document.createElement('label');
-                card.className='timeslot-card';
-                card.innerHTML='<input type="radio" name="timeslot" value="'+slot.start+'" required><div class="timeslot-time">'+slot.start+'〜'+slot.end+'</div><div class="timeslot-count">'+count+'件予約</div>';
-                card.querySelector('input').addEventListener('change',function(ev){
-                    selectedTimeslot=ev.target.value;
-                    console.log('✅ 時間帯選択:',selectedTimeslot);
-                    document.querySelectorAll('.timeslot-card').forEach(c=>c.classList.remove('selected'));
-                    card.classList.add('selected');
-                });
-                grid.appendChild(card);
-                console.log('✅ 時間帯カード追加:',slot.start+'〜'+slot.end);
-            });
-            console.log('✅ 時間帯生成完了');
-        }
-        
-        function updateReservationCounts(){
-            const entries=JSON.parse(localStorage.getItem('citizenEntries')||'[]');
-            ['2026-02-27','2026-03-27','2026-03-28'].forEach(date=>{
-                const count=entries.filter(e=>e.date===date).length;
-                const badge=document.getElementById('badge-'+date);
-                if(badge)badge.textContent=count+'件予約';
-            });
-        }
-        
-        async function searchPostal(){
-            console.log('🔥 searchPostal() 開始');
-            const postalInput=document.getElementById('postal');
-            const addressInput=document.getElementById('address');
-            if(!postalInput||!addressInput){
-                console.error('❌ フィールドが見つかりません');
-                return;
-            }
-            const postal=postalInput.value.replace(/[^0-9]/g,'');
-            console.log('📮 郵便番号:',postal);
-            if(postal.length!==7){
-                console.log('⚠️ 7桁ではありません');
-                return;
-            }
-            addressInput.value='検索中...';
-            addressInput.disabled=true;
-            try{
-                const url='https://zipcloud.ibsnet.co.jp/api/search?zipcode='+postal;
-                console.log('🌐 API呼び出し:',url);
-                const response=await fetch(url);
-                const data=await response.json();
-                console.log('📦 API応答:',data);
-                if(data.status===200&&data.results&&data.results.length>0){
-                    const result=data.results[0];
-                    const address=result.address1+result.address2+result.address3;
-                    addressInput.value=address;
-                    addressInput.disabled=false;
-                    console.log('✅ 住所取得成功:',address);
-                }else{
-                    addressInput.value='';
-                    addressInput.disabled=false;
-                    addressInput.placeholder='該当する住所が見つかりませんでした';
-                    console.log('❌ 該当する住所なし');
-                }
-            }catch(error){
-                console.error('❌ 郵便番号検索エラー:',error);
-                addressInput.value='';
-                addressInput.disabled=false;
-                addressInput.placeholder='検索に失敗しました';
-            }
-        }
-        
-        function checkEmailDomain(){
-            const emailInput=document.getElementById('email');
-            const email=emailInput.value.trim();
-            const typos={'gmial.com':'gmail.com','gmai.com':'gmail.com','yahooo.co.jp':'yahoo.co.jp','yaho.co.jp':'yahoo.co.jp'};
-            for(let typo in typos){
-                if(email.endsWith('@'+typo)){
-                    const correct=email.replace(typo,typos[typo]);
-                    if(confirm('メールアドレスを「'+correct+'」に修正しますか？')){
-                        emailInput.value=correct;
-                    }
-                    break;
-                }
-            }
-        }
-        
-        async function handleSubmit(e){
-            e.preventDefault();
-            if(!selectedDate||!selectedTimeslot){
-                alert('⚠️ 日付と時間帯を選択してください');
-                return;
-            }
-            console.log('📝 フォーム送信開始');
-            const loadingOverlay=document.getElementById('loadingOverlay');
-            const loadingSubtext=document.getElementById('loadingSubtext');
-            loadingOverlay.classList.add('active');
-            
-            try{
-                // ✅ チケットID生成（18文字）
-                const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
-                let randomStr = '';
-                for (let i = 0; i < 6; i++) {
-                    randomStr += chars.charAt(Math.floor(Math.random() * chars.length));
-                }
-                const timestamp = Math.floor(Date.now() / 1000).toString();
-                const ticketId = 'CM' + timestamp + randomStr;
-                
-                console.log('🎫 生成したチケットID:', ticketId, '(長さ:', ticketId.length + ')');
-                
-                const formElement=e.target;
-                const formData={
-                    id:ticketId,
-                    type:'citizen',
-                    date:selectedDate,
-                    timeslot:selectedTimeslot,
-                    name:formElement.name.value.trim(),
-                    postal:formElement.postal.value.trim(),
-                    address:formElement.address.value.trim(),
-                    phone:formElement.phone.value.trim(),
-                    email:formElement.email.value.trim(),
-                    age:formElement.age.value,
-                    gender:formElement.gender.value,
-                    timestamp:new Date().toISOString(),
-                    status:'reserved',
-                    boardedAt:null,
-                    disembarkedAt:null
-                };
-                
-                console.log('📋 予約データ:', formData);
-                
-                // ✅ LocalStorageに保存
-                const entries=JSON.parse(localStorage.getItem('citizenEntries')||'[]');
-                entries.push(formData);
-                localStorage.setItem('citizenEntries',JSON.stringify(entries));
-                localStorage.setItem('lastUpdate',Date.now().toString());
-                console.log('💾 localStorage保存完了:',entries.length,'件');
-                
-                // ✅ Google Spreadsheetに送信（クラウド連携）
-                if (isCloudOnline) {
-                    try {
-                        loadingSubtext.textContent = 'クラウドに保存中...';
-                        console.log('☁️ クラウド送信開始...');
-                        
-                        const response = await fetch(GAS_URL + '?action=addCitizen', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded',
-                            },
-                            body: new URLSearchParams(formData)
-                        });
-                        
-                        const result = await response.json();
-                        console.log('☁️ クラウド応答:', result);
-                        
-                        if (result.success) {
-                            console.log('✅ クラウド保存成功');
-                        } else {
-                            console.log('⚠️ クラウド保存失敗（ローカルには保存済み）:', result.message);
-                        }
-                    } catch (cloudError) {
-                        console.log('⚠️ クラウド送信エラー（ローカルには保存済み）:', cloudError);
-                    }
+                    // さらに2秒待機（メール送信完了を確実にする）
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    
+                    // チケットページへリダイレクト
+                    updateLoading('完了！', 'チケット画面を表示します');
+                    
+                    setTimeout(() => {
+                        window.location.href = `ticket-citizen.html?id=${data.ticketId}`;
+                    }, 1000);
+                    
                 } else {
-                    console.log('⚠️ クラウドオフライン（ローカルにのみ保存）');
+                    hideLoading();
+                    alert('予約に失敗しました:\n' + (data.message || '不明なエラー'));
                 }
                 
-                // ✅ メール送信（オプション）
-                try{
-                    loadingSubtext.textContent = 'メール送信中...';
-                    await fetch(GAS_URL,{
-                        method:'POST',
-                        mode:'no-cors',
-                        headers:{'Content-Type':'application/json'},
-                        body:JSON.stringify(formData)
-                    });
-                    console.log('✅ メール送信処理完了');
-                }catch(emailError){
-                    console.log('⚠️ メール送信エラー（続行）:',emailError);
-                }
-                
-                loadingOverlay.classList.remove('active');
-                alert('✅ 予約が完了しました！\n\n【予約内容】\nお名前: '+formData.name+'\n日時: '+formData.date+' '+formData.timeslot+'\nチケットID: '+formData.id+'\n\n次の画面でQRコードをご確認ください。');
-                window.location.href='ticket-citizen.html?id='+formData.id;
-                
-            }catch(error){
-                console.error('❌ エラー発生:',error);
-                loadingOverlay.classList.remove('active');
-                alert('⚠️ エラーが発生しました。もう一度お試しください。');
+            } catch (error) {
+                hideLoading();
+                console.error('Error:', error);
+                alert('通信エラーが発生しました。\nもう一度お試しください。\n\nエラー内容: ' + error.message);
             }
+        });
+        
+        function showLoading(text, subtext) {
+            document.getElementById('loadingText').textContent = text;
+            document.getElementById('loadingSubtext').textContent = subtext;
+            document.getElementById('loadingOverlay').classList.add('show');
         }
         
-        init();
-        console.log('🚀 エントリーフォーム起動完了');
+        function updateLoading(text, subtext) {
+            document.getElementById('loadingText').textContent = text;
+            document.getElementById('loadingSubtext').textContent = subtext;
+        }
+        
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('show');
+        }
+        
+        // 日付の初期値を明日に設定
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        document.getElementById('date').valueAsDate = tomorrow;
+        
+        // 日付の最小値を今日に設定
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('date').setAttribute('min', today);
     </script>
 </body>
 </html>
