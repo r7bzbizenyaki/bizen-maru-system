@@ -10,165 +10,160 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+            font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', Meiryo, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
         }
-        
+
         .container {
-            max-width: 500px;
+            max-width: 800px;
             margin: 0 auto;
             background: white;
             border-radius: 20px;
-            padding: 30px;
+            padding: 40px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
-        
+
         .header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
         }
-        
+
         .header-icon {
-            font-size: 2.5rem;
+            font-size: 60px;
             margin-bottom: 10px;
         }
-        
-        .header h1 {
-            color: #667eea;
-            font-size: 1.5rem;
-            margin-bottom: 5px;
-        }
-        
-        .section-title {
-            display: flex;
-            align-items: center;
-            font-size: 1rem;
-            font-weight: 600;
+
+        h1 {
             color: #333;
-            margin: 25px 0 15px 0;
+            font-size: 28px;
+            font-weight: bold;
         }
-        
-        .section-title .icon {
-            font-size: 1.5rem;
-            margin-right: 8px;
-        }
-        
-        .date-buttons,
-        .time-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .date-button,
-        .time-button {
-            padding: 18px;
-            border: 2px solid #e5e7eb;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s;
-            background: white;
-            text-align: left;
-        }
-        
-        .date-button:hover,
-        .time-button:hover {
-            border-color: #667eea;
-            background: #f0f4ff;
-        }
-        
-        .date-button.selected,
-        .time-button.selected {
+
+        .section-title {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            border-color: #667eea;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin: 30px 0 20px 0;
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        
-        .date-button {
+
+        .icon {
+            font-size: 24px;
+        }
+
+        .date-buttons, .time-buttons {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .date-button, .time-button {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        
-        .date-main {
+
+        .date-button:hover, .time-button:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .date-button.selected, .time-button.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .date-main, .time-title {
             flex: 1;
         }
-        
+
         .date-title {
-            font-size: 1.3rem;
+            font-size: 20px;
             font-weight: bold;
             margin-bottom: 5px;
         }
-        
+
         .date-time {
-            font-size: 0.9rem;
+            font-size: 14px;
             opacity: 0.8;
         }
-        
-        .date-badge {
-            background: rgba(255,255,255,0.2);
+
+        .date-badge, .time-badge {
+            background: rgba(255, 255, 255, 0.9);
+            color: #667eea;
             padding: 8px 16px;
             border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-        
-        .date-button.selected .date-badge {
-            background: rgba(255,255,255,0.3);
-        }
-        
-        .time-button {
-            text-align: center;
-        }
-        
-        .time-title {
-            font-size: 1.3rem;
+            font-size: 14px;
             font-weight: bold;
-            margin-bottom: 5px;
         }
-        
-        .time-badge {
-            font-size: 0.85rem;
-            opacity: 0.8;
+
+        .date-button.selected .date-badge,
+        .time-button.selected .time-badge {
+            background: white;
+            color: #667eea;
         }
-        
+
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
-        
+
         label {
             display: block;
-            font-weight: 600;
-            color: #333;
             margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+            font-size: 16px;
         }
-        
+
         .required {
-            color: #ef4444;
+            color: #e74c3c;
+            margin-left: 5px;
         }
-        
+
         input[type="text"],
         input[type="email"],
         input[type="tel"],
         input[type="number"],
         select {
             width: 100%;
-            padding: 12px;
-            border: 2px solid #e5e7eb;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
             border-radius: 8px;
-            font-size: 1rem;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
         }
-        
-        input:focus,
-        select:focus {
+
+        input:focus, select:focus {
             outline: none;
             border-color: #667eea;
         }
-        
+
+        select {
+            appearance: none;
+            background: white url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8"%3E%3Cpath fill="%23333" d="M6 8L0 0h12z"/%3E%3C/svg%3E') no-repeat right 15px center;
+            background-size: 12px;
+            padding-right: 40px;
+        }
+
         .btn-submit {
             width: 100%;
             padding: 18px;
@@ -176,17 +171,22 @@
             color: white;
             border: none;
             border-radius: 12px;
-            font-size: 1.2rem;
-            font-weight: 600;
+            font-size: 18px;
+            font-weight: bold;
             cursor: pointer;
+            transition: all 0.3s ease;
             margin-top: 30px;
         }
-        
+
         .btn-submit:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
         }
-        
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
         .loading-overlay {
             display: none;
             position: fixed;
@@ -196,46 +196,65 @@
             bottom: 0;
             background: rgba(0, 0, 0, 0.8);
             z-index: 9999;
-            align-items: center;
             justify-content: center;
+            align-items: center;
         }
-        
+
         .loading-overlay.show {
             display: flex;
         }
-        
+
         .loading-content {
             background: white;
             padding: 40px;
             border-radius: 20px;
             text-align: center;
+            max-width: 400px;
         }
-        
+
         .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #667eea;
             border-radius: 50%;
-            width: 60px;
-            height: 60px;
             animation: spin 1s linear infinite;
             margin: 0 auto 20px;
         }
-        
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        
+
         .loading-text {
-            font-size: 1.2rem;
+            font-size: 20px;
+            font-weight: bold;
             color: #333;
             margin-bottom: 10px;
-            font-weight: 600;
         }
-        
+
         .loading-subtext {
-            font-size: 0.9rem;
+            font-size: 14px;
             color: #666;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .date-button, .time-button {
+                padding: 15px;
+            }
+
+            .date-title {
+                font-size: 18px;
+            }
         }
     </style>
 </head>
@@ -245,32 +264,48 @@
             <div class="header-icon">🚢</div>
             <h1>備前丸市民限定内覧会</h1>
         </div>
-        
+
         <form id="reservationForm">
+            <!-- 日付選択 -->
             <div class="section-title">
                 <span class="icon">📅</span>
                 ご希望の日付を選択してください
             </div>
             <div class="date-buttons" id="dateButtons"></div>
             <input type="hidden" id="date" name="date" required>
-            
+
+            <!-- 時間帯選択 -->
             <div class="section-title">
                 <span class="icon">⏰</span>
                 ご希望の時間帯を選択してください
             </div>
             <div class="time-buttons" id="timeButtons"></div>
             <input type="hidden" id="timeSlot" name="timeSlot" required>
-            
+
+            <!-- お名前 -->
             <div class="form-group">
                 <label>👤 お名前 <span class="required">※</span></label>
-                <input type="text" id="name" name="name" required>
+                <input type="text" id="name" name="name" required placeholder="例: 山田 太郎">
             </div>
-            
+
+            <!-- 年代 -->
             <div class="form-group">
-                <label>🎂 年齢 <span class="required">※</span></label>
-                <input type="number" id="age" name="age" min="0" max="120" required>
+                <label>👥 年代 <span class="required">※</span></label>
+                <select id="age" name="age" required>
+                    <option value="">選択してください</option>
+                    <option value="10代未満">10代未満</option>
+                    <option value="10代">10代</option>
+                    <option value="20代">20代</option>
+                    <option value="30代">30代</option>
+                    <option value="40代">40代</option>
+                    <option value="50代">50代</option>
+                    <option value="60代">60代</option>
+                    <option value="70代">70代</option>
+                    <option value="80代以上">80代以上</option>
+                </select>
             </div>
-            
+
+            <!-- 性別 -->
             <div class="form-group">
                 <label>👥 性別 <span class="required">※</span></label>
                 <select id="gender" name="gender" required>
@@ -281,31 +316,36 @@
                     <option value="回答しない">回答しない</option>
                 </select>
             </div>
-            
+
+            <!-- 郵便番号 -->
             <div class="form-group">
                 <label>📮 郵便番号 <span class="required">※</span></label>
-                <input type="text" id="postalCode" name="postalCode" required>
+                <input type="text" id="postalCode" name="postalCode" required placeholder="例: 1234567（ハイフンなし）" pattern="[0-9]{7}">
             </div>
-            
+
+            <!-- 住所 -->
             <div class="form-group">
                 <label>🏠 住所 <span class="required">※</span></label>
-                <input type="text" id="address" name="address" required>
+                <input type="text" id="address" name="address" required placeholder="自動入力されます">
             </div>
-            
+
+            <!-- 電話番号 -->
             <div class="form-group">
                 <label>📞 電話番号 <span class="required">※</span></label>
-                <input type="tel" id="phone" name="phone" required>
+                <input type="tel" id="phone" name="phone" required placeholder="例: 09012345678（ハイフンなし）" pattern="[0-9]{10,11}">
             </div>
-            
+
+            <!-- メールアドレス -->
             <div class="form-group">
                 <label>📧 メールアドレス <span class="required">※</span></label>
-                <input type="email" id="email" name="email" required>
+                <input type="email" id="email" name="email" required placeholder="例: example@example.com">
             </div>
-            
+
             <button type="submit" class="btn-submit">予約を確定する</button>
         </form>
     </div>
-    
+
+    <!-- ローディングオーバーレイ -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loading-content">
             <div class="spinner"></div>
@@ -314,15 +354,16 @@
         </div>
     </div>
 
+    <script src="https://yubinbango.github.io/yubinbango/yubinbango.js"></script>
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyLpyqMk8xbnNfDz5H2DHhH_ZLNBSEWDG2pI11zrnRkCFwf3uVvHgrYpr1Asi0ijA1n/exec';
-        
+
         const dates = [
             { date: '2026-02-27', display: '2月27日（金）', count: 13 },
             { date: '2026-03-27', display: '3月27日（金）', count: 3 },
             { date: '2026-03-28', display: '3月28日（土）', count: 5 }
         ];
-        
+
         const times = [
             { time: '09:00-10:00', count: 9 },
             { time: '10:00-11:00', count: 8 },
@@ -330,61 +371,80 @@
             { time: '13:00-14:00', count: 6 },
             { time: '14:00-15:00', count: 5 }
         ];
-        
+
+        // 日付ボタン初期化
         function initDateButtons() {
             const container = document.getElementById('dateButtons');
-            dates.forEach(d => {
-                const btn = document.createElement('div');
-                btn.className = 'date-button';
-                btn.dataset.date = d.date;
-                btn.innerHTML = `
+            dates.forEach(dateInfo => {
+                const button = document.createElement('div');
+                button.className = 'date-button';
+                button.dataset.date = dateInfo.date;
+                button.innerHTML = `
                     <div class="date-main">
-                        <div class="date-title">${d.display}</div>
+                        <div class="date-title">${dateInfo.display}</div>
                         <div class="date-time">09:00〜15:00</div>
                     </div>
-                    <div class="date-badge">${d.count}件予約</div>
+                    <div class="date-badge">${dateInfo.count}件予約</div>
                 `;
-                btn.addEventListener('click', () => {
+                button.onclick = () => {
                     document.querySelectorAll('.date-button').forEach(b => b.classList.remove('selected'));
-                    btn.classList.add('selected');
-                    document.getElementById('date').value = d.date;
-                });
-                container.appendChild(btn);
+                    button.classList.add('selected');
+                    document.getElementById('date').value = dateInfo.date;
+                };
+                container.appendChild(button);
             });
         }
-        
+
+        // 時間帯ボタン初期化
         function initTimeButtons() {
             const container = document.getElementById('timeButtons');
-            times.forEach(t => {
-                const btn = document.createElement('div');
-                btn.className = 'time-button';
-                btn.dataset.time = t.time;
-                btn.innerHTML = `
-                    <div class="time-title">${t.time}</div>
-                    <div class="time-badge">${t.count}件予約</div>
+            times.forEach(timeInfo => {
+                const button = document.createElement('div');
+                button.className = 'time-button';
+                button.dataset.time = timeInfo.time;
+                button.innerHTML = `
+                    <div class="time-title">${timeInfo.time}</div>
+                    <div class="time-badge">${timeInfo.count}件予約</div>
                 `;
-                btn.addEventListener('click', () => {
+                button.onclick = () => {
                     document.querySelectorAll('.time-button').forEach(b => b.classList.remove('selected'));
-                    btn.classList.add('selected');
-                    document.getElementById('timeSlot').value = t.time;
-                });
-                container.appendChild(btn);
+                    button.classList.add('selected');
+                    document.getElementById('timeSlot').value = timeInfo.time;
+                };
+                container.appendChild(button);
             });
         }
-        
-        document.getElementById('reservationForm').addEventListener('submit', async (e) => {
+
+        // 郵便番号から住所自動入力
+        document.getElementById('postalCode').addEventListener('input', function(e) {
+            const postalCode = e.target.value.replace(/[^0-9]/g, '');
+            e.target.value = postalCode;
+
+            if (postalCode.length === 7) {
+                new YubinBango.Core(postalCode, function(addr) {
+                    if (addr.region) {
+                        document.getElementById('address').value = 
+                            addr.region + addr.locality + addr.street;
+                    }
+                });
+            }
+        });
+
+        // フォーム送信
+        document.getElementById('reservationForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
+
+            // 日付・時間帯の選択確認
             if (!document.getElementById('date').value) {
                 alert('日付を選択してください');
                 return;
             }
-            
             if (!document.getElementById('timeSlot').value) {
                 alert('時間帯を選択してください');
                 return;
             }
-            
+
+            // フォームデータ取得
             const formData = {
                 category: '市民',
                 date: document.getElementById('date').value,
@@ -397,27 +457,37 @@
                 phone: document.getElementById('phone').value,
                 email: document.getElementById('email').value
             };
-            
+
+            // 確認ダイアログ
             const confirmed = confirm(`以下の内容で予約します。よろしいですか？\n\nお名前: ${formData.name}\n日付: ${formData.date}\n時間枠: ${formData.timeSlot}`);
-            
             if (!confirmed) return;
-            
+
+            // ローディング表示
             showLoading('予約を処理中...', 'スプレッドシートに保存しています');
-            
+
             try {
                 const params = new URLSearchParams(formData);
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
                     body: params,
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (data.success) {
+                    // メール送信中
                     updateLoading('メール送信中...', '確認メールを送信しています');
+                    
+                    // 3秒待機（メール送信完了・スプレッドシート反映待ち）
                     await new Promise(resolve => setTimeout(resolve, 3000));
+                    
+                    // 完了表示
                     updateLoading('完了！', 'チケット画面を表示します');
+                    
+                    // 1秒後にリダイレクト
                     setTimeout(() => {
                         window.location.href = `ticket-citizen.html?id=${data.ticketId}`;
                     }, 1000);
@@ -427,25 +497,28 @@
                 }
             } catch (error) {
                 hideLoading();
+                console.error('エラー:', error);
                 alert('通信エラーが発生しました。\nもう一度お試しください。');
             }
         });
-        
+
+        // ローディング表示関数
         function showLoading(text, subtext) {
             document.getElementById('loadingText').textContent = text;
             document.getElementById('loadingSubtext').textContent = subtext;
             document.getElementById('loadingOverlay').classList.add('show');
         }
-        
+
         function updateLoading(text, subtext) {
             document.getElementById('loadingText').textContent = text;
             document.getElementById('loadingSubtext').textContent = subtext;
         }
-        
+
         function hideLoading() {
             document.getElementById('loadingOverlay').classList.remove('show');
         }
-        
+
+        // 初期化
         initDateButtons();
         initTimeButtons();
     </script>
