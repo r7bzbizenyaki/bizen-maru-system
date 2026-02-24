@@ -19,32 +19,125 @@
         }
         
         .container {
-            max-width: 800px;
+            max-width: 500px;
             margin: 0 auto;
             background: white;
             border-radius: 20px;
-            padding: 40px;
+            padding: 30px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
         
         .header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
+        }
+        
+        .header-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
         }
         
         .header h1 {
             color: #667eea;
-            font-size: 2rem;
-            margin-bottom: 10px;
+            font-size: 1.5rem;
+            margin-bottom: 5px;
         }
         
-        .header p {
-            color: #666;
+        .section-title {
+            display: flex;
+            align-items: center;
             font-size: 1rem;
+            font-weight: 600;
+            color: #333;
+            margin: 25px 0 15px 0;
+        }
+        
+        .section-title .icon {
+            font-size: 1.5rem;
+            margin-right: 8px;
+        }
+        
+        .date-buttons,
+        .time-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .date-button,
+        .time-button {
+            padding: 18px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+            text-align: left;
+        }
+        
+        .date-button:hover,
+        .time-button:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+        
+        .date-button.selected,
+        .time-button.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .date-button {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .date-main {
+            flex: 1;
+        }
+        
+        .date-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .date-time {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .date-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .date-button.selected .date-badge {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .time-button {
+            text-align: center;
+        }
+        
+        .time-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .time-badge {
+            font-size: 0.85rem;
+            opacity: 0.8;
         }
         
         .form-group {
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
         
         label {
@@ -52,18 +145,15 @@
             font-weight: 600;
             color: #333;
             margin-bottom: 8px;
-            font-size: 1.1rem;
         }
         
         .required {
             color: #ef4444;
-            margin-left: 5px;
         }
         
         input[type="text"],
         input[type="email"],
         input[type="tel"],
-        input[type="date"],
         input[type="number"],
         select {
             width: 100%;
@@ -71,40 +161,11 @@
             border: 2px solid #e5e7eb;
             border-radius: 8px;
             font-size: 1rem;
-            transition: border-color 0.3s;
         }
         
         input:focus,
         select:focus {
             outline: none;
-            border-color: #667eea;
-        }
-        
-        .time-slots {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 10px;
-            margin-top: 10px;
-        }
-        
-        .time-slot {
-            padding: 15px;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 600;
-        }
-        
-        .time-slot:hover {
-            border-color: #667eea;
-            background: #f0f4ff;
-        }
-        
-        .time-slot.selected {
-            background: #667eea;
-            color: white;
             border-color: #667eea;
         }
         
@@ -118,7 +179,6 @@
             font-size: 1.2rem;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s;
             margin-top: 30px;
         }
         
@@ -127,12 +187,6 @@
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
         }
         
-        .btn-submit:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        /* ローディング画面 */
         .loading-overlay {
             display: none;
             position: fixed;
@@ -155,7 +209,6 @@
             padding: 40px;
             border-radius: 20px;
             text-align: center;
-            max-width: 400px;
         }
         
         .spinner {
@@ -184,75 +237,38 @@
             font-size: 0.9rem;
             color: #666;
         }
-        
-        .note {
-            background: #fff3cd;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 4px solid #ffc107;
-        }
-        
-        .note p {
-            color: #856404;
-            font-size: 0.9rem;
-            line-height: 1.6;
-        }
-        
-        @media (max-width: 600px) {
-            .container {
-                padding: 20px;
-            }
-            
-            .time-slots {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🚢 備前丸市民限定内覧会</h1>
-            <p>予約フォーム</p>
-        </div>
-        
-        <div class="note">
-            <p>📌 予約完了後、確認メールが送信されます。<br>
-            当日はメールに記載されたQRコードをご提示ください。</p>
+            <div class="header-icon">🚢</div>
+            <h1>備前丸市民限定内覧会</h1>
         </div>
         
         <form id="reservationForm">
-            <div class="form-group">
-                <label>📅 ご希望の日付 <span class="required">※</span></label>
-                <input type="date" id="date" name="date" required>
+            <div class="section-title">
+                <span class="icon">📅</span>
+                ご希望の日付を選択してください
             </div>
+            <div class="date-buttons" id="dateButtons"></div>
+            <input type="hidden" id="date" name="date" required>
             
-            <div class="form-group">
-                <label>⏰ ご希望の時間枠 <span class="required">※</span></label>
-                <div class="time-slots" id="timeSlots">
-                    <div class="time-slot" data-time="09:00-09:30">09:00-09:30</div>
-                    <div class="time-slot" data-time="09:30-10:00">09:30-10:00</div>
-                    <div class="time-slot" data-time="10:00-10:30">10:00-10:30</div>
-                    <div class="time-slot" data-time="10:30-11:00">10:30-11:00</div>
-                    <div class="time-slot" data-time="11:00-11:30">11:00-11:30</div>
-                    <div class="time-slot" data-time="11:30-12:00">11:30-12:00</div>
-                    <div class="time-slot" data-time="13:00-13:30">13:00-13:30</div>
-                    <div class="time-slot" data-time="13:30-14:00">13:30-14:00</div>
-                    <div class="time-slot" data-time="14:00-14:30">14:00-14:30</div>
-                    <div class="time-slot" data-time="14:30-15:00">14:30-15:00</div>
-                </div>
-                <input type="hidden" id="timeSlot" name="timeSlot" required>
+            <div class="section-title">
+                <span class="icon">⏰</span>
+                ご希望の時間帯を選択してください
             </div>
+            <div class="time-buttons" id="timeButtons"></div>
+            <input type="hidden" id="timeSlot" name="timeSlot" required>
             
             <div class="form-group">
                 <label>👤 お名前 <span class="required">※</span></label>
-                <input type="text" id="name" name="name" placeholder="山田 太郎" required>
+                <input type="text" id="name" name="name" required>
             </div>
             
             <div class="form-group">
                 <label>🎂 年齢 <span class="required">※</span></label>
-                <input type="number" id="age" name="age" min="0" max="120" placeholder="30" required>
+                <input type="number" id="age" name="age" min="0" max="120" required>
             </div>
             
             <div class="form-group">
@@ -268,29 +284,28 @@
             
             <div class="form-group">
                 <label>📮 郵便番号 <span class="required">※</span></label>
-                <input type="text" id="postalCode" name="postalCode" placeholder="700-0000" required>
+                <input type="text" id="postalCode" name="postalCode" required>
             </div>
             
             <div class="form-group">
                 <label>🏠 住所 <span class="required">※</span></label>
-                <input type="text" id="address" name="address" placeholder="岡山県備前市..." required>
+                <input type="text" id="address" name="address" required>
             </div>
             
             <div class="form-group">
                 <label>📞 電話番号 <span class="required">※</span></label>
-                <input type="tel" id="phone" name="phone" placeholder="090-1234-5678" required>
+                <input type="tel" id="phone" name="phone" required>
             </div>
             
             <div class="form-group">
                 <label>📧 メールアドレス <span class="required">※</span></label>
-                <input type="email" id="email" name="email" placeholder="example@example.com" required>
+                <input type="email" id="email" name="email" required>
             </div>
             
             <button type="submit" class="btn-submit">予約を確定する</button>
         </form>
     </div>
     
-    <!-- ローディング画面 -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loading-content">
             <div class="spinner"></div>
@@ -302,33 +317,78 @@
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyLpyqMk8xbnNfDz5H2DHhH_ZLNBSEWDG2pI11zrnRkCFwf3uVvHgrYpr1Asi0ijA1n/exec';
         
-        // 時間枠選択
-        const timeSlots = document.querySelectorAll('.time-slot');
-        const timeSlotInput = document.getElementById('timeSlot');
+        const dates = [
+            { date: '2026-02-27', display: '2月27日（金）', count: 13 },
+            { date: '2026-03-27', display: '3月27日（金）', count: 3 },
+            { date: '2026-03-28', display: '3月28日（土）', count: 5 }
+        ];
         
-        timeSlots.forEach(slot => {
-            slot.addEventListener('click', () => {
-                timeSlots.forEach(s => s.classList.remove('selected'));
-                slot.classList.add('selected');
-                timeSlotInput.value = slot.dataset.time;
+        const times = [
+            { time: '09:00-10:00', count: 9 },
+            { time: '10:00-11:00', count: 8 },
+            { time: '11:00-12:00', count: 7 },
+            { time: '13:00-14:00', count: 6 },
+            { time: '14:00-15:00', count: 5 }
+        ];
+        
+        function initDateButtons() {
+            const container = document.getElementById('dateButtons');
+            dates.forEach(d => {
+                const btn = document.createElement('div');
+                btn.className = 'date-button';
+                btn.dataset.date = d.date;
+                btn.innerHTML = `
+                    <div class="date-main">
+                        <div class="date-title">${d.display}</div>
+                        <div class="date-time">09:00〜15:00</div>
+                    </div>
+                    <div class="date-badge">${d.count}件予約</div>
+                `;
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.date-button').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    document.getElementById('date').value = d.date;
+                });
+                container.appendChild(btn);
             });
-        });
+        }
         
-        // フォーム送信
+        function initTimeButtons() {
+            const container = document.getElementById('timeButtons');
+            times.forEach(t => {
+                const btn = document.createElement('div');
+                btn.className = 'time-button';
+                btn.dataset.time = t.time;
+                btn.innerHTML = `
+                    <div class="time-title">${t.time}</div>
+                    <div class="time-badge">${t.count}件予約</div>
+                `;
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.time-button').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    document.getElementById('timeSlot').value = t.time;
+                });
+                container.appendChild(btn);
+            });
+        }
+        
         document.getElementById('reservationForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // バリデーション
-            if (!timeSlotInput.value) {
-                alert('時間枠を選択してください');
+            if (!document.getElementById('date').value) {
+                alert('日付を選択してください');
                 return;
             }
             
-            // フォームデータを取得
+            if (!document.getElementById('timeSlot').value) {
+                alert('時間帯を選択してください');
+                return;
+            }
+            
             const formData = {
                 category: '市民',
                 date: document.getElementById('date').value,
-                timeSlot: timeSlotInput.value,
+                timeSlot: document.getElementById('timeSlot').value,
                 name: document.getElementById('name').value,
                 age: document.getElementById('age').value,
                 gender: document.getElementById('gender').value,
@@ -338,58 +398,36 @@
                 email: document.getElementById('email').value
             };
             
-            // 確認ダイアログ
-            const confirmed = confirm(`以下の内容で予約します。よろしいですか？\n\n` +
-                `お名前: ${formData.name}\n` +
-                `日付: ${formData.date}\n` +
-                `時間枠: ${formData.timeSlot}\n` +
-                `性別: ${formData.gender}\n` +
-                `年齢: ${formData.age}\n` +
-                `電話番号: ${formData.phone}\n` +
-                `メールアドレス: ${formData.email}`
-            );
+            const confirmed = confirm(`以下の内容で予約します。よろしいですか？\n\nお名前: ${formData.name}\n日付: ${formData.date}\n時間枠: ${formData.timeSlot}`);
             
             if (!confirmed) return;
             
-            // ローディング表示
             showLoading('予約を処理中...', 'スプレッドシートに保存しています');
             
             try {
                 const params = new URLSearchParams(formData);
-                
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
                     body: params,
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    }
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
                 });
                 
                 const data = await response.json();
                 
                 if (data.success) {
-                    // メール送信を待つ
                     updateLoading('メール送信中...', '確認メールを送信しています');
-                    
-                    // 3秒待機（スプレッドシート書き込み + メール送信完了を確実にする）
                     await new Promise(resolve => setTimeout(resolve, 3000));
-                    
-                    // チケットページへリダイレクト
                     updateLoading('完了！', 'チケット画面を表示します');
-                    
                     setTimeout(() => {
                         window.location.href = `ticket-citizen.html?id=${data.ticketId}`;
                     }, 1000);
-                    
                 } else {
                     hideLoading();
                     alert('予約に失敗しました:\n' + (data.message || '不明なエラー'));
                 }
-                
             } catch (error) {
                 hideLoading();
-                console.error('Error:', error);
-                alert('通信エラーが発生しました。\nもう一度お試しください。\n\nエラー内容: ' + error.message);
+                alert('通信エラーが発生しました。\nもう一度お試しください。');
             }
         });
         
@@ -408,14 +446,8 @@
             document.getElementById('loadingOverlay').classList.remove('show');
         }
         
-        // 日付の最小値を今日に設定
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('date').setAttribute('min', today);
-        
-        // 日付の初期値を明日に設定
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        document.getElementById('date').valueAsDate = tomorrow;
+        initDateButtons();
+        initTimeButtons();
     </script>
 </body>
 </html>
