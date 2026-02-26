@@ -288,7 +288,7 @@
         // 統計情報を取得
         async function loadStats() {
             try {
-                const response = await fetch(`${SCRIPT_URL}?action=getDashboardData`);
+                const response = await fetch(`${SCRIPT_URL}?action=getDashboardData&category=市民`);
                 const data = await response.json();
                 
                 if (data.success) {
