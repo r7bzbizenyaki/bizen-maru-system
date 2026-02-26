@@ -357,12 +357,12 @@
         
         async function loadDashboardData() {
             try {
-                const response = await fetch(`${SCRIPT_URL}?action=getDashboardData`);
+                const response = await fetch(`${SCRIPT_URL}?action=getDashboardData&category=市民`);
                 const data = await response.json();
                 
                 if (data.success) {
                     updateStats(data.stats);
-                    updateRecordsTable(data.recentRecords);
+                    updateRecordsTable(data.records);
                 } else {
                     showError('データの読み込みに失敗しました');
                 }
@@ -377,7 +377,7 @@
             document.getElementById('totalBoarded').textContent = stats.totalBoarded || 0;
             document.getElementById('totalDisembarked').textContent = stats.totalDisembarked || 0;
             document.getElementById('currentOnboard').textContent = stats.currentOnboard || 0;
-            document.getElementById('avgStayTime').textContent = stats.averageStayTime || '-';
+            document.getElementById('avgStayTime').textContent = stats.avgStayTime ? stats.avgStayTime + '分' : '-';
         }
         
         function updateRecordsTable(records) {
@@ -465,7 +465,7 @@
         
         async function exportCSV() {
             try {
-                const response = await fetch(`${SCRIPT_URL}?action=getDashboardData`);
+                const response = await fetch(`${SCRIPT_URL}?action=getDashboardData&category=市民`);
                 const data = await response.json();
                 
                 if (!data.success || !data.recentRecords || data.recentRecords.length === 0) {
@@ -476,7 +476,7 @@
                 let csv = '\ufeff'; // BOM for Excel
                 csv += 'チケットID,お名前,予約日,時間枠,ステータス,乗船時刻,下船時刻\n';
                 
-                data.recentRecords.forEach(record => {
+                data.records.forEach(record => {
                     csv += `"${record.ticketId}",`;
                     csv += `"${record.name}",`;
                     csv += `"${record.date}",`;
